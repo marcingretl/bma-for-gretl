@@ -1,0 +1,25 @@
+function bundle BMA_OldStyle (list big_list "List of all variables (Y must be the first one!!!)",
+                              int acc_type[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
+                              scalar av_model_size[0::1] "Prior average model size",
+                              scalar alpha[0:1:0.6] "Significance level for the initial model",
+                              int l_rank[2::4] "Number of the top ranked models",
+                              int g_type[1:5:1] "g-prior type" {"Benchmark prior", "Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP"},
+                              int do_joint[0:2:0] "Jointness analysis" {"None", "Ley-Steel Measure", "Doppelhofer-Weeks Measure"},
+                              int h_predict[0::0] "Number of out-of-sample forecasts",
+                              int Nrep[1e+06] "Total number of replications",
+                              int burn[0:99:10] "Percentage of burn-in draws",
+                              int verbosity[1:2:1] "Verbosity")
+    /*
+    Function for backward compatibility
+    */
+    bundle OldStyle
+    matrix big_list_m = big_list
+    if cols(big_list_m) >= 2
+        string Y_name = varname(big_list_m[1])
+        series @Y_name = big_list[1]
+        OldStyle = BMA_GUI(@Y_name, big_list-big_list[1], acc_type, av_model_size, alpha, l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity)
+    else
+        funcerr "BMA needs at least one intenpendent variable."
+    endif
+    return OldStyle
+end function

@@ -1,0 +1,105 @@
+----------------------------------
+Prior: Binomial
+Prior average model size: 1.500000
+Significance level for the initial model: 0.600000
+g-prior: Risk Inflation Criterion (g-RIC)
+Total number of iterations: 10000
+Number of burn-in draws: 1000
+
+The initial model:
+
+OLS, using observations 1-22
+Dependent variable: valadd
+
+             coefficient   std. error   t-ratio   p-value
+  -------------------------------------------------------
+  const      −32.2641      36.2671      −0.8896   0.3854 
+  capital      4.22623      0.932387     4.533    0.0003  ***
+  labor        4.07109      0.993979     4.096    0.0007  ***
+  nfirm        0.351708     0.230110     1.528    0.1438 
+
+SSR = 254851, R-squared = 0.988273
+
+----------------------------------
+
+Posterior average model size: 1.814333
+
+Posterior moments (unconditional and conditional on inclusion):
+                    PIP           Mean       Std.Dev.      Cond.Mean   Cond.Std.Dev
+  labor        0.856778       4.926748       2.688874       5.750322       1.924273
+capital        0.581778       2.390236       2.806000       4.108503       2.544453
+  nfirm        0.375778       0.138829       0.498889       0.369443       0.759695
+
+----------------------------------
+
+Posterior probability of models:
+Model 1:	0.324778
+Model 2:	0.294222
+Model 3:	0.138000
+Model 4:	0.124000
+Total probability of the models in ranking (numerical): 0.881000
+
+Correlation coefficient between the analytical
+and numerical probabilities of the above models: 0.998169
+
+----------------------------------
+
+Predictive results:
+            valadd           Mean       Std.Dev.
+WA      636.948000     614.778835     379.183358
+WV       22.700000     108.708922     384.134111
+WI      349.711000     415.443199     378.720023
+
+----------------------------------
+
+Posterior joint probability of variables:
+                capital          labor          nfirm
+capital        0.000000       0.438556       0.251778
+  labor        0.000000       0.000000       0.237778
+  nfirm        0.000000       0.000000       0.000000
+
+Jointness statistics (Doppelhofer-Weeks Measure):
+                capital          labor          nfirm
+capital        0.000000     -35.439116       0.593508
+  labor        0.000000       0.000000      -4.231099
+  nfirm        0.000000       0.000000       0.000000
+
+Strong substitutes:
+capital,labor      -35.439116
+  labor,nfirm       -4.231099
+
+----------------------------------
+
+Model: 1, posterior probability: 0.324778
+             coefficient   std. error     z     p-value
+  -----------------------------------------------------
+  capital      2.90426      1.85048     1.569   0.1165 
+  labor        4.84961      1.37819     3.519   0.0004  ***
+
+
+----------------------------------
+
+Model: 2, posterior probability: 0.294222
+             coefficient   std. error     z     p-value 
+  ------------------------------------------------------
+  labor        6.83464      0.580200    11.78   4.96e-32 ***
+
+
+----------------------------------
+
+Model: 3, posterior probability: 0.138000
+             coefficient   std. error     z     p-value 
+  ------------------------------------------------------
+  capital      7.01347      0.962142    7.289   3.11e-13 ***
+  nfirm        1.05205      0.330875    3.180   0.0015   ***
+
+
+----------------------------------
+
+Model: 4, posterior probability: 0.124000
+             coefficient   std. error      z      p-value 
+  --------------------------------------------------------
+  labor        7.45095      1.03505      7.199    6.08e-13 ***
+  nfirm       -0.341692     0.477929    -0.7149   0.4746  
+
+----------------------------------

@@ -1,0 +1,9 @@
+function void BMA_ols (bundle *M)
+    /*
+    Function computes Bayesian OLS (posterior beta vector end covariance matrix).
+    */
+    matrix Vhat = M.XtXinv / (1 + M.scaling_f[1])
+    M.bhat = Vhat * M.XtY
+    M.dj_new = M.scaling_f[3] * M.yMy + M.scaling_f[4]
+    M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
+end function

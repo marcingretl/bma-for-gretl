@@ -1,0 +1,168 @@
+function void BMA_Print (bundle *M)
+    /*
+    Function prints BMA results
+    */
+    # We have to set sample
+    if M.h_predict > 0
+        smpl 1 M.last_obs
+    endif
+    # We re-create Y process
+    string Y_name = M.Y_name
+    series @Y_name = M.Y
+    # Additional information in summary
+    printf "\n"
+    if M.verbosity == 2
+        print "----------------------------------"
+        printf "Prior: %s\n", M.prior_name
+        printf "Prior average model size: %f\n", M.av_model_size
+        printf "Significance level for the initial model: %f\n", M.alpha
+        printf "g-prior: %s\n", M.gtype
+        printf "Total number of iterations: %d\n", M.Nrep
+        printf "Number of burn-in draws: %d\n", M.Nburn
+        if exists(M.Norig) == 1
+            printf "Original number of observations (with missing): %d", M.Norig
+        endif
+        printf "\n"
+        print "The initial model:"
+        list start_model = M.StartModel
+        ols @Y_name const start_model --simple
+    endif
+    # Standard information (PIPs, Means and so on)
+    print "----------------------------------"
+    printf "\n"
+    printf "Posterior average model size: %f\n", M.mod_size/(M.Nrep - M.Nburn)
+    printf "\n"
+    print "Posterior moments (unconditional and conditional on inclusion):"
+    if $version < 20170
+        printf "%15f", M.Post_Results
+    else
+        printf "%15f", mreverse(msortby(M.Post_Results, 1))
+    endif
+    printf "\n"
+    print "----------------------------------"
+    printf "\n"
+    print "Posterior probability of models:"
+    loop for i=1..M.l_rank --quiet
+        printf "Model %d:\t%f\n", i, M.Numerical_Likelihood[i]
+    endloop
+    printf "Total probability of the models in ranking (numerical): %f\n", sumc(M.Numerical_Likelihood)
+    printf "\n"
+    printf "Correlation coefficient between the analytical\n"
+    printf "and numerical probabilities of the above models: %f\n", BMA_correlation_coeff(&M)
+    # Forecasts
+    if M.h_predict > 0
+        printf "\n"
+        print "----------------------------------"
+        printf "\n"
+        print "Predictive results:"
+        printf "%15f", M.prediction
+        printf "\n"
+    endif
+    # Jointess analysis
+    if M.do_joint != 0
+        matrix jointess_measure = BMA_jointness_measure(&M)
+        if M.do_joint == 1
+            string jointess_measure_name = "Ley-Steel Measure"
+        else
+            string jointess_measure_name = "Doppelhofer-Weeks Measure"
+        endif
+        print "----------------------------------"
+        printf "\n"
+        print "Posterior joint probability of variables:"
+        printf "%15f", M.jointness_m
+        printf "\n"
+        printf "Jointness statistics (%s):\n", jointess_measure_name
+        printf "%15f", jointess_measure
+        scalar strong_sub = 0
+        scalar significant_sub = 0
+        scalar strong_com = 0
+        scalar significant_com = 0
+        matrix pairs = zeros(round(0.5*M.k^2), 3)
+        scalar pair = 0
+        loop for i=1..M.k --quiet
+            loop for j=i+1..M.k --quiet
+                if abs(jointess_measure[i,j]) > 1
+                    pair += 1
+                    pairs[pair,1] = jointess_measure[i,j]
+                    pairs[pair,2] = i
+                    pairs[pair,3] = j
+                    if jointess_measure[i,j] < 0
+                        if jointess_measure[i,j] < -2
+                            strong_sub += 1
+                        else
+                            significant_sub += 1
+                        endif
+                    else
+                        if jointess_measure[i,j] > 2
+                            strong_com += 1
+                        else
+                            significant_com += 1
+                        endif
+                    endif
+                endif
+            endloop
+        endloop
+        if pair > 0
+            pairs = msortby(pairs[1:pair, ], 1)
+            scalar shift = 0
+            if strong_sub > 0
+                BMA_jointness_pairs("Strong substitutes:", &strong_sub, M.var_numbers, &shift, &pairs)
+            endif
+            if significant_sub > 0
+                BMA_jointness_pairs("Significant substitutes:", &significant_sub, M.var_numbers, &shift, &pairs)
+            endif
+            if significant_com > 0
+                BMA_jointness_pairs("Significant complements:", &significant_com, M.var_numbers, &shift, &pairs)
+            endif
+            if strong_com > 0
+                BMA_jointness_pairs("Strong complements:", &strong_com, M.var_numbers, &shift, &pairs)
+            endif
+        endif
+    endif
+    # Printing models in ranking
+    if M.verbosity == 2
+        # We copy the bundle
+        bundle M_new = M
+        matrix k_new_mat = sumr(M_new.mod_rank)
+        loop for i=1..M_new.l_rank --quiet
+            if M_new.mod_nume_prob[i] == 0
+                break
+            endif
+            matrix M_new.X_new = {}
+            matrix M_new.XtY = {}
+            matrix M_new.XtXinv = {}
+            matrix M_new.bhat = {}
+            matrix M_new.bvar = {}
+            scalar M_new.yMy = 0
+            string Xnames = ""
+            list X = const
+            loop for j=1..M_new.k --quiet
+                if M_new.mod_rank[i,j] == 1
+                    if rows(M_new.X_new) == 0
+                        M_new.X_new = M_new.big_mat_dem[,j+1]
+                    else
+                        M_new.X_new = M_new.X_new ~ M_new.big_mat_dem[,j+1]
+                    endif
+                    Xnames += "," ~ varname(M_new.var_numbers[j+1])
+                endif
+            endloop
+            # Bayesian OLS for models in ranking
+            printf "\n"
+            print "----------------------------------"
+            printf "\nModel: %d, posterior probability: %f", i, M_new.Numerical_Likelihood[i]
+            M_new.k_new = k_new_mat[i]
+            if M_new.k_new == 0
+                printf "\n\n  %s\n", "None of the variables were significant."
+                printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
+            else
+                BMA_matrix_precompute(&M_new)
+                BMA_ols(&M_new)
+                matrix coeffmat = M_new.bhat ~ sqrt(M_new.bvar)
+                coeffmat = coeffmat[2:M_new.k_new+1,]
+                modprint coeffmat Xnames
+            endif
+        endloop
+    endif
+    print "----------------------------------"
+    printf "\n\n"
+end function

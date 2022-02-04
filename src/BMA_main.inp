@@ -1,0 +1,62 @@
+function void BMA_main (bundle *M)
+    /*
+    This is main BMA function with complete MC3 simulation procedure
+    */
+    # Local variables
+    scalar progress = floor(M.Nrep/10) # progress of MCMC
+    scalar percentage = progress # percentage of progress of MCMC
+    # Sample setting for prediction
+    if M.h_predict > 0
+        smpl 1 M.last_obs
+    endif
+    ##################
+    # Part 1: Starting model
+    # We estimate starting model and construct starting mod_rank_struct and mod_rank
+    BMA_initial_model(&M)
+    BMA_new_X_matrix("START", &M)
+    BMA_matrix_precompute(&M)
+    BMA_lprob(&M)
+    BMA_ols(&M)
+    M.lprob_old = M.lprob_new
+    M.mod_struct = M.mod_struct_new
+    ##################
+    # Part 2: Markov Chain Monte Carlo
+    printf "\nOverall progress: "
+    flush
+    loop for rep=1..M.Nrep --quiet
+        # Saving data for the old model
+        BMA_model_switch("SAVE", &M)
+        # Now we draw the number of candidate variable
+        scalar potential_var = randint(0, M.k)
+        # Now we modify the list of variables (remove an existing variable or add a new variable)
+        if potential_var > 0
+            M.mod_struct_new = M.mod_struct
+            M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
+            # We create the new matrix of indenpendent variables and run some precomputes based on it
+            M.k_new = sum(M.mod_struct_new)
+            BMA_new_X_matrix("NORMAL", &M)
+            BMA_matrix_precompute(&M)
+            BMA_lprob(&M)
+            # Now we decide if to accept the new model
+            BMA_accep_model(&M)
+        endif
+        # Essentials of MCMC: building of rankings, averaging the results and jointness stuff
+        # Now we construct rankings
+        if rep > M.Nburn
+            BMA_build_rank(&M)
+            # Now we compute average model size, PIPs and average values of all coefficients and variances
+            BMA_averaging(&M)
+            # Out-of-sample forecasts
+            if M.h_predict > 0 && M.k_new > 0
+                BMA_forecast(&M)
+            endif
+            # Jointness analysis
+            if M.do_joint != 0
+                BMA_jointness_matrix(&M)
+            endif
+        endif
+        if M.show_progress == 1
+            BMA_show_progress(&rep, &percentage, &progress, M.Nrep)
+        endif
+    endloop
+end function

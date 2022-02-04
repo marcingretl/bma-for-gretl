@@ -1,0 +1,24 @@
+function void BMA_new_X_matrix (string MODE,
+                                bundle *M)
+    /*
+    Function creates matrix of explanatory variables (demeaned) for current draw.
+    MODE - mode in which function operates: START (for starting model) or NORMAL
+    */
+    # If we have at least one variable we create new X matrix, otherwise it includes "Ones" only.
+    if M.k_new > 0
+        if MODE == "START" # Note: this hapens only ones: for the starting model!!!
+            BMA_model_structure(&M)
+        endif
+        M.X_new_num = selifc(M.var_numbers2[2,], M.mod_struct_new)
+        M.X_new = selifc(M.big_mat_dem[,2:], M.mod_struct_new)
+        if M.h_predict > 0
+            M.X_new_predict = selifc(M.big_mat_dem_predict[,2:], M.mod_struct_new)
+        endif
+    else
+        M.X_new_num = {}
+        M.X_new = ones($nobs,1)
+        if M.h_predict > 0
+            M.X_new_predict = {}
+        endif
+    endif
+end function

@@ -1,0 +1,26 @@
+function matrix BMA_jointness_measure (bundle *M)
+    /*
+    Function computes jointness measure based on given jointness matrix.
+    Local variables:
+    var_prob - vector with posterior probability of indenpendent variables
+    B, C, D	 - scalars for Doppelhofer-Weeks Measure computation
+    Returns: matrix with computed jointness measure
+    */
+    matrix var_prob = M.Post_Results[,1]
+    matrix jointness_measure = zeros(rows(M.jointness_m), cols(M.jointness_m))
+    loop for i=1..M.k --quiet
+        loop for j=i+1..M.k --quiet
+            if M.do_joint == 1 # Ley-Steel Measure
+                jointness_measure[i,j] = log(M.jointness_m[i,j]/(var_prob[i] + var_prob[j] - 2*M.jointness_m[i,j]))
+            elif M.do_joint == 2 # Doppelhofer-Weeks Measure
+                scalar D = var_prob[j] - M.jointness_m[i,j]
+                scalar B = 1 - var_prob[i] - D
+                scalar C = var_prob[i] - M.jointness_m[i,j]
+                jointness_measure[i,j] = log((M.jointness_m[i,j]*B)/(C*D))
+            endif
+        endloop
+    endloop    
+    cnameset(jointness_measure, M.all_names_sp)
+    rnameset(jointness_measure, M.all_names_sp)
+    return jointness_measure
+end function

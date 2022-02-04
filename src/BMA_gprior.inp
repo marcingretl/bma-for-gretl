@@ -1,0 +1,27 @@
+function scalar BMA_gprior (scalar k,
+                            int type)
+    /*
+    Function computes g-prior:
+    *k	 - pointer to scalar holding numer of indenpendent variables
+    type - type of g-prior to be computed
+    Returs: scalar gprior
+    */
+    # Starting value
+    scalar gprior = 0
+    if type == 1 # Benchmark prior
+        if $nobs < k^2
+            gprior = 1/k^2
+        else
+            gprior = 1/$nobs
+        endif
+    elif type == 2 # Unit Information Prior (g-UIP)
+        gprior = 1/$nobs
+    elif type == 3 # Risk Inflation Criterion (g-RIC)
+        gprior = 1/k^2
+    elif type == 4 # Hannan and Quinn HQC
+        gprior = 1/(log($nobs))^3
+    elif type == 5 # Root of g-UIP
+        gprior = sqrt(1/$nobs)
+    endif
+    return gprior
+end function

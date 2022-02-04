@@ -1,0 +1,59 @@
+function void BMA_initial_model (bundle *M)
+    /*
+    Function creates list of variables for the initial model.
+    Local variables:
+    Y		- dependent variable
+    max_k	- number of given indenpendent variables
+    X_list2	- M.X_list in a form of list (not matrix)
+    */
+    # Starting values of the local variables
+    series Y = M.Y
+    list X_list2 = M.X_list
+    list last = {}
+    scalar max_k = cols(M.var_numbers2)
+    #M.var_numbers2 = transp(msortby(transp(M.var_numbers2), 2))
+    if M.alpha == 0 # Empty model (const only)
+        M.k_new = 0
+    elif M.alpha == 1	# Trully random model
+        M.k_new = randint(0, max_k)
+        if M.k_new > 0
+            if M.k_new == max_k # All variables in the starting model, nothing to draw
+                last = X_list2
+            else
+                loop for i=1..M.k_new --quiet
+                    scalar accept = 0
+                    #set loop_maxiter 99999 # This should be set if we cannot construct random list
+                    loop while accept == 0 --quiet
+                        cand = transp(M.var_numbers2)[1, randint(1, max_k)]
+                        if inlist(last, cand) == 0
+                            last += cand
+                            accept = 1
+                        endif
+                    endloop
+                endloop
+                # We have to sort variables in created list
+                matrix last_mat = zeros(2,M.k_new)
+                last_mat[1,] = last
+                loop for i=1..M.k_new --quiet
+                    loop for j=1..max_k --quiet
+                        if last_mat[1,i] == transp(M.var_numbers2)[1,j]
+                            last_mat[2,i] = transp(M.var_numbers2)[2,j]
+                            break
+                        endif
+                    endloop
+                endloop
+                last_mat = transp(msortby(transp(last_mat),2))
+                last = last_mat[1,]
+            endif
+        endif
+    else
+        # Model reduced at given M.alpha (classic OLS)
+        ols Y const X_list2 --quiet
+        omit --auto=M.alpha --silent
+        last = $xlist
+        last -= const
+        M.k_new = $ncoeff-1
+    endif
+    M.k_old = nelem(last)
+    matrix M.StartModel = last
+end function

@@ -1,0 +1,42 @@
+function bundle BMA_GUI (series Y "Dependent variable",
+                         list X_list "List of indenpendent variables (X)",
+                         int acc_type[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
+                         scalar av_model_size[0::1] "Prior average model size",
+                         scalar alpha[0:1:0.6] "Significance level for the initial model",
+                         int l_rank[2::4] "Number of the top ranked models",
+                         int g_type[1:5:1] "g-prior type" {"Benchmark prior", "Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP"},
+                         int do_joint[0:2:0] "Jointness analysis" {"None", "Ley-Steel Measure", "Doppelhofer-Weeks Measure"},
+                         int h_predict[0::0] "Number of out-of-sample forecasts",
+                         int Nrep[1e+06] "Total number of replications",
+                         int burn[0:99:10] "Percentage of burn-in draws",
+                         int verbosity[1:2:1] "Verbosity",
+                         bool show_progress[1] "Show overall progress")
+    /*
+    Main public function to carry out BMA analysis
+    Function returns bundle MODEL with (formatted) results
+    */
+    # Basic parsing and checking
+    bundle MODEL
+    Norig = $nobs
+    smpl Y X_list --no-missing --quiet
+    if Norig != $nobs
+        printf "\nThere are missing values in dataset!"
+    else
+        Norig = NA
+    endif
+    err = BMA_parse(&MODEL, Y, argname(Y), X_list, &av_model_size, &l_rank)
+    if strlen(err) != 0
+        funcerr "@err !!!"
+    else
+        MODEL = BMA_setup(Y, MODEL.X_list, acc_type, av_model_size, alpha, l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity, argname(Y), show_progress, Norig)
+        # Setting sample for forecasting
+        if MODEL.h_predict > 0
+            smpl 1 MODEL.last_obs
+        endif
+        BMA_main(&MODEL)
+        BMA_summary(&MODEL)
+        BMA_Print(&MODEL)
+    endif
+    set warnings on
+    return MODEL
+end function

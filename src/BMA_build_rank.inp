@@ -1,0 +1,43 @@
+function void BMA_build_rank (bundle *M)
+    /*
+    Function creates both analitycal and numerical model rankings.
+    Local variable:
+    nr - position (row) in rankings to be replaced
+    */
+    # Initial value
+    scalar nr = 0
+    # We look for the lowest probability and replace it by probability of the current model (if bigger)
+    if M.lprob_old > minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
+        loop for j=1..M.l_rank --quiet
+            if M.lprob_old == M.mod_rank_prob[j] && sumc(M.mod_rank[j,]) == sumc(M.mod_struct)
+                if M.mod_rank[j,] == M.mod_struct
+                    break
+                endif
+            elif M.mod_rank_prob[j] == 0
+                nr = j
+                break
+            elif M.lprob_old > M.mod_rank_prob[j]
+                nr = j
+                break
+            endif
+        endloop
+    endif
+    # Now we replace analytical probability and model structure by new one (taken from current draw)
+    if nr > 0
+        if nr < M.l_rank
+            M.mod_rank_prob[nr+1:M.l_rank,] = M.mod_rank_prob[nr:M.l_rank-1,] # analytical
+            M.mod_nume_prob[nr+1:M.l_rank,] = M.mod_nume_prob[nr:M.l_rank-1,] # numerical
+            M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
+        endif
+        M.mod_rank_prob[nr] = M.lprob_old
+        M.mod_nume_prob[nr] = 0
+        M.mod_rank[nr,] = M.mod_struct
+    endif
+    # Now we compute numerical probs
+    loop for j=1..M.l_rank --quiet
+        if M.mod_rank[j,] == M.mod_struct
+            M.mod_nume_prob[j] += 1
+            break
+        endif
+    endloop
+end function

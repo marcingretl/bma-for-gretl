@@ -1,0 +1,14 @@
+author = Marcin Błażejowski, Jacek Kwiatkowski
+email = marcin.blazejowski@wsb.torun.pl
+version = 2.1
+date = 2022-02-03
+description = Bayesian Model Averaging for the linear regression models with jointness measures
+tags = C11 C21
+min-version = 2017b
+gui-main = BMA_GUI
+label = Bayesian Model Averaging
+menu-attachment = MAINWIN/Model/LinearModels
+bundle-print = BMA_Print
+public = BMA_Print BMA_GUI BMA_OldStyle 
+help = BMA.pdf
+sample-script = examples/BMA_sample.inp

@@ -1,0 +1,7 @@
+function void BMA_jointness_matrix (bundle *M)
+    /*
+    Function counts coexistence (jointness) of every pair of variables in the given draw.
+    This piece of code was written by Jack (instead of our version which was much much slower)
+    */
+    M.jointness_m = upper(M.jointness_m .+ ((M.mod_struct .* M.mod_struct') .> 0))
+end function

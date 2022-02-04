@@ -1,0 +1,163 @@
+function bundle BMA_setup (series Y,
+                           matrix X_list_m,
+                           int acc_type[1:2:1],
+                           scalar av_model_size[0::1],
+                           scalar alpha[0:1:0.6],
+                           int l_rank[2::4],
+                           int g_type[1:5:1],
+                           int do_joint[0:2:0],
+                           int h_predict[0::],
+                           int Nrep[1e+06],
+                           int burn[0:99:10],
+                           int verbosity[1:2:1],
+                           string Y_name,
+                           bool show_progress[1],
+                           int Norig)
+    /*
+    This function creates BUNDLE holding all BMA information
+    #
+    Local variables:
+    tmp_str - general purpose string
+    */
+    bundle M
+    list X_list = X_list_m
+    list big_list = Y X_list
+    string tmp_str = ""
+    #
+    # Basic parsing and checking
+    # Global variables
+    series M.Y = Y
+    matrix M.X_list = X_list
+    scalar M.acc_type = acc_type
+    scalar M.av_model_size = av_model_size
+    scalar M.alpha = alpha
+    scalar M.l_rank = l_rank
+    scalar M.g_type = g_type
+    scalar M.do_joint = do_joint
+    scalar M.h_predict = h_predict
+    scalar M.Nrep = Nrep
+    scalar M.burn = burn
+    scalar M.verbosity = verbosity
+    scalar M.show_progress = show_progress
+    if ok(Norig)
+        scalar M.Norig = Norig
+    endif
+    # Local variables
+    matrix M.StartModel = {} # list with variables selected in starting model
+    matrix M.X_list = X_list # X_list
+    scalar M.k = nelem(X_list) # total number of indenpendent variables
+    scalar M.Nburn = round(burn/100*Nrep) # number of burn-in draws
+    matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in dataset (not in the procedure)
+    matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 1)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
+    matrix M.big_mat = { big_list } # matrix M.of all variables (including Y)
+    matrix M.big_mat_dem = cdemean(M.big_mat) # matrix M.of all demeaned variables (including Y)
+    # In case of "out-of-sample" prediction
+    if h_predict > 0
+        scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
+        matrix M.big_mat_predict = M.big_mat[M.last_obs+1:$nobs,] # "out-of-sample" matrix M.of all variables (including Y)
+        matrix M.big_mat_dem_predict = M.big_mat_dem[M.last_obs+1:$nobs,] # "out-of-sample" matrix M.of all demeaned variables (including Y)
+        matrix M.Y_mat_predict = M.big_mat_predict[,1] # "out-of-sample" matrix M.of the dependent variable
+        matrix M.Yhat = zeros(h_predict,1) # vector of Y predictions in current draw
+        matrix M.precision = zeros(h_predict,1) # prediction precision
+        matrix M.Yhat_avg = zeros(h_predict,1) # vector of Y predictions - average
+        matrix M.Yhat_var_avg = zeros(h_predict,1) # predicion variance
+        matrix M.prediction = {} # matrix with prediction results
+        loop for i=(M.last_obs + 1)..$nobs --quiet
+            tmp_str += strsub(obslabel(i), " ", "") ~ " "
+        endloop
+        string M.predict_obs_names = tmp_str # obs labels for forecasts
+        smpl 1 M.last_obs # setting sample
+        matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
+        matrix M.big_mat_dem = M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
+    else
+        matrix M.big_mat_dem_predict = {}
+        matrix M.Yhat_avg = {}
+        matrix M.Yhat_var_avg = {}
+        matrix M.Y_mat_predict = {}
+        string M.predict_obs_names = ""
+    endif
+    # New model
+    matrix M.ZtZinv_new = {} # inverse of Z'Z (X's without constant term)
+    scalar M.k_new = 0 # number of variables in the current (new) model
+    scalar M.lprob_new = 0 # scalar M.with natural logarithm of marginal density of the new model
+    matrix M.X_new_num = {} # vector containing numbers of variables in the new model
+    matrix M.X_new = {} # the X matrix M.for the current (new) model (demeaned)
+    # Old model
+    matrix M.ZtZinv_old = {} # old inverse of Z'Z (X's without constant term)
+    scalar M.k_old = 0 # number of variables in the previous (old) model
+    scalar M.lprob_old = 0 # scalar M.with natural logarithm of marginal density of the old model
+    matrix M.X_old_num = {} # vector containing numbers of variables in the old model
+    scalar M.dj_new = 0 # scalar M.needed for prediction precision computation
+    scalar M.dj_old = 0 # scalar M.needed for prediction precision computation
+    matrix M.X_new_predict = {} # "out-of-sample" the X matrix M.for the current (new) model (demeaned)
+    matrix M.X_old_predict = {} # "out-of-sample" the X matrix M.for the previous (old) model (demeaned)
+    matrix M.Y_mat = M.big_mat[,1] # matrix M.of the dependent variable
+    scalar M.y_dem_sq = M.big_mat_dem[,1]'M.big_mat_dem[,1] # sum of squares of the demeaned Y
+    scalar M.y_mean = meanc(M.Y_mat) # mean of the Y
+    scalar M.mod_size = 0 # size of models in MCMC (sum)
+    scalar M.yMy = 0 # scalar M.for P_y computation
+    matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
+    matrix M.mod_struct = zeros(1,M.k) # 0-1 vector containing the structure of the current model
+    matrix M.mod_struct_new = zeros(1,M.k) # 0-1 vector containing the structure of the current model
+    matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix M.containing structure of models in ranking
+    matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
+    matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
+    matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
+    string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all indenpendent variables
+    string M.Y_name = Y_name # string with name of denpendent variable
+    if do_joint != 0
+        matrix M.jointness_m = zeros(M.k,M.k) # square matrix M.containing counts of coexistence (jointness) of every pair of indenpendent variables
+    else
+        matrix M.jointness_m = {}
+    endif
+    if acc_type == 1 # options for the prior
+        string M.prior_name = "Binomial"
+        scalar M.a = ln(av_model_size/M.k)
+        scalar M.b = ln(1 - av_model_size/M.k)
+        scalar M.c = 0
+    else
+        string M.prior_name = "Binomial-Beta"
+        scalar M.a = 1
+        scalar M.b = (M.k - av_model_size)/av_model_size
+        scalar M.c = lngamma(M.a + M.b) - lngamma(M.a) - lngamma(M.b)
+    endif
+    matrix M.bhat = {} # column vector containing the estimated coefficients for the current model
+    matrix M.bvar = {} # column vector containing the variances of the coefficients for the current model
+    matrix M.XtY = {} # X'Y (part of OLS)
+    matrix M.XtXinv = {} # inverse of X'X (part of OLS)
+    matrix M.bhat_avg = zeros(1,M.k) # column vector containing average values of coefficients (over MCMC)
+    matrix M.bvar_avg = zeros(1,M.k) # column vector containing average values of variances of the coefficients (over MCMC)
+    matrix M.Numerical_Likelihood = {} # column vector containing numerical probabilities for models
+    matrix M.Post_Results = {} # matrix with all posterior results
+    # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
+    matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
+    # g0 (g-prior)
+    M.scaling_f[1] = BMA_gprior(M.k, g_type)
+    # g1 (g/(1+g))
+    M.scaling_f[2] = M.scaling_f[1] / (1 + M.scaling_f[1])
+    # g2 (1/(1+g))
+    M.scaling_f[3] = 1 / (1 + M.scaling_f[1])
+    # g1*y_sq
+    M.scaling_f[4] = M.y_dem_sq * M.scaling_f[2]
+    # .5*log(g1)
+    M.scaling_f[5] = .5 * log(M.scaling_f[2])
+    # .5*(n-1)
+    M.scaling_f[6] = .5 * ($nobs - 1)
+    # Y'Y (sum of squares of Y)
+    M.scaling_f[7] = M.Y_mat'M.Y_mat
+    if g_type == 1
+        string M.gtype = "Benchmark prior"
+    elif g_type == 2
+        string M.gtype = "Unit Information Prior (g-UIP)"
+    elif g_type == 3
+        string M.gtype = "Risk Inflation Criterion (g-RIC)"
+    elif g_type == 4
+        string M.gtype = "Hannan and Quinn HQC"
+    elif g_type == 5
+        string M.gtype = "Root of g-UIP"
+    endif
+    if verbosity == 1
+        set warnings off
+    endif
+    return M
+end function

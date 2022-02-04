@@ -1,0 +1,14 @@
+function void BMA_matrix_precompute (bundle *M)
+    /*
+    Function computes some linear algebra stuff for further computation.
+    */
+    if M.k_new > 0
+        if M.h_predict > 0
+            M.ZtZinv_new = invpd(M.X_new'M.X_new)
+        endif
+        matrix M.X_new = ones($nobs,1) ~ M.X_new
+    endif
+    matrix M.XtY = M.X_new'M.Y_mat
+    M.XtXinv = invpd(M.X_new'M.X_new)
+    M.yMy = M.scaling_f[7] - qform(M.XtY',M.XtXinv)
+end function

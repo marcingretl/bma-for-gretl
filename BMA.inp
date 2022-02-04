@@ -1,0 +1,27 @@
+set verbose off
+
+include src/BMA_model_switch.inp
+include src/BMA_parse.inp
+include src/BMA_initial_model.inp
+include src/BMA_model_structure.inp
+include src/BMA_correlation_coeff.inp
+include src/BMA_build_rank.inp
+include src/BMA_gprior.inp
+include src/BMA_accept_prob.inp
+include src/BMA_jointness_matrix.inp
+include src/BMA_jointness_measure.inp
+include src/BMA_matrix_precompute.inp
+include src/BMA_ols.inp
+include src/BMA_jointness_pairs.inp
+include src/BMA_new_X_matrix.inp
+include src/BMA_forecast.inp
+include src/BMA_accep_model.inp
+include src/BMA_lprob.inp
+include src/BMA_averaging.inp
+include src/BMA_summary.inp
+include src/BMA_main.inp
+include src/BMA_setup.inp
+include src/BMA_show_progress.inp
+include src/BMA_Print.inp
+include src/BMA_GUI.inp
+include src/BMA_OldStyle.inp

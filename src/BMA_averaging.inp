@@ -1,0 +1,14 @@
+function void BMA_averaging (bundle *M)
+    /*
+    Function "averages" posterior results (values must be normalised after MC3)
+    */
+    # For PiPs and average model size
+    M.mod_size += M.k_new
+    M.var_prob += M.mod_struct
+    # For coeffs
+    if M.k_new > 0
+        matrix indexes = M.X_new_num - 1
+        M.bhat_avg[indexes] += transp(M.bhat[2:,])
+        M.bvar_avg[indexes] += transp(M.bvar[2:,] + M.bhat[2:,] .^ 2)
+    endif
+end function
