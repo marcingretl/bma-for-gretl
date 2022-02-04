@@ -21,14 +21,14 @@ $(PKG).zip: $(PKG).gfn pdfdoc
 
 .PHONY : pdfdoc clean distclean
 
-pdfdoc: $(PKG).gfn
-	$(MAKE) -C doc
+pdfdoc: 
+	@$(MAKE) -C doc
 
 clean: 
-	@rm -f $(PKG).gfn $(PKG)-i18n.c $(PKG).xml $(PKG).zip
+	@rm -f $(PKG).gfn $(PKG).xml $(PKG).zip
 
 distclean: 
-	@rm -f $(PKG).gfn $(PKG)-i18n.c $(PKG).xml $(PKG).zip
+	@rm -f $(PKG).gfn $(PKG).xml $(PKG).zip
 	@rm -f *.pdf test.out
 	@$(MAKE) -C doc clean
 

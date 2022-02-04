@@ -11,4 +11,4 @@ $(PKG).pdf: $(SRCS)
 	@if grep 'Rerun to get' $(PKG).log ; then pdflatex $(PKG) ; fi
 
 clean:
-	@rm -f *.log *.aux *.bbl *.blg *.toc $(PKG).pdf
+	@rm -f *.log *.aux *.bbl *.blg *.toc *.out *.brf $(PKG).pdf
