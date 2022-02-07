@@ -48,11 +48,7 @@ function bundle BMA_setup (const series Y,
     scalar M.k = nelem(X_list) # total number of indenpendent variables
     scalar M.Nburn = round(burn/100*Nrep) # number of burn-in draws
     matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in dataset (not in the procedure)
-    matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 1)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
-    # This is strange -- in case of time-series we must sort var_numbers2 again!!!
-    if $datatype == 2
-        M.var_numbers2 = transp(msortby(transp(M.var_numbers2), 2))
-    endif
+    matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
     matrix M.big_mat = { big_list } # matrix M.of all variables (including Y)
     matrix M.big_mat_dem = cdemean(M.big_mat) # matrix M.of all demeaned variables (including Y)
     # In case of "out-of-sample" prediction
