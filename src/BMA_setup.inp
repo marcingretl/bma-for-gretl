@@ -1,4 +1,4 @@
-function bundle BMA_setup (series Y,
+function bundle BMA_setup (const series Y,
                            matrix X_list_m,
                            int acc_type[1:2:1],
                            scalar av_model_size[0::1],
@@ -103,7 +103,7 @@ function bundle BMA_setup (series Y,
     matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
     matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
-    string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all indenpendent variables
+    string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
     string M.Y_name = Y_name # string with name of denpendent variable
     if do_joint != 0
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix M.containing counts of coexistence (jointness) of every pair of indenpendent variables
@@ -112,8 +112,8 @@ function bundle BMA_setup (series Y,
     endif
     if acc_type == 1 # options for the prior
         string M.prior_name = "Binomial"
-        scalar M.a = ln(av_model_size/M.k)
-        scalar M.b = ln(1 - av_model_size/M.k)
+        scalar M.a = log(av_model_size/M.k)
+        scalar M.b = log(1 - av_model_size/M.k)
         scalar M.c = 0
     else
         string M.prior_name = "Binomial-Beta"
