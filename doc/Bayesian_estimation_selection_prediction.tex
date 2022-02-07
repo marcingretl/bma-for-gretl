@@ -1,0 +1,200 @@
+\subsection{Bayesian estimation, model selection, and prediction}
+Let us consider normal linear regression models which differ in their
+explanatory variables (see \citealt{Koop2003} for further details).
+Suppose that we have $K$ potential explanatory variables, which means
+there are $2^K$ possible models and let $M_r$ for $r=1,\dots, 2^K$
+denote the $2^K$ different models under consideration.  Suppose also
+that $y_i$ and $x_i$ denote the observed data on the dependent and
+explanatory variables for $i=1,\ldots,N$. The observations are placed
+in a $(N \times 1)$ vector $y$ and a $(N \times k_r)$ matrix $X_r$
+containing the set of regressors included in model $M_r$%
+\footnote{We subtract the mean from all regressors as in
+	\cite{FernandezLeySteel2001a}.}.  Thus, we can write our model as
+\begin{equation*}
+	y=\alpha \iota_N + X_r\beta_r + \epsilon,
+\end{equation*}
+where $\iota_N$ is a $(N \times 1)$ vector of ones, $\beta_r$ is a
+$(k_r \times 1)$ vector of unknown parameters, $\epsilon$ is a
+$(N \times 1)$ vector of errors which are assumed to be normally
+distributed, $\epsilon \sim N(0_N, h^{-1}I_N)$ and \textit{h} is the
+error precision, which is defined as $h=\frac{1}{\sigma^2}$.
+$N(\mu, \Sigma)$ denotes a normal distribution with mean $\mu$ and
+variance ${\Sigma}$.  Following \cite{Koop2003}, the prior for
+$\beta_r$ is normally distributed,
+\begin{equation*}
+	\beta_r \mid h, M_r \sim N \left(0_{k_r}, h^{-1} \left [g X_r^\top X_r  \right]^{-1}  \right),
+\end{equation*}
+while we use a noninformative prior for the intercept and precision,
+\begin{equation*}
+	p(\alpha) \propto 1, p(h)\propto \frac {1}{h}.
+	\label{eq:prior}
+\end{equation*}
+The factor of proportionality \textit{g} is part of the so-called
+Zellner's g-prior \citep{Zellner1986}. This prior is a convenient way
+to specify the prior variance matrix, because it reduces the number of
+prior variance parameters and considerably simplifies posterior
+computations. The \pkg{gretl} package offers the five most popular
+alternative Zellner's g-priors (see \citealt{FernandezLeySteel2001a}
+and \citealt{Moral-Benito2010}).
+
+\begin{itemize}\label{text:g-priors}
+	\item Unit information prior (g-UIP), recommended by \cite{KassWasserman1995}:
+	\begin{equation}
+		g = \frac{1}{N}.
+		\label{eq:g-UIP}
+	\end{equation}
+	\item Risk inflation criterion (g-RIC), proposed by \cite{FosterGeorge1994}:
+	\begin{equation}
+		g = \frac{1}{K^2}.
+		\label{eq:g-RIC}
+	\end{equation}
+	\item Benchmark prior, recommended by \cite{FernandezLeySteel2001a}:
+	\begin{equation}
+		g = \left\{\begin{array}{ll}
+			\frac{1}{K^2} & \mbox{for $N \le K^2$},\\
+			\frac{1}{N} & \mbox{for $N>K^2$}.\end{array} \right. 
+		\label{eq:Benchmark_Prior}
+	\end{equation}
+	\item g-HQ prior which mimics the Hannan and Quinn criterion, see \cite{FernandezLeySteel2001a}:
+	\begin{equation}
+		g = \frac{1}{(\text{ln}N)^3}.
+		\label{eq:g-HQ}
+	\end{equation}
+	\item Root of g-UIP, see \cite{FernandezLeySteel2001a}:
+	\begin{equation}
+		g = \sqrt{\frac{1}{N}}.
+		\label{eq:root-g-UIP}
+	\end{equation}
+\end{itemize}
+
+By Bayes' rule, the mean of the posterior distribution of the slope
+parameters $\beta_r$, conditional on model $M_r$, can be written as
+\begin{equation}
+	\E(\beta_r \mid y, M_r)= \left [ \left (1+g  \right ) X^\top_rX_r \right ]^{-1}X^\top_ry.
+	\label{eq:posterior_mean}
+\end{equation}
+It is easy to see that if $g \approx 0$ the mean of the posterior
+distribution (see Equation~\ref{eq:posterior_mean}) equals the OLS
+estimates. The posterior variance of $\beta_r$, conditional on model
+$M_r$, is given by
+\begin{equation}
+	\VAR \left (\beta_r \mid y, M_r \right)=\frac {Ns^2_r}{N-2}\left [ \left (1+g  \right ) X^\top_rX_r \right ]^{-1},
+	\label{eq:posterior_variance2}
+\end{equation}
+where 
+\begin{equation*}
+	s^2_r=\frac{\frac{1}{1+g} y^\top P_{W_r}y+\frac{g}{1+g} \left( y-\bar y\iota_N \right)^\top \left( y-\bar y\iota_N \right)}{N}
+\end{equation*}
+and $P_{W_r}=I_N-W_r \left ( W^\top_rW_r \right )^{-1}W^\top_r$ for $W_r=(\iota_N,X_r)$. 
+
+The marginal data density, conditional on model $M_r$, may be written
+as
+\begin{equation}
+	p(y \mid M_r) \propto \left (\frac{g}{1+g}\right)^{\frac{k_r}{2}}
+	\left [  \frac{1}{1+g}y^\top P_{W_r}y + \frac{g}{1+g} \left( y-\bar y\iota_N \right)^\top
+	\left( y-\bar y\iota_N \right) \right]^{-\frac{N-1}{2}}.
+	\label{eq:marginal_data_density}
+\end{equation}
+
+In the Bayesian approach of comparing models, it is considered useful
+to employ probabilities to represent the degree of belief associated
+with the alternative models. For the normal linear regression models
+we can easily test two mutually exclusive (non-nested) and jointly
+exhaustive models with different subset of variables.  Using Bayes'
+theorem, the posterior odds ratio for a model $M_l$ against model
+$M_n$ is given by
+\begin{equation}
+	\frac{\Prob(M_l \mid y)}{\Prob(M_n \mid y)}=\frac{\Prob(M_l)}{\Prob(M_n)}\frac{p(y \mid M_l)}{p(y \mid M_n)},
+	\label{eq:posterior_odds_ratio}
+\end{equation}
+where $\frac{\Prob(M_l)}{\Prob(M_n)}$ is the prior odds ratio and
+$\frac{p(y \mid M_l)}{p(y \mid M_n)}$ is the Bayes factor. If the
+ratio $\frac{\Prob(M_l \mid y)}{\Prob(M_n \mid y)}$ is larger than 1,
+we can say that the data supports model $M_l$ over model $M_n$. In our
+package, we use two popular model priors.
+\begin{itemize}\label{misc:priors}
+	\item Binomial prior:
+	\begin{equation}
+		\Prob(M_r)=\theta^{k_r}(1-\theta)^{K-k_r}\; \quad\mathrm{for~} r=1, \dots, 2^K.
+		\label{eq:model_prior_binomial}
+	\end{equation}    
+	Note that for $\theta=0.5$ we have a uniform prior on the model space, i.e., $\Prob(M_r)=2^{-K}$.
+	\item Binomial-beta prior (see \citealt{GelmanCarlinSternRubin1997}):
+	\begin{equation}
+		\Prob(\Xi=k_r)= \frac{\Gamma (K+1)}{\Gamma(k_r+1)\Gamma(K-k_r+1)}\cdot
+		\frac{\Gamma(a+k_r)\Gamma(K+b-k_r)}{\Gamma(a+b+k_r)} \cdot \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)},
+		\label{eq:model_prior_binomial-beta}
+	\end{equation}
+	where $\Xi$ denotes model size. 
+\end{itemize}
+
+In our package, we only need to specify the prior expected model size
+$\E(\Xi) \in \left (0, K \right ]$.  Note that in case of the binomial
+prior we have $\E(\Xi)=K\theta$ and the choice of $\E(\Xi)$
+automatically produces a value for the prior inclusion probability
+$\theta$. If we have the binomial-beta prior, the average model size
+will satisfy $\E(\Xi)=\frac {a}{a+b}K$. Here, we follow
+\cite{Ley_Steel_jae_2009} and fix $a=1$ hence obtaining the value of
+the second hyperparameter as $b=\frac{K-\E(\Xi)}{\E(\Xi)}$.
+
+One of the most widely accepted norms of scientific investigation is
+Occam's razor.  Simply speaking, Occam's razor states that the
+simplest hypothesis is also the most probable (see for example
+\citealt{MadiganDavidRafteryAdrian}). In the \pkg{BMA} package we penalize
+large models through the prior model probabilities
+(\citealt{Osiewalski_Steel_1994}). Note that one can make $\Prob(M_r)$
+a decreasing function of $k_r$ simply by defining the prior expected
+model size $\E(\Xi)$. The smaller the prior expected model size
+$\E(\Xi)$, the less probable are large models.
+
+It is easy to show that the posterior probability of model $M_l$ is given by
+\begin{equation*}
+	\Prob(M_l \mid y)= \frac{\Prob(M_l)p(y \mid M_l)}{\sum_{r=1}^{2^K} \Prob(M_r)p(y \mid M_r)}.
+\end{equation*}
+
+The posterior density of vector $\beta$ is the average
+of the posterior densities $p(\beta_r \mid y, M_r)$ conditional on the models
+\begin{equation*}
+	p(\beta \mid y)=\sum_{r=1}^{2^K} \Prob(M_r \mid y)p(\beta_r \mid y, M_r).
+\end{equation*}
+
+Once the model posterior probabilities have been calculated, we can also easily
+evaluate the mean and variance of the posterior distribution of slope parameters
+(see \citealt{Leamer1978}).
+\begin{equation}
+	\E(\beta \mid y)=\sum_{r=1}^{2^K} \Prob(M_r \mid y)\E(\beta_r \mid y, M_r)
+	\label{eq:mean_averaging}
+\end{equation} 
+and
+\begin{multline}
+	\VAR(\beta \mid y) = \\\sum_{r=1}^{2^K}\Prob(M_r \mid y)\VAR(\beta_r \mid y, M_r)+
+	\sum_{r=1}^{2^K} \Prob(M_r \mid y) \left (\E(\beta_r \mid y, M_r)-\E(\beta \mid y) \right)^2
+	\label{eq:variance_averaging}
+\end{multline}
+
+In a similar manner, we can find other characteristics of the
+posterior distribution (see for example \citealt[p.~266]{Koop2003}).
+We might be also interested in the estimates of the posterior
+inclusion probability $\Prob(i \mid y)$ (PIP), i.e., the probability
+that, conditional on the data, but unconditional with respect to a
+specific model, the variable $x_i$ is relevant in explaining the
+dependent variable \textit{y} (see \citealt{Leamer1978,
+	Mitchell_Beauchamp_1988,DoppelhoferWeeks2009}).  The PIP is
+calculated as the sum of the posterior model probabilities for all of
+the models including variable $x_i$.
+
+In Bayesian model averaging approach, predictions of the dependent
+variable are made by taking a weighted average of the individual model
+forecasts. As described in \cite{FernandezLeySteel2001b}, prediction
+of an unobserved data point $y_f$ is based on calculating
+\begin{multline}
+	p(y_f\mid y) = \sum_{r=1}^{2^K} f_S ( y_f \mid N-1,\bar y + \frac{1}{g+1}x^\top_{f,r}\beta^*_r,\\
+	\frac{N-1}{Ns^2_r} \{1+\frac{1}{N}+\frac{1}{g+1}x^\top_{f,r}(X^\top_jX_j)^{-1}x_{f,r}\}^{-1})\Prob(M_r\mid y),    
+	\label{eq:predictive_pdf}
+\end{multline}
+where $f_S ( y_f \mid v, b, a)$ denotes the univariate Student-$t$
+density with $v$ degrees of freedom, mean $b$ and precision $a$ (with
+variance $ v/ \{a(v-2)\}$).  In addition,
+$\beta^*_r=\left [X^\top_rX_r \right ]^{-1}X^\top_ry$ is the ordinary
+least squares estimator for $\beta_r$ and $x_{f,r}$ groups the $r$
+elements of $x_{f}$ corresponding to the regressors in model $M_r$. 

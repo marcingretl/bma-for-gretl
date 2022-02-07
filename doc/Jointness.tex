@@ -1,0 +1,55 @@
+\subsection{Jointness measures}\label{sec:jointness_measures}
+The main implementations of Bayesian model averaging are concerned
+with the selection of variables when model uncertainty is
+present. Another relevant issue which arises in this framework is to
+identify whether different sets of two variables $x_i$ and $x_j$ are
+substitutes, complements or neither over the model space. For that
+reason, \cite{LeySteel2007} and \cite{DoppelhoferWeeks2009} define
+ex-post jointness measures of dependence between different sets of
+explanatory variables. The logarithm of the jointness statistic
+proposed by \cite{LeySteel2007} has the form
+\begin{equation}
+	J_{\mathit{LS}}= \ln\left[\frac {\Prob(i \cap j \mid y)}{\Prob(i\mid y)+\Prob(j\mid y)-2\Prob(i \cap j\mid y)}\right],
+	\label{LS_jointness}
+\end{equation}
+where $\Prob(i \cap j\mid y)$ represents the sum of the posterior
+probabilities of those models that contain both variables $x_i$ and
+$x_j$, $\Prob(i\mid y)$ and $\Prob(j\mid y)$ are the PIPs of $x_i$ and
+$x_j$.  $J_{\mathit{LS}}$ can be interpreted as the posterior odds
+ratio of the models including both \textit{i} and \textit{j} vs the
+models that include them only individually (see
+\citealt{LeySteel2007}).
+
+An alternative jointness measure was proposed by
+\cite{DoppelhoferWeeks2009}. It can be written as follows
+\begin{equation}
+	J_{\mathit{DW}}= \ln\left[\frac {\Prob(i \cap j\mid y)\Prob(\tilde{i} \cap \tilde{j}\mid y)}
+	{\Prob(i \cap \tilde{j}\mid y)\Prob(\tilde{i} \cap j\mid y)}\right],
+	\label{DW_jointness}
+\end{equation}
+where $\Prob(\tilde{i} \cap \tilde{j}\mid y)$ denotes the sum of the
+posterior probabilities of the regression models in which neither
+$x_i$ and $x_j$ are included, $\Prob(i \cap \tilde{j}\mid y)$
+corresponds to the sum of the posterior probabilities of all models in
+which $x_i$ is included and $x_j$ is excluded. The last probability
+$\Prob(\tilde{i} \cap j\mid y)$ is defined analogously.
+
+$J_{\mathit{DW}}$ corresponds to the posterior odds of including $i$,
+given that $j$ is included, divided by the posterior odds of including
+$i$ given that $j$ is not included (see
+\citealt{DoppelhoferWeeks2009}).  According to
+\cite{DoppelhoferWeeks2009}, we use the classification of
+jointness among the variables given in Table~\ref{tab1}.
+
+\begin{table}[t!]
+	\centering
+	\begin{tabular}{lc}\hline
+		Evidence & Jointness statistics \\ \hline
+		strong substitutes & $J_{\mathit{LS}}, J_{\mathit{DW}} \le -2 $ \\
+		significant substitutes & $-2 <J_{\mathit{LS}}, J_{\mathit{DW}} \le-1 $ \\
+		not significantly related & $-1< J_{\mathit{LS}}, J_{\mathit{DW}} <1 $ \\
+		significant complements & $ 1\ge J_{\mathit{LS}}, J_{\mathit{DW}} <2 $ \\
+		strong complements & $ J_{\mathit{LS}}, J_{\mathit{DW}} \ge 2 $ \\ \hline
+	\end{tabular}
+	\caption{Classification of strength of jointness measures.}\label{tab1}
+\end{table} 

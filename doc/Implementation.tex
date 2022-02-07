@@ -1,0 +1,178 @@
+\section[Implementation in gretl]{Implementation in \pkg{gretl}}\label{BmaGretlSec3}
+In this section, we describe the code as well as the use of the \pkg{gretl}
+package for Bayesian model averaging, together with the accompanying
+jointness measures. First, we will characterize our code and the use
+of the GUI, then we will present how to use \pkg{BMA} via a
+script. Finally, we will show the outputs that are returned.
+
+
+\subsection[The core of the BMA code]{The core of the \pkg{BMA} code}
+The \pkg{BMA} package consists of 3 public and 22 private functions, but
+only 16 of them are used regularly. The name of each function starts
+with the prefix \code{BMA_}.
+
+\subsubsection{Public functions}
+The public functions are:
+\begin{enumerate}
+	\item \code{BMA_GUI}
+	\item \code{BMA_Print} 
+	\item \code{BMA_OldStyle}
+\end{enumerate}
+
+The core package function which runs and controls the main loop is:
+\begin{CodeChunk}
+	\begin{CodeInput}
+		function bundle BMA_GUI (series Y "Dependent variable",
+		list X_list "List of indenpendent variables (X)",
+		int acc_type[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
+		scalar av_model_size[0::1] "Prior average model size",
+		scalar alpha[0:1:0.6] "Significance level for the initial model",
+		int l_rank[2::4] "Number of the top ranked models",
+		int g_type[1:5:1] "g-prior type" {"Benchmark prior",
+			"Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)",
+			"Hannan and Quinn HQC", "Root of g-UIP"},
+		int do_joint[0:2:0] "Jointness analysis" {"None", "Ley-Steel Measure",
+			"Doppelhofer-Weeks Measure"},
+		int h_predict[0::0] "Number of out-of-sample forecasts",
+		int Nrep[1e+06] "Total number of replications",
+		int burn[0:99:10] "Percentage of burn-in draws",
+		int verbosity[1:2:1] "Verbosity",
+		bool show_progress[1] "Show overall progress",
+		bool force_dof_lack[0] "Force more variables than observations")
+	\end{CodeInput}
+\end{CodeChunk}
+%
+The words in quotation marks are the labels for the GUI shown in
+Figure~\ref{fig:Main window for BMA}.
+\begin{itemize}
+	\item The \code{series Y} is just a series of dependent variable.
+	\item The \code{X_list} is a \pkg{gretl}'s object ``named list'' which
+	is just a set of \textit{K} indenpendent variables (defined by names or dataset
+	IDs). What is very important the \code{X_list} cannot contain a
+	\code{const} (\pkg{gretl}'s internal and automatically generated
+	constant term).
+	\item The \code{acc_type[1:2:1]} is an integer indicating model prior
+	type (the default is binomial, see
+	Equations~\ref{eq:model_prior_binomial} and
+	\ref{eq:model_prior_binomial-beta}).
+	\item The \code{scalar av_model_size[0::1]} is the scalar of the prior
+	average model size. Note, if \code{av_model_size} $ = \frac{K}{2}$
+	and the model prior is set to binomial, we get the uniform prior on
+	the model space. The default value is 1.
+	\item The \code{scalar alpha[0:1:0.6]} is the significance level in
+	OLS estimation. An independent variable enters the initial model if
+	its $p$~value is less than the significance level (see
+	\citealt{Koop2003}). The default value is $\alpha=0.6$, but setting
+	$\alpha=1$ results in a model consisting of 0 to \textit{K} randomly
+	chosen explanatory variables.
+	\item The \code{int l_rank[2::10]} is the number of the top ranked
+	models.  The default value is 10.
+	\item The \code{int g_type[1:5:1]} indicates the type of g-prior to be
+	used (the default value is 1: ``Benchmark prior''), see
+	Equations~\ref{eq:g-UIP}, \ref{eq:g-RIC}, \ref{eq:Benchmark_Prior},
+	\ref{eq:g-HQ} and~\ref{eq:root-g-UIP}.
+	\item The \code{int do_joint[0:2:0]} indicates whether we do jointness
+	analysis and if so, which measure to use. The default value is 0:
+	``None'', see Section~\ref{sec:jointness_measures}.
+	\item The \code{h_predict[0::]} is the number of out-of-sample
+	forecasts.
+	\item The \code{int Nrep[1000000]} is the total number of replications
+	in the Monte Carlo simulation.  The default value is 1000000.
+	\item The \code{int burn[0:99:10]} is the percentage of burn-in draws
+	ranging from 0\% to 99\%. The default value is 10\%.
+	\item The \code{int verbosity[1:2:1]} indicates the level of verbosity
+	of the \pkg{BMA} package for printing results. The default value is 1,
+	i.e., silent mode.
+	\item The \code{bool show_progress[1]} switches progress printing during
+	the simulation. Note that it consumes a lot of CPU time and significantly
+	slows the package.
+	\item The \code{bool force_dof_lack[0]} makes the BMA analysis to run even
+	if there is not sufficient degrees of freedom.
+\end{itemize}
+
+Function for results printing is: 
+\begin{CodeChunk}
+	\begin{CodeInput}
+		function void BMA_Print (bundle *MODEL)
+	\end{CodeInput}
+\end{CodeChunk}
+This function takes as an argument reference to the bundle MODEL
+with BMA results and prints results according to \code{verbosity} settings.
+
+The last public function is \code{BMA_OldStyle} which is written
+for backwards compatibility and can be used with scripts prepared
+for old versions of BMA package (prior to 2.0).
+
+
+\subsubsection{The main loop}
+The main loop of the \pkg{BMA} package is split into five parts
+controlled by following functions:
+\begin{enumerate}
+	\item \code{BMA_parse} -- basic parsing and dataset checks,
+	\item \code{BMA_setup} -- bundle setup,
+	\item \code{BMA_main} -- MCMC,
+	\item \code{BMA_summary} -- final computations and bundle clean up,
+	\item \code{BMA_Print} -- results printing.
+\end{enumerate}
+
+Essentials of BMA analysis is the MCMC stuff driven by \code{BMA_main}.
+This part is split into thee parts:
+\begin{enumerate}
+	\item Setting up the $\mbox{MC}^3$ sampling algorithm.
+	\item Constructing the initial model.
+	\item $\mbox{MC}^3$ simulation.
+\end{enumerate}
+
+
+\subsubsection[The bundle returned by the BMA package]{The bundle returned by the \pkg{BMA} package}
+The \pkg{BMA} package can optionally return bundle containing
+results obtained in the analysis. The most interesting are:
+\begin{itemize}
+	\item \code{Post_Results} containing posterior moments
+	(unconditional and conditional on inclusion),
+	\item \code{jointness_m} containing posterior joint probability of variables,
+	\item \code{prediction} containing predictive results.
+\end{itemize}
+
+
+The structure of the \code{Post_Results} matrix is
+shown in Figure~\ref{fig:BMA_Post_Results_matrix_structure}.
+It has \textit{K} rows (one for each explanatory variable)
+and five columns are: the posterior inclusion probabilities, the
+posterior mean and standard deviation of each coefficient (Mean and
+Std.Dev.) and the posterior mean and standard deviation of each
+coefficient conditional on the variable being included in the model
+(Cond.Mean and Cond.Std.Dev.), see page~\pageref{sec:outputs} for
+details.
+
+\begin{figure}[ht!]
+	\centering
+	\begin{tabular}{cccccc}\hline
+		& PIP & Mean & Std.Dev. & Cond.Mean & Cond.Std.Dev.\\
+		$x_1$ & & & & &\\
+		$x_2$ & & & & &\\
+		$x_3$ & & & & &\\
+		\vdots & & & & &\\
+		$x_K$ & & & & &\\\hline
+	\end{tabular}
+	\caption{Structure of the \code{Post\_Results} matrix returned by the \pkg{BMA} package.}
+	\label{fig:BMA_Post_Results_matrix_structure}
+\end{figure}
+
+The structure of the \code{jointness_m} matrix is
+shown in Figure~\ref{fig:BMA_jointness_m_matrix_structure}.
+
+\begin{figure}[ht!]
+	\centering
+	\begin{tabular}{cccccc}\hline
+		& $x_1$ &$x_2$ &$x_3$ &\ldots&$x_K$\\
+		$x_1$  &&&&&\\
+		$x_2$  &&&&&\\
+		$x_3$  & \multicolumn{5}{c}{joint probability of variables}\\
+		\vdots &&&&&\\
+		$x_K$  &&&&&\\\hline
+	\end{tabular}
+	\caption{Structure of the \code{jointness\_m} matrix returned by the \pkg{BMA} package.}
+	\label{fig:BMA_jointness_m_matrix_structure}
+\end{figure}
+ 

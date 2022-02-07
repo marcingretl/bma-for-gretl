@@ -1,0 +1,75 @@
+\section{Introduction}\label{BmaGretlSec1}
+We know from elementary statistical theory that linear regression
+attempts to model the relationship between two or more variables by
+fitting a simple linear equation to observed data. In the classical
+approach, we usually rely on ordinary least squares (OLS) or maximum
+likelihood (ML) estimates and popular model selection criteria, i.e.,
+the Akaike information criterion (AIC) and the Bayesian information
+criterion (BIC), to find the ``best'' model. A problem with this
+approach arises when we have to select a ``good'' subset of variables
+from a large set of regressors. When the number of possible exogenous
+variables is $K$, the number of possible linear models is $2^K$.  If
+we have, for example, $K=30$ possible regressors, the number of
+possible combinations of variables to be included or not equals
+1073741824. This means that it is very difficult, if not impossible,
+to find the estimates for all combinations. Moreover,
+\cite{RafteryMadiganHoeting1997} show that standard variable selection
+procedures lead to different estimates and conflicting conclusions
+about the main questions of interest.
+
+Bayesian model averaging is a useful alternative to other variable
+selection procedures, because it incorporates model uncertainty into
+conclusions about the estimated parameters.  Bayesian model averaging
+is a standard Bayesian solution to model uncertainty, where the
+inference on parameters is based on a weighted average over all
+possible models under consideration, rather than on one single
+regression model. These weights are the Bayesian posterior
+probabilities of the individual models.
+
+There is a recent and growing literature on Bayesian model
+averaging. Examples of applications of Bayesian model averaging can be
+found in a number of works (see, for example,
+\citealt{HoetingMadiganRafteryVolinsky1999}, \citealt{Steel2011} for a
+recent overview).  Our software package for parameter estimation and
+model comparison of linear regression models is based on
+\cite{FernandezLeySteel2001a,FernandezLeySteel2001b} and
+\cite{Koop2003}. We use the Markov chain Monte Carlo model composition
+($\mbox{MC}^3$) sampling algorithm developed by \cite{MadiganYork1995}
+to select a representative subset of models.
+
+\cite{DoppelhoferWeeks2005,DoppelhoferWeeks2009} define a jointness
+measure of dependence among explanatory variables that appear in the
+linear regression models. We use this measure to identify whether two
+variables are substitutes, complements or neither.  A similar
+jointness measure was also proposed by \cite{LeySteel2007}.
+
+In this paper, we propose Bayesian model averaging package for
+\pkg{gretl}, \citep{gretl} named \pkg{BMA}.  We can list several reasons
+why, in our opinion, it is important to address this topic. \pkg{gretl} is
+an increasingly popular, free, open-source software for econometric
+analysis, both for students and academics. It is written in pure
+\proglang{C} ``by econometricians for econometricians'' with the
+international community gathered around two men: Allin Cottrell and
+Riccardo ``Jack'' Lucchetti. Since 2009 the community has been meeting
+every two years at the \pkg{gretl} conference. The last conference was held
+in Berlin on June 12--13, 2015.  \pkg{gretl} is licensed under the GPL-3
+license (\url{http://www.gnu.org/copyleft/gpl.html})  and has been reviewed
+several times in various international journals.  The best known
+reviews were written by
+\cite{RePEc:jae:japmet:v:18:y:2003:i:1:p:105-110},
+\cite{RePEc:jae:japmet:v:22:y:2007:i:4:p:849-854} and
+\cite{Rosenblad:2008:JSSOBK:v25s01}. Some brief information about
+\pkg{gretl} was also presented in \cite{Lucchetti:2010:JSSOBK:v41i11} and
+\cite{RePEc:wly:japmet:v:26:y:2011:i:5:p:880-885}.  Unlike most other
+statistical software packages \pkg{gretl} has an easy-to-use graphical user
+interface (GUI). Our software package is, therefore, a free and
+easy-to-use tool for Bayesian model averaging.
+
+The rest of the paper is organized as follows:
+Section~\ref{BmaGretlSec2} briefly outlines Bayesian model averaging
+for linear regression models with the $\mbox{MC}^3$ sampling algorithm and
+jointness measures.  Section~\ref{BmaGretlSec3} provides an overview
+of the \pkg{gretl} packages for Bayesian model averaging.
+Section~\ref{BmaGretlSec4} includes an overview of Bayesian model
+averaging software packages.  Section~\ref{BmaGretlSec5} presents
+an empirical illustration. The final section concludes. 

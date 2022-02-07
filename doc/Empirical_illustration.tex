@@ -1,0 +1,97 @@
+\section{Empirical illustration}\label{BmaGretlSec5}
+
+\begin{sidewaystable}
+	\centering
+	\begin{tabular}{lrrrrrrrrrr}\hline
+		&\multicolumn{2}{c}{\proglang{R}-\pkg{BMS}}&\multicolumn{2}{c}{\proglang{R}-\pkg{BMA}}&\multicolumn{2}{c}{\proglang{R}-\pkg{BAS}}&\multicolumn{2}{c}{\pkg{FLSBMA}}&\multicolumn{2}{c}{\pkg{gretl}-\pkg{BMA}}\\\cline{2-11} 
+		Regressors 		&Mean		&SD   	       &Mean	     &SD	     &Mean  & SD   &Mean	  &SD&Mean	  &SD\\ \hline
+		Log GDP in 1960 	&$-1.425$ 	&0.280	       &$-1.595$	&0.195	&$-1.467$ &0.241 &$-1.418$& 0.267&$-1.427$	  &0.275\\
+		Fraction Confucian  &\textbf{0.494} &0.127	       &0.641	&0.089	&0.579	&0.103 &0.490 & 0.117&\textbf{0.494}&0.126\\
+		Life expectancy  	&0.954  	&0.396	       &1.024	&0.213	&1.004	&0.242 &0.958 & 0.370&0.967	  &0.386\\
+		Equipment investment&0.553		&0.237	       &0.510	&0.121	&0.455	&0.164 &0.557 & 0.222&0.550&0.234\\
+		Sub-Saharan dummy  	&$-0.472$ 	&0.346	       &$-0.919$	&0.172	&$-0.848$&0.214 &$-0.476$& 0.334&$-0.474$  &0.346\\
+		Fraction Muslim  	&0.260 &0.228&0.149	&0.156	&0.141	&0.198  &0.257 & 0.219&0.261 &0.229\\
+		\ldots & \multicolumn{10}{c}{\ldots}\\
+		Population growth  	&\textbf{0.005}	&\textbf{0.048}&$-0.004$	&0.037	&0.006	&0.060 &0.003 & 0.035&\textbf{0.005}&\textbf{0.048}\\    
+		British colony dummy  &$\mathbf{-0.003}$&\textbf{0.031}&0.360	 &0.133	&0.159		&0.196 &$-0.002$& 0.022&$\mathbf{-0.003}$&\textbf{0.031}\\
+		Outward orientation   &$-0.003$&0.029	 &$-0.160$ &0.099	&$-0.074$	&0.102 &$-0.002$& 0.021&$-0.004$&0.030\\
+		Fraction Jewish  	  &$\mathbf{-0.002}$&\textbf{0.027}&-0.001	 &0.010	&0.000	&0.022 &$-0.001$& 0.020&$\mathbf{-0.002}$&\textbf{0.027}\\
+		Revolutions and coups &\textbf{0.000} &\textbf{0.023}&n/a	 &n/a	&\textbf{0.000}&0.024 &\textbf{0.000}	& 0.017&\textbf{0.000} &\textbf{0.023}\\
+		Public education share&\textbf{0.001} &\textbf{0.023}&0.014	 &0.053	&0.061	&0.109 &0.000	& 0.017&\textbf{0.001} &\textbf{0.023}\\
+		Area (scale effect)   &$\mathbf{-0.001}$&\textbf{0.021}&n/a	 &n/a	&$-0.003$&0.030 &$\mathbf{-0.001}$&0.014 &$\mathbf{-0.001}$&\textbf{0.021}\\\hline
+	\end{tabular}
+	\caption{The posterior estimates of regression coefficients based on
+		the Bayesian model averaging software packages for the FLS data.
+		The dependent variable is the growth rate from 1960--1992 across
+		72 countries. All the regressors have been centered to have zero
+		mean. Abbreviation ``n/a'' means that \proglang{R}-\pkg{BMA} dropped
+		variable in pre-selection procedure.  Bold font denotes identical
+		results.}
+	\label{tab:Estimates of coefficients based on Bayesian model averaging}
+\end{sidewaystable}
+
+
+In this section we examine the ability of our package in replicating
+the results published by \cite{FernandezLeySteel2001b} and
+\cite{LeySteel2007}.  We use the same original dataset to attempt to
+replicate their results. In our empirical illustration, we discard the
+first 1 million models and draw samples from the model space 2 million
+times. We specify the following entries in the GUI \pkg{BMA} window: model
+prior = `binomial', prior average model size = `20.5' (we set the
+model prior to the uniform distribution), number of the top ranked
+models = `20', g-prior type = `Benchmark prior', total number of
+replications = `3000000', percentage of burn-in draws = `33'.
+Tables~\ref{tab:Estimates of coefficients based on Bayesian model
+	averaging} and~\ref{tab:PIPs based on Bayesian model averaging}
+present the estimation results%
+\footnote{The reported chain took about 31 minutes of CPU time on a PC
+	with AMD Phenom II X6 1100T CPU, 6.0~Gb of RAM running under Debian
+	GNU/Linux. We used \pkg{gretl} 1.10.2 compiled by GCC~5.2.1. The
+	seed for RNG was set to 1000000.}.  They report the posterior means,
+standard errors and PIPs of regressors calculated by \proglang{R}-\pkg{BMS},
+\proglang{R}-\pkg{BMA}, \proglang{R}-\pkg{BAS} and \pkg{FLSBMA} packages. These
+benchmarking results allow us to compare and analyze the performance
+of our package. Bold font indicates identical results.
+
+As is apparent in Tables~\ref{tab:Estimates of coefficients based on
+	Bayesian model averaging} and~\ref{tab:PIPs based on Bayesian model
+	averaging}, the only minor differences in the posterior results are
+found between \pkg{gretl}-\pkg{BMA} and the results published in
+\cite{LeySteel2007}.  All PIPs and estimated posterior means or
+standard deviations are reasonably close in all cases and the same
+variables are identified to be relevant. Note that the \pkg{gretl} package
+results are almost identical to the results produced by the
+\proglang{R}-\pkg{BMS} package.
+
+\begin{table}[t!]
+	\centering
+	\begin{tabular}{lrrrrr}\hline
+		Regressors 		  &\proglang{R}-\pkg{BMS}	&\proglang{R}-\pkg{BMA}	&\proglang{R}-\pkg{BAS}   &\pkg{FLSBMA}	&\pkg{gretl}-\pkg{BMA}\\\hline
+		Log GDP in 1960 	  &\textbf{1.00}&\textbf{1.00}	&\textbf{1.00}	&\textbf{1.00}	&\textbf{1.00}\\
+		Fraction Confucian    &\textbf{0.99}&	1.00	&	1.00	&	1.00	&\textbf{0.99}\\
+		Life expectancy  	  &	0.93	&	1.00	&	1.00	&	0.95	&	0.94	\\
+		Equipment investment  &\textbf{0.92}&	1.00	&	0.97	&	0.94	&\textbf{0.92}\\
+		Sub-Saharan dummy  	  &\textbf{0.74}&	1.00	&	1.00	&	0.76	&\textbf{0.74}\\
+		Fraction Muslim  	  &\textbf{0.65}&	0.60	&	0.43	&	0.66	&\textbf{0.65}\\
+		\ldots & \multicolumn{5}{c}{\ldots}\\
+		Population growth  	  &\textbf{0.04}&\textbf{0.04}	&	0.09	&	0.02	&\textbf{0.04}\\    
+		British colony dummy  &\textbf{0.04}&	0.98	&	0.49	&	0.02	&\textbf{0.04}\\
+		Outward orientation   &\textbf{0.04}&	0.86	&	0.44	&	0.02	&\textbf{0.04}\\
+		Fraction Jewish    	  &\textbf{0.04}&	0.01	&	0.06	&	0.02	&\textbf{0.04}\\
+		Revolutions and coups &\textbf{0.03}&	n/a	&	0.06	&	0.02	&\textbf{0.03}\\
+		Public education share&\textbf{0.03}&	0.10	&	0.32	&	0.02	&\textbf{0.03}\\
+		Area (scale effect)   &\textbf{0.03}&	n/a	&	0.06	&	0.02	&\textbf{0.03}\\\hline
+	\end{tabular}
+	\caption{Posterior inclusion probabilities based on the Bayesian model averaging software packages for FLS data.
+		Abbreviation ``n/a'' means that \proglang{R}-\pkg{BMA} dropped the variable in the pre-selection procedure.
+		Bold font denotes identical results.}
+	\label{tab:PIPs based on Bayesian model averaging}
+\end{table}
+
+In our opinion, the main reason for the very similar results produced
+by \proglang{R}-\pkg{BMS} and \pkg{gretl}-\pkg{BMA} is the implementation of the same
+RNG algorithm (the SIMD-oriented Fast Mersenne Twister), while
+\pkg{FLSBMA} package uses an older RNG algorithm, i.e., ``ran2''
+developed by L'Ecuyer.  The \proglang{R}-\pkg{BMA} and \proglang{R}-\pkg{BAS} packages are
+not capable to reproduce our results (see~\citealt{AminiParmeter2011}
+for additional information). 

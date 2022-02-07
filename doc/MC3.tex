@@ -1,0 +1,24 @@
+\subsection[MC3 sampling algorithm]{$\mbox{MC}^3$ sampling algorithm}\label{sec:MC3_sampling}
+Our $\mbox{MC}^3$ sampling algorithm is based on the Metropolis-Hastings
+algorithm, and was originally developed by \cite{MadiganYork1995}. It
+simulates a chain of models $M^{(s)} \ \text{for} \ s=1, \dots, S$ to
+find the equilibrium distribution $\Prob(M_r \mid y)$ of the posterior
+model probabilities. We do this as follows: We construct a candidate
+set of models, containing all models constructed by deleting one
+independent variable from $M^{(s-1)}$ or adding one independent
+variable to $M^{(s-1)}$, where $M^{(s-1)}$ is the previously accepted
+model $M^{(s-1)}$.  The chain is then constructed by drawing a
+model $M'$ from this candidate set and the acceptance probability has the form
+\begin{equation*}
+	\alpha \left(M^{(s-1)}, M' \right)=\min \left\{\frac{\Prob (M')p(y \mid M')}{\Prob (M^{(s-1)})p(y \mid M^{(s-1)})}, 1 \right\}.
+\end{equation*}
+
+In order to assess the reliability and the convergence of the chain,
+we look at the Pearson's correlation between the analytical and $\mbox{MC}^3$
+posterior model probabilities.\label{misc:model_ranking} Convergence
+is concluded to be achieved if the correlation is above 0.99 (see
+\citealt{FernandezLeySteel2001b} and \citealt{Koop2003}). Note that we
+measure correlation between the analytical and $\mbox{MC}^3$ posterior model
+probabilities \textit{only} for the top ranked models. If the number
+of top ranked models is very small, this may lead to a high value of
+Pearson's correlation even when convergence has not been achieved. 

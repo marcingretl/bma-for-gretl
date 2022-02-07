@@ -1,0 +1,39 @@
+\section{Conclusions}\label{Conclusions}
+This paper has outlined a new software package that implements
+Bayesian model averaging and jointness measures for \pkg{gretl}. Bayesian
+model averaging is a straightforward and natural extension of standard
+Bayesian analysis and it is a useful and popular alternative to other
+variable selection procedures, especially for a large set of
+regressors. Here we used \pkg{gretl}, which is a free, open-source
+software for econometric analysis with an easy-to-use GUI. Our goal
+was to familiarize potential users with the features and the different
+options that our package has to offer. We described how our package
+implements Bayesian model averaging, as well as the outputs that are
+returned.
+
+Recent trends in Bayesian model averaging still concern applications
+in various areas of empirical research, i.e., economic growth (see
+\citealt{RePEc:taf:regstd:v:48:y:2014:i:1:p:44-67},
+\citealt{GazdaPuziak2012}), stock returns (see
+\citealt{RePEc:cqe:wpaper:2914}), geography (see
+\citealt{RePEc:eee:csdana:v:75:y:2014:i:c:p:227-238}) and many more.
+One can also encounter new papers about theory of Bayesian model
+averaging, for example: two-stage Bayesian model averaging (see
+\citealt{RePEc:taf:emetrv:v:33:y:2014:i:1-4:p:122-151}) or comparison
+of Bayesian model averaging to the weighted average least squares
+method (see \citealt{RePEc:dgr:kubcen:2011082}).
+
+The future development of the \pkg{BMA} package could be focused on two
+main aspects: speed improvements and feature extensions. The first one
+is strongly correlated with the \pkg{gretl} development process, especially
+with work on improvements in speed of the \proglang{Hansl} interpreter. It is
+possible that the interpreter will be rewritten in the near future to
+achieve speed boost with backward compatibility.  The feature
+extensions would concern two aspects: implementing new g-priors and
+model priors.  In the literature we can find many types of g-priors
+(see \citealt{FernandezLeySteel2001a}).  Moreover new model priors
+could be also considered.  For instance,
+\cite{RePEc:aea:aecrev:v:94:y:2004:i:4:p:813-835} proposed the
+so-called fixed model prior.  These implementations would surely
+improve the flexibility of the \pkg{BMA} package.
+ 

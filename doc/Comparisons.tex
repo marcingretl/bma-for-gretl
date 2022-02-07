@@ -1,0 +1,100 @@
+\section{Comparison to other BMA software packages}\label{BmaGretlSec4}
+Several Bayesian model averaging software packages have been developed by many
+researchers%
+\footnote{Useful information about Bayesian model averaging software
+	packages are available at link
+	\url{http://bms.zeugner.eu/resources/}.}.  The most popular in the
+literature are \proglang{R} packages.  A recent and comprehensive overview of
+Bayesian model averaging software in \proglang{R} is given in
+\cite{AminiParmeter2011}. They outline the following BMA packages:
+\pkg{BMS} by \cite{Zeugner_BMS}, \pkg{BAS} by
+\cite{ClydeLittmanGhosh_BAS} and \pkg{BMA} by
+\cite{RafteryHoetingVolinskyPainterYeung_BMA}.  According to their
+research the \pkg{BMS} package provides the most accurate results and
+it is also the most flexible with numerous options.
+Table~\ref{tab:features_BMA_software} presents the main features of
+the above mentioned packages.  Furthermore we compare our \pkg{BMA} package
+to the \pkg{FLSBMA} program developed in \proglang{Fortran~77} by
+\cite{FernandezLeySteel2001b}.
+
+\begin{table}[t!]
+	\centering
+	\begin{tabular}{@{\extracolsep{-1pt}}lccccc}\hline
+		Main features			&\proglang{R}-\pkg{BMS}			& \proglang{R}-\pkg{BMA}		& \proglang{R}-\pkg{BAS}	    &\pkg{FLSBMA}	      &\pkg{gretl}-\pkg{BMA}\\\hline
+		\\[-10pt]
+		\multirow{2}{*}{Model sampling}&\multirow{2}{*}{$\mbox{MC}^3$}		&\multirow{2}{*}{BIC}	&BAS, AMCMC,	    &\multirow{2}{*}{$\mbox{MC}^3$}     &\multirow{2}{*}{$\mbox{MC}^3$}\\
+		&				&			&BAS+MCMC	    &			      &\\  
+		Model priors			&5				&1			&3		    &2			      &3\\
+		Zellner's g-priors	 	&6				&1			&9		    &9			      &5\\
+		Jointness analysis	 	&				&			&		    &\checkmark		      &\checkmark\\
+		Jointness measures     	&				&			&		    &1			      &2\\
+		Out-of-sample forecast 	&\checkmark			&			&\checkmark         &\checkmark		      &\checkmark\\
+		No.\ of burn-in draws		&\checkmark			&			&\checkmark         &\checkmark		      &\checkmark\\
+		No.\ of draws	 		&\checkmark			&\checkmark		&\checkmark         &\checkmark		      &\checkmark\\
+		No.\ of top ranked models  	&\checkmark			&			&	            &\checkmark		      &\checkmark\\
+		Graphical user interface	&				&			&		    &			      &\checkmark\\\hline
+	\end{tabular}
+	\caption{Main features of the selected Bayesian model averaging software packages.
+		Model sampling: Type of model sampling algorithms.
+		Model priors: Number of available model priors.
+		Zellner's g-priors: Number of available Zellner's factors of proportionality.
+		Jointness analysis: Information if the package provides jointness analysis.
+		Jointness measures: Number of available jointness measures.
+		Out-of-sample forecast: Information about which package can be used for out-of-sample forecasting.
+		No.~of burn-in draws.
+		No.~of draws and no.~of top ranked models: Number of user-defined parameters in the sampling algorithm.
+		Graphical user interface: Presence of a GUI in the package.}
+	\label{tab:features_BMA_software}
+\end{table}
+
+The most flexible package according to the model sampling category is
+\proglang{R}-\pkg{BAS} which contains three sampling algorithms: Bayesian
+adaptive sampling (BAS), adaptive MCMC (AMCMC) and Bayesian adaptive
+sampling with MCMC for the initial replications (BAS+MCMC).  All
+packages offer different model priors. The most limited is
+\proglang{R}-\pkg{BMA} with only a fixed model prior, while the most
+comprehensive is \proglang{R}-\pkg{BMS} which contains the following model
+priors: fixed, uniform, binomial, binomial-beta and custom
+(user-controlled prior probabilities).  Furthermore, the number of
+g-priors may differ depending on the package starting from one for
+\proglang{R}-\pkg{BMA}, to nine for \proglang{R}-\pkg{BAS} and \pkg{FLSBMA}.
+
+\pkg{gretl}-\pkg{BMA} and \pkg{FLSBMA} are the only packages which offer
+Bayesian model averaging together with accompanying jointness
+statistics.  \pkg{FLSBMA} contains one jointness measure (Ley-Steel)
+while \pkg{gretl}-\pkg{BMA} contains two measures (Ley-Steel and
+Doppelhofer-Weeks). The estimation of out-of-sample forecasts is
+possible in almost all packages excluding \proglang{R}-\pkg{BMA}, where this
+option is not available.  Three out of five packages enable full
+control of the replication algorithm.  In \proglang{R}-\pkg{BMS}, \pkg{FLSBMA}
+and \pkg{gretl}-\pkg{BMA}, the user can set the number of burn-in draws,
+replication draws and detailed information about top ranked models.
+Unlike other packages \pkg{gretl}-\pkg{BMA} offers an easy-to-use GUI for
+the Bayesian model averaging approach.
+
+In order to compare run times of the above mentioned packages we used
+the FLS dataset with the following options: benchmark g-prior, 1000000
+burn-in draws, 2000000 iterations.  Model prior was set to uniform. We
+considered two scenarios for our experiment: with or without jointness
+analysis.
+
+\begin{table}[t!]
+	\centering
+	\begin{tabular}{lccccc}\hline
+		Run time &\proglang{R}-\pkg{BMS} &\proglang{R}-\pkg{BMA} &\proglang{R}-\pkg{BAS} &\pkg{FLSBMA} &\pkg{gretl}-\pkg{BMA}\\\hline
+		\\[-10pt]
+		Without jointness analysis &317 &92 &53 &1423 &1852\\
+		With jointness analysis 	&	&	&	&1423 &3073\\\hline  
+	\end{tabular} 
+	\caption{Run time in seconds of Bayesian model averaging software packages for FLS data.}
+	\label{tab:FLS_packages_timings}
+\end{table}
+
+According to the results presented in
+Table~\ref{tab:FLS_packages_timings}, the fastest Bayesian model
+averaging software package is \proglang{R}-\pkg{BAS}, while the slowest one is
+\pkg{gretl}-\pkg{BMA}. We are aware of this disadvantage of our package, but
+it strongly depends on the \pkg{gretl} development process, especially on
+the improvements of the \proglang{Hansl} interpreter. It is possible that in the
+near future \pkg{gretl} will be much faster than the current 1.10.2
+version (see Section~\ref{Conclusions} for more details). 
