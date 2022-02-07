@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="BMA" minver="2017b" lives-in-subdir="true">
 <author email="marcin.blazejowski@wsb.torun.pl">Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>2.1</version>
-<date>2022-02-03</date>
+<version>2.2-svn</version>
+<date>2022-02-07</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -974,7 +974,7 @@ endloop
 </gretl-function>
 <gretl-function name="BMA_setup" type="bundle" private="1">
  <params count="15">
-  <param name="Y" type="series"/>
+  <param name="Y" type="series" const="true"/>
   <param name="X_list_m" type="matrix"/>
   <param name="acc_type" type="int" min="1" max="2" default="1"/>
   <param name="av_model_size" type="scalar" min="0" default="1"/>
@@ -1026,6 +1026,10 @@ scalar M.k = nelem(X_list) # total number of indenpendent variables
 scalar M.Nburn = round(burn/100*Nrep) # number of burn-in draws
 matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in dataset (not in the procedure)
 matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 1)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
+# This is strange -- in case of time-series we must sort var_numbers2 again!!!
+if $datatype == 2
+  M.var_numbers2 = transp(msortby(transp(M.var_numbers2), 2))
+endif
 matrix M.big_mat = { big_list } # matrix M.of all variables (including Y)
 matrix M.big_mat_dem = cdemean(M.big_mat) # matrix M.of all demeaned variables (including Y)
 # In case of &quot;out-of-sample&quot; prediction
@@ -1080,7 +1084,7 @@ matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix M.containing structure of
 matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
 matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
 matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
-string M.all_names_sp = strsub(varname(X_list), &quot;,&quot;, &quot; &quot;) # string with names of all indenpendent variables
+string M.all_names_sp = strsub(varname(X_list), &quot;,&quot;, &quot; &quot;) # string with names of all independent variables
 string M.Y_name = Y_name # string with name of denpendent variable
 if do_joint != 0
   matrix M.jointness_m = zeros(M.k,M.k) # square matrix M.containing counts of coexistence (jointness) of every pair of indenpendent variables
@@ -1089,8 +1093,8 @@ else
 endif
 if acc_type == 1 # options for the prior
   string M.prior_name = &quot;Binomial&quot;
-  scalar M.a = ln(av_model_size/M.k)
-  scalar M.b = ln(1 - av_model_size/M.k)
+  scalar M.a = log(av_model_size/M.k)
+  scalar M.b = log(1 - av_model_size/M.k)
   scalar M.c = 0
 else
   string M.prior_name = &quot;Binomial-Beta&quot;

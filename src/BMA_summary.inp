@@ -10,10 +10,6 @@ function void BMA_summary (bundle *M)
     # We construct Post_Results matrix
     matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
     matrix tmp = M.bhat_avg' ~ bvar'
-    ###
-    printf("\n### Debug ###\n")
-    eval tmp
-    ###
     M.Post_Results = M.Post_Results ~ tmp
     tmp = M.Post_Results[,2] ./ M.Post_Results[,1]
     M.Post_Results = M.Post_Results ~ tmp
@@ -21,10 +17,6 @@ function void BMA_summary (bundle *M)
     M.Post_Results = M.Post_Results ~ tmp
     string title = "PIP Mean Std.Dev. Cond.Mean Cond.Std.Dev"
     cnameset(M.Post_Results, title)
-    ###
-    printf("\n### Debug ###\n")
-    eval M.all_names_sp
-    ###
     rnameset(M.Post_Results, M.all_names_sp)
     # Forecasts
     if M.h_predict > 0

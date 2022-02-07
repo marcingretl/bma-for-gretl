@@ -24,23 +24,11 @@ function bundle BMA_GUI (series Y "Dependent variable",
     else
         Norig = NA
     endif
-    ###
-    eval X_list
-    matrix F = X_list 
-    eval F
-    ###
     err = BMA_parse(&MODEL, Y, argname(Y), X_list, &av_model_size, &l_rank)
     if strlen(err) != 0
         funcerr "@err !!!"
     else
         MODEL = BMA_setup(Y, MODEL.X_list, acc_type, av_model_size, alpha, l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity, argname(Y), show_progress, Norig)
-        #eval MODEL.var_numbers
-        eval MODEL.var_numbers2
-        eval MODEL.all_names_sp
-        #eval varnum(Y)
-        #eval varname(45)
-        #eval argname(Y)
-        #eval varnum(argname(Y))
         # Setting sample for forecasting
         if MODEL.h_predict > 0
             smpl 1 MODEL.last_obs
