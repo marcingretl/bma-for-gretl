@@ -20,7 +20,7 @@ function void BMA_Print (bundle *M)
         printf "Total number of iterations: %d\n", M.Nrep
         printf "Number of burn-in draws: %d\n", M.Nburn
         if exists(M.Norig) == 1
-            printf "Original number of observations (with missing): %d", M.Norig
+            printf "Original number of observations (with missing): %d\n", M.Norig
         endif
         printf "\n"
         print "The initial model:"

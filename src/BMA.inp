@@ -1,0 +1,24 @@
+function bundle BMA (series Y "Dependent variable",
+                     list X_list "List of indenpendent variables (X)",
+                     bundle Options[null])
+    /*
+       Bundle-based call of BMA_GUI (wrapper).
+       Function returns bundle MODEL with (formatted) results.
+    */
+    string Y_name = argname(Y)
+    series @Y_name = Y
+    scalar acc_type = exists(Options["acc_type"]) ? Options["acc_type"] : 1
+    scalar av_model_size = exists(Options["av_model_size"]) ? Options["av_model_size"] : 1
+    scalar alpha = exists(Options["alpha"]) ? Options["alpha"] : 0.6
+    scalar l_rank = exists(Options["l_rank"]) ? Options["l_rank"] : 4
+    scalar g_type = exists(Options["g_type"]) ? Options["g_type"] : 1
+    scalar do_joint = exists(Options["do_joint"]) ? Options["do_joint"] : 0
+    scalar h_predict = exists(Options["h_predict"]) ? Options["h_predict"] : 0
+    scalar Nrep = exists(Options["Nrep"]) ? Options["Nrep"] : 1e+06
+    scalar burn = exists(Options["burn"]) ? Options["burn"] : 10
+    scalar verbosity = exists(Options["verbosity"]) ? Options["verbosity"] : 1
+    scalar show_progress = exists(Options["show_progress"]) ? Options["show_progress"] : 1
+    
+    return BMA_GUI(@Y_name, X_list, acc_type, av_model_size, alpha, l_rank, \
+      g_type, do_joint, h_predict, Nrep, burn, verbosity, show_progress)    
+end function
