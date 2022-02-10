@@ -1,13 +1,32 @@
 # Usage:
+set verbose off
 open greene9_1.gdt
 include BMA.gfn
 
-# We set the seed in order to exact reproduction of results
-set seed 1000000
-
 list greene = capital labor nfirm
 
+/*
+# We set the seed in order to exact reproduction of results
+set seed 1000000
 BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+bundle opts = defbundle("acc_type", 1, "av_model_size", 1.5, \
+  "alpha", 0.6, "l_rank", 4, "g_type", 1, "do_joint", 0, "h_predict", 0, \
+  "Nrep", 10000, "burn", 10, "verbosity", 1, "show_progress", 1)
+BMA(valadd, greene, opts)
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+BMA(valadd, greene, _(acc_type=1, av_model_size=1.5, alpha=0.6, \
+  l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=10000, \
+  burn=10, verbosity=1, show_progress=1))
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
+*/
 
 # The above example consists of three blocks.
 # The first block is just opening of the so called greene9_1 dataset,
@@ -32,34 +51,34 @@ BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
 # Suppose we want to run the same analysis but following
 # Occam's razor philosophy. The simplest way is setting the prior
 # average model size to 1. The code would be as follows:
-#BMA_GUI(valadd, greene, 1, 1, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
+#BMA(valadd, greene, _(av_model_size=1, Nrep=10000))
 
 # Because in the Occam's razor philosophy we penalize large
 # models assigning high probability for small ones, better distribution
 # then binomial is binomial-beta (which is right skewed). In order to
 # use binomial-beta distribution we have to set prior to 2.
 # The code would be as follows:
-# BMA_GUI(valadd, greene, 2, 1, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
+#BMA(valadd, greene, _(av_model_size=1, Nrep=10000, acc_type=2))
 
 # Suppose we want to set g-prior to Risk Inflation Criterion (g-RIC),
 # uniform model prior, do jointness analysis with Ley-Steel Measure,
 # compute forecasts for 3 observations and print additional information
 # in results (verbosity set to 2) and we don't want to see any progress.
 # The code would be as follows:
-#BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 3, 1, 3, 10000, 10, 2, 0)
+#BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
 
 # Finally, if we want to save results of the above Bayesian model
 # averaging analysis in the bundle results_b,
 # the code should be as follows:
-results_b = BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 3, 1, 3, 10000, 10, 2, 0)
+results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
 
 # Suppose we want to compute Doppelhofer-Weeks Measure instead of
 # already computed Ley-Steel Measure. Since the type of jointness measure
 # is controlled by 'do_joint' field in the result bundle, the only thing
 # we have to do is to set the value of 'do_join' to 2 and print BMA
 # results again. The code should be as follows:
-results_b.do_joint = 2
-BMA_Print(&results_b)
+#results_b.do_joint = 2
+#BMA_Print(&results_b)
 
 # If we need backwards compatibility with BMA_package prior to version 2
 # we can use the BMA_OldStyle function to run the old style script.
