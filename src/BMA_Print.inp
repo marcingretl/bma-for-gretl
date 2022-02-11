@@ -1,6 +1,6 @@
 function void BMA_Print (bundle *M)
-    /*
-    Function prints BMA results
+/*
+   Function prints BMA results
     */
     # We have to set sample
     if M.h_predict > 0
@@ -60,11 +60,21 @@ function void BMA_Print (bundle *M)
     endif
     # Jointess analysis
     if M.do_joint != 0
-        matrix jointess_measure = BMA_jointness_measure(&M)
+        matrix jointess_measure = BMA_jointness_measure(&M)        
         if M.do_joint == 1
-            string jointess_measure_name = "Ley-Steel Measure"
-        else
-            string jointess_measure_name = "Doppelhofer-Weeks Measure"
+            string jointess_measure_name = "Ley-Steel Measure (LS2)"
+        elif M.do_joint == 2
+            string jointess_measure_name = "Doppelhofer-Weeks Measure (DW2)"
+        elif M.do_joint == 3
+            string jointess_measure_name = "Ley-Steel Measure (LS1)"
+        elif M.do_joint == 4
+            string jointess_measure_name = "Doppelhofer-Weeks Measure (DW1)"
+        elif M.do_joint == 5
+            string jointess_measure_name = "Strachan Measure"
+        elif M.do_joint == 6
+            string jointess_measure_name = "Yule's Q Measure (YQ)"
+        elif M.do_joint == 7
+            string jointess_measure_name = "Modified Yule's Q Measure (YQM)"
         endif
         print "----------------------------------"
         printf "\n"
@@ -79,15 +89,15 @@ function void BMA_Print (bundle *M)
         scalar significant_com = 0
         matrix pairs = zeros(round(0.5*M.k^2), 3)
         scalar pair = 0
-        loop for i=1..M.k --quiet
-            loop for j=i+1..M.k --quiet
+        loop i=1..M.k --quiet
+            loop j=i+1..M.k --quiet
                 if abs(jointess_measure[i,j]) > 1
                     pair += 1
                     pairs[pair,1] = jointess_measure[i,j]
                     pairs[pair,2] = i
                     pairs[pair,3] = j
-                    if jointess_measure[i,j] < 0
-                        if jointess_measure[i,j] < -2
+                    if (jointess_measure[i,j] < 0)
+                        if (jointess_measure[i,j] < -2)
                             strong_sub += 1
                         else
                             significant_sub += 1
@@ -106,16 +116,16 @@ function void BMA_Print (bundle *M)
             pairs = msortby(pairs[1:pair, ], 1)
             scalar shift = 0
             if strong_sub > 0
-                BMA_jointness_pairs("Strong substitutes:", &strong_sub, M.var_numbers, &shift, &pairs)
+                BMA_jointness_pairs("Strong substitutes:", &strong_sub, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
             if significant_sub > 0
-                BMA_jointness_pairs("Significant substitutes:", &significant_sub, M.var_numbers, &shift, &pairs)
+                BMA_jointness_pairs("Significant substitutes:", &significant_sub, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
             if significant_com > 0
-                BMA_jointness_pairs("Significant complements:", &significant_com, M.var_numbers, &shift, &pairs)
+                BMA_jointness_pairs("Significant complements:", &significant_com, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
             if strong_com > 0
-                BMA_jointness_pairs("Strong complements:", &strong_com, M.var_numbers, &shift, &pairs)
+                BMA_jointness_pairs("Strong complements:", &strong_com, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
         endif
     endif

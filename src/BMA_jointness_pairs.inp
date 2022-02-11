@@ -1,22 +1,24 @@
 function void BMA_jointness_pairs (string MODE,
-                                   const scalar *n_pairs,
-                                   const matrix var_numbers,
-                                   scalar *shift,
-                                   const matrix *pairs)
+                                    scalar *n_pairs,
+                                    matrix var_numbers,
+                                    scalar *shift,
+                                    matrix *pairs,
+                                    matrix jointness_m)
     /*
-    Function for generating vector with pairs of hightly releated variables
-    and jointness statistics for these pairs:
-    MODE			- string with type of relation between variables
-    *n_pairs		- pointer to the scalar with number of pairs of related variables
-    *var_numbers	- pointer to the matrix holding numbers of variables
-    *shift			- pointer to the scalar holding total number of previous pairs (shift in the "pairs" vector)
-    *pairs			- pointer to the cevtor holding (ordered) pairs of hightly releated variables
+       Function for generating vector with pairs of hightly releated variables
+       and jointness statistics for these pairs:
+       MODE			- string with type of relation between variables
+       *n_pairs		- pointer to the scalar with number of pairs of related variables
+       *var_numbers	- pointer to the matrix holding numbers of variables
+       *shift			- pointer to the scalar holding total number of previous pairs (shift in the "pairs" vector)
+       *pairs			- pointer to the vector holding (ordered) pairs of hightly related variables
+       jointness_m		- matrix with counts for every pair
     */
     matrix pairs_related = pairs[shift + 1 : shift + n_pairs, ]
     shift += n_pairs
     string pair_names = ""
-    loop for i=1..n_pairs --quiet
-        pair_names += " " ~ varname(var_numbers[1+pairs_related[i,2]]) ~ "," ~ varname(var_numbers[1+pairs_related[i,3]])
+    loop i=1..n_pairs --quiet
+        pair_names += " " ~ cnameget(jointness_m, pairs_related[i,2]) ~ "," ~ cnameget(jointness_m, pairs_related[i,3])
     endloop
     matrix pairs_related = pairs_related[,1]
     printf "\n%s\n", MODE

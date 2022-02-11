@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2017b" lives-in-subdir="true">
 <author email="marcin.blazejowski@wsb.torun.pl">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>2.2-svn</version>
-<date>2022-02-08</date>
+<date>2022-02-11</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -78,9 +78,19 @@ endif
 if M.do_joint != 0
   matrix jointess_measure = BMA_jointness_measure(&amp;M)
   if M.do_joint == 1
-    string jointess_measure_name = &quot;Ley-Steel Measure&quot;
-  else
-    string jointess_measure_name = &quot;Doppelhofer-Weeks Measure&quot;
+    string jointess_measure_name = &quot;Ley-Steel Measure (LS2)&quot;
+  elif M.do_joint == 2
+    string jointess_measure_name = &quot;Doppelhofer-Weeks Measure (DW2)&quot;
+  elif M.do_joint == 3
+    string jointess_measure_name = &quot;Ley-Steel Measure (LS1)&quot;
+  elif M.do_joint == 4
+    string jointess_measure_name = &quot;Doppelhofer-Weeks Measure (DW1)&quot;
+  elif M.do_joint == 5
+    string jointess_measure_name = &quot;Strachan Measure&quot;
+  elif M.do_joint == 6
+    string jointess_measure_name = &quot;Yule's Q Measure (YQ)&quot;
+  elif M.do_joint == 7
+    string jointess_measure_name = &quot;Modified Yule's Q Measure (YQM)&quot;
   endif
   print &quot;----------------------------------&quot;
   printf &quot;\n&quot;
@@ -95,15 +105,15 @@ if M.do_joint != 0
   scalar significant_com = 0
   matrix pairs = zeros(round(0.5*M.k^2), 3)
   scalar pair = 0
-  loop for i=1..M.k --quiet
-    loop for j=i+1..M.k --quiet
+  loop i=1..M.k --quiet
+    loop j=i+1..M.k --quiet
       if abs(jointess_measure[i,j]) &gt; 1
         pair += 1
         pairs[pair,1] = jointess_measure[i,j]
         pairs[pair,2] = i
         pairs[pair,3] = j
-        if jointess_measure[i,j] &lt; 0
-          if jointess_measure[i,j] &lt; -2
+        if (jointess_measure[i,j] &lt; 0)
+          if (jointess_measure[i,j] &lt; -2)
             strong_sub += 1
           else
             significant_sub += 1
@@ -122,16 +132,16 @@ if M.do_joint != 0
     pairs = msortby(pairs[1:pair, ], 1)
     scalar shift = 0
     if strong_sub &gt; 0
-      BMA_jointness_pairs(&quot;Strong substitutes:&quot;, &amp;strong_sub, M.var_numbers, &amp;shift, &amp;pairs)
+      BMA_jointness_pairs(&quot;Strong substitutes:&quot;, &amp;strong_sub, M.var_numbers, &amp;shift, &amp;pairs, M.jointness_m)
     endif
     if significant_sub &gt; 0
-      BMA_jointness_pairs(&quot;Significant substitutes:&quot;, &amp;significant_sub, M.var_numbers, &amp;shift, &amp;pairs)
+      BMA_jointness_pairs(&quot;Significant substitutes:&quot;, &amp;significant_sub, M.var_numbers, &amp;shift, &amp;pairs, M.jointness_m)
     endif
     if significant_com &gt; 0
-      BMA_jointness_pairs(&quot;Significant complements:&quot;, &amp;significant_com, M.var_numbers, &amp;shift, &amp;pairs)
+      BMA_jointness_pairs(&quot;Significant complements:&quot;, &amp;significant_com, M.var_numbers, &amp;shift, &amp;pairs, M.jointness_m)
     endif
     if strong_com &gt; 0
-      BMA_jointness_pairs(&quot;Strong complements:&quot;, &amp;strong_com, M.var_numbers, &amp;shift, &amp;pairs)
+      BMA_jointness_pairs(&quot;Strong complements:&quot;, &amp;strong_com, M.var_numbers, &amp;shift, &amp;pairs, M.jointness_m)
     endif
   endif
 endif
@@ -679,9 +689,66 @@ M.jointness_m = upper(M.jointness_m .+ ((M.mod_struct .* M.mod_struct') .&gt; 0)
 Function computes jointness measure based on given jointness matrix.
 Local variables:
 var_prob - vector with posterior probability of indenpendent variables
-B, C, D	 - scalars for Doppelhofer-Weeks Measure computation
+a, b, c, d	 - scalars according to
+Paul Hofmarcher, Jesus Crespo Cuaresma, Bettina Grün, Stefan Humer, Mathias Moser, Bivariate jointness measures in Bayesian Model Averaging: Solving the conundrum, Journal of Macroeconomics, Volume 57, 2018, Pages 150-165, ISSN 0164-0704, DOI: 10.1016/j.jmacro.2018.05.005.
+#
 Returns: matrix with computed jointness measure
 */
+scalar a
+scalar b
+scalar c
+scalar d
+scalar N
+scalar loghuge = 999 # proxy for infty
+matrix var_prob = M.Post_Results[,1]
+matrix jointness_measure = zeros(rows(M.jointness_m), cols(M.jointness_m))
+loop i=1..M.k --quiet
+  loop j=i+1..M.k --quiet
+    # We compute a,b,c,d
+    a = M.jointness_m[i,j] # p(i &amp; j)
+    b = var_prob[i] - a	   # p(i &amp; ~j)
+    c = var_prob[j] - a	   # p(~i &amp; j)
+    d = 1 - b - c - a	   # p(~i &amp; ~j)
+    N = a + b + c + d
+    if M.do_joint == 1 # Ley-Steel Measure (LS2)
+      if a == 1
+        jointness_measure[i,j] = loghuge
+      elif a == 0
+        jointness_measure[i,j] = -loghuge
+      else
+        jointness_measure[i,j] = log(a/(b + c))
+      endif
+    elif M.do_joint == 2 # Doppelhofer-Weeks Measure (DW2)
+      if b * c == 0
+        jointness_measure[i,j] = loghuge
+      else
+        if a * d == 0
+          jointness_measure[i,j] = -loghuge
+        else
+          if (a*d)/(b*c) &lt;= 0
+            jointness_measure[i,j] = -loghuge
+          else
+            jointness_measure[i,j] = log((a*d)/(b*c))
+          endif
+        endif
+      endif
+    elif M.do_joint == 3 # Ley-Steel Measure (LS1)
+      jointness_measure[i,j] = log(a/(a + b + c))
+    elif M.do_joint == 4 # Doppelhofer-Weeks Measure (DW1)
+      jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
+    elif M.do_joint == 5 # Strachan Measure
+      jointness_measure[i,j] = (a+b)/N * (a+c)/N * log(a*N/(b*c))
+    elif M.do_joint == 6 # Yule's Q (YQ)
+      jointness_measure[i,j] = (a*d - b*c) / (a*d + b*c)
+    elif M.do_joint == 7 # Modified Yule's Q (YQM)
+      jointness_measure[i,j] = ((a+0.5)*(d+0.5)-(b+0.5)*(c+0.5)) / ((a+0.5)*(d+0.5)+(b+0.5)*(c+0.5)-0.5)
+    endif
+  endloop
+endloop
+cnameset(jointness_measure, M.all_names_sp)
+rnameset(jointness_measure, M.all_names_sp)
+return jointness_measure
+/*
 matrix var_prob = M.Post_Results[,1]
 matrix jointness_measure = zeros(rows(M.jointness_m), cols(M.jointness_m))
 loop for i=1..M.k --quiet
@@ -696,9 +763,7 @@ loop for i=1..M.k --quiet
     endif
   endloop
 endloop
-cnameset(jointness_measure, M.all_names_sp)
-rnameset(jointness_measure, M.all_names_sp)
-return jointness_measure
+*/
 </code>
 </gretl-function>
 <gretl-function name="BMA_matrix_precompute" type="void" private="1">
@@ -733,12 +798,13 @@ M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
 </code>
 </gretl-function>
 <gretl-function name="BMA_jointness_pairs" type="void" private="1">
- <params count="5">
+ <params count="6">
   <param name="MODE" type="string"/>
-  <param name="n_pairs" type="scalarref" const="true"/>
-  <param name="var_numbers" type="matrix" const="true"/>
+  <param name="n_pairs" type="scalarref"/>
+  <param name="var_numbers" type="matrix"/>
   <param name="shift" type="scalarref"/>
-  <param name="pairs" type="matrixref" const="true"/>
+  <param name="pairs" type="matrixref"/>
+  <param name="jointness_m" type="matrix"/>
  </params>
 <code>/*
 Function for generating vector with pairs of hightly releated variables
@@ -747,13 +813,14 @@ MODE			- string with type of relation between variables
 *n_pairs		- pointer to the scalar with number of pairs of related variables
 *var_numbers	- pointer to the matrix holding numbers of variables
 *shift			- pointer to the scalar holding total number of previous pairs (shift in the &quot;pairs&quot; vector)
-*pairs			- pointer to the cevtor holding (ordered) pairs of hightly releated variables
+*pairs			- pointer to the vector holding (ordered) pairs of hightly related variables
+jointness_m		- matrix with counts for every pair
 */
 matrix pairs_related = pairs[shift + 1 : shift + n_pairs, ]
 shift += n_pairs
 string pair_names = &quot;&quot;
-loop for i=1..n_pairs --quiet
-  pair_names += &quot; &quot; ~ varname(var_numbers[1+pairs_related[i,2]]) ~ &quot;,&quot; ~ varname(var_numbers[1+pairs_related[i,3]])
+loop i=1..n_pairs --quiet
+  pair_names += &quot; &quot; ~ cnameget(jointness_m, pairs_related[i,2]) ~ &quot;,&quot; ~ cnameget(jointness_m, pairs_related[i,3])
 endloop
 matrix pairs_related = pairs_related[,1]
 printf &quot;\n%s\n&quot;, MODE
@@ -1188,15 +1255,34 @@ flush
 </gretl-function>
 <sample-script filename="examples/BMA_sample.inp">
 # Usage:
+set verbose off
 open greene9_1.gdt
 include BMA.gfn
 
-# We set the seed in order to exact reproduction of results
-set seed 1000000
-
 list greene = capital labor nfirm
 
+/*
+# We set the seed in order to exact reproduction of results
+set seed 1000000
 BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+bundle opts = defbundle(&quot;acc_type&quot;, 1, &quot;av_model_size&quot;, 1.5, \
+  &quot;alpha&quot;, 0.6, &quot;l_rank&quot;, 4, &quot;g_type&quot;, 1, &quot;do_joint&quot;, 0, &quot;h_predict&quot;, 0, \
+  &quot;Nrep&quot;, 10000, &quot;burn&quot;, 10, &quot;verbosity&quot;, 1, &quot;show_progress&quot;, 1)
+BMA(valadd, greene, opts)
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+BMA(valadd, greene, _(acc_type=1, av_model_size=1.5, alpha=0.6, \
+  l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=10000, \
+  burn=10, verbosity=1, show_progress=1))
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
+*/
 
 # The above example consists of three blocks.
 # The first block is just opening of the so called greene9_1 dataset,
@@ -1221,34 +1307,34 @@ BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
 # Suppose we want to run the same analysis but following
 # Occam's razor philosophy. The simplest way is setting the prior
 # average model size to 1. The code would be as follows:
-#BMA_GUI(valadd, greene, 1, 1, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
+#BMA(valadd, greene, _(av_model_size=1, Nrep=10000))
 
 # Because in the Occam's razor philosophy we penalize large
 # models assigning high probability for small ones, better distribution
 # then binomial is binomial-beta (which is right skewed). In order to
 # use binomial-beta distribution we have to set prior to 2.
 # The code would be as follows:
-# BMA_GUI(valadd, greene, 2, 1, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
+#BMA(valadd, greene, _(av_model_size=1, Nrep=10000, acc_type=2))
 
 # Suppose we want to set g-prior to Risk Inflation Criterion (g-RIC),
 # uniform model prior, do jointness analysis with Ley-Steel Measure,
 # compute forecasts for 3 observations and print additional information
 # in results (verbosity set to 2) and we don't want to see any progress.
 # The code would be as follows:
-#BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 3, 1, 3, 10000, 10, 2, 0)
+#BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
 
 # Finally, if we want to save results of the above Bayesian model
 # averaging analysis in the bundle results_b,
 # the code should be as follows:
-results_b = BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 3, 1, 3, 10000, 10, 2, 0)
+results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
 
 # Suppose we want to compute Doppelhofer-Weeks Measure instead of
 # already computed Ley-Steel Measure. Since the type of jointness measure
 # is controlled by 'do_joint' field in the result bundle, the only thing
 # we have to do is to set the value of 'do_join' to 2 and print BMA
 # results again. The code should be as follows:
-results_b.do_joint = 2
-BMA_Print(&amp;results_b)
+#results_b.do_joint = 2
+#BMA_Print(&amp;results_b)
 
 # If we need backwards compatibility with BMA_package prior to version 2
 # we can use the BMA_OldStyle function to run the old style script.
