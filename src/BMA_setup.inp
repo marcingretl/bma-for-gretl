@@ -50,7 +50,7 @@ function bundle BMA_setup (const series Y,
     matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in dataset (not in the procedure)
     matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
     matrix M.big_mat = { big_list } # matrix M.of all variables (including Y)
-    matrix M.big_mat_dem = cdemean(M.big_mat) # matrix M.of all demeaned variables (including Y)
+    matrix M.big_mat_dem = stdize(M.big_mat, -1) # matrix M.of all demeaned variables (including Y)
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts

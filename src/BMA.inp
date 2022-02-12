@@ -1,10 +1,11 @@
 function bundle BMA (series Y "Dependent variable",
                      list X_list "List of indenpendent variables (X)",
-                     bundle Options[null])
+      bundle Options[null])
     /*
-       Bundle-based call of BMA_GUI (wrapper).
+       Bundle-based to carry out BMA analysis.
        Function returns bundle MODEL with (formatted) results.
-    */
+       */
+    bundle MODEL   
     string Y_name = argname(Y)
     series @Y_name = Y
     scalar acc_type = exists(Options["acc_type"]) ? Options["acc_type"] : 1
@@ -18,7 +19,29 @@ function bundle BMA (series Y "Dependent variable",
     scalar burn = exists(Options["burn"]) ? Options["burn"] : 10
     scalar verbosity = exists(Options["verbosity"]) ? Options["verbosity"] : 1
     scalar show_progress = exists(Options["show_progress"]) ? Options["show_progress"] : 1
+
+    # Basic parsing and checking    
+    Norig = $nobs
+    smpl Y X_list --no-missing --quiet
+    if Norig != $nobs
+        printf "\nThere are missing values in dataset!"
+    else
+        Norig = NA
+    endif
+    err = BMA_parse(&MODEL, Y, argname(Y), X_list, av_model_size, l_rank)
+    if strlen(err) != 0
+        funcerr "@err !!!"
+    else
+        MODEL = BMA_setup(Y, MODEL.X_list, acc_type, av_model_size, alpha, l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity, argname(Y), show_progress, Norig)
+        # Setting sample for forecasting
+        if MODEL.h_predict > 0
+            smpl 1 MODEL.last_obs
+        endif
+        BMA_main(&MODEL)
+        BMA_summary(&MODEL)
+        BMA_Print(&MODEL)
+    endif
     
-    return BMA_GUI(@Y_name, X_list, acc_type, av_model_size, alpha, l_rank, \
-      g_type, do_joint, h_predict, Nrep, burn, verbosity, show_progress)    
+    set warnings on    
+    return MODEL
 end function

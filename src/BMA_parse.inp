@@ -2,8 +2,8 @@ function string BMA_parse (bundle *M,
                            series Y,
                            string Y_name,
                            list X_list,
-                           const scalar *av_model_size,
-                           const scalar *l_rank)
+                           scalar av_model_size,
+                           scalar l_rank)
     /*
        Function parses given list of variables end checks several conditions:
        M				-	pointer to the bundle
