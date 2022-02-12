@@ -1,0 +1,62 @@
+/*
+   BMA -- package implementing Bayesian Model Averaging for gretl
+   Copyright (C) 2012 Marcin Błażejowski and Jacek Kwiatkowski
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+function string BMA_bcheck (const bundle OPTS, scalar k, scalar *acc_type, scalar *av_model_size,
+                            scalar *alpha, scalar *l_rank, scalar *g_type, scalar *do_joint,
+                            scalar *h_predict, scalar *Nrep, scalar *burn, scalar *verbosity,
+                            scalar *show_progress)
+    /*
+       This function checks options bundle and returns error message in
+       any problem found.
+    */
+    string err = ""
+    acc_type = exists(OPTS["acc_type"]) ? int(OPTS["acc_type"]) : 1
+    av_model_size = exists(OPTS["av_model_size"]) ? OPTS["av_model_size"] : k/2
+    alpha = exists(OPTS["alpha"]) ? OPTS["alpha"] : 0.6
+    l_rank = exists(OPTS["l_rank"]) ? int(OPTS["l_rank"]) : 4
+    g_type = exists(OPTS["g_type"]) ? int(OPTS["g_type"]) : 1
+    do_joint = exists(OPTS["do_joint"]) ? int(OPTS["do_joint"]) : 0
+    h_predict = exists(OPTS["h_predict"]) ? int(OPTS["h_predict"]) : 0
+    Nrep = exists(OPTS["Nrep"]) ? int(OPTS["Nrep"]) : 1e+06
+    burn = exists(OPTS["burn"]) ? int(OPTS["burn"]) : 10
+    verbosity = exists(OPTS["verbosity"]) ? int(OPTS["verbosity"]) : 1
+    show_progress = exists(OPTS["show_progress"]) ? int(OPTS["show_progress"]) : 1
+
+    if acc_type > 2
+        err = "Model prior takes the integer values in the range [1; 2]"
+    elif alpha < 0 || alpha > 1
+        err = "The significance level (alpha) takes the real values in the range [0; 1]"
+    elif g_type < 0 || g_type > 5
+        err = "Zellner's g-prior takes the integer values in the range [1; 5]"
+    elif do_joint < 0 || do_joint > 7
+        err = "Jointess type (do_joint) takes the integer values in the range [1; 7]"
+    elif h_predict < 0
+        err = "Number of out-of-sample forecasts (h_predict) takes the integer values"
+    elif h_predict >= round($nobs/2)
+        printf("Number of out-of-sample forecasts is more than 50%s sample lenght.\n", "%")
+    elif Nrep < 0
+        err = "Total number of replications (Nrep) takes the integer values"
+    elif burn < 0 || burn > 99
+        err = "Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]"
+    elif verbosity < 1 || verbosity > 2
+        err = "Verbosity takes the integer values in the range [1; 2]"
+    elif show_progress < 0 || show_progress > 1
+        err = "Show overall progress (show_progress) takes the boolean values"
+    endif
+
+    return err
+end function

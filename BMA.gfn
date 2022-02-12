@@ -336,18 +336,14 @@ Function returns bundle MODEL with (formatted) results.
 bundle MODEL
 string Y_name = argname(Y)
 series @Y_name = Y
-scalar acc_type = exists(Options[&quot;acc_type&quot;]) ? Options[&quot;acc_type&quot;] : 1
-scalar av_model_size = exists(Options[&quot;av_model_size&quot;]) ? Options[&quot;av_model_size&quot;] : 1
-scalar alpha = exists(Options[&quot;alpha&quot;]) ? Options[&quot;alpha&quot;] : 0.6
-scalar l_rank = exists(Options[&quot;l_rank&quot;]) ? Options[&quot;l_rank&quot;] : 4
-scalar g_type = exists(Options[&quot;g_type&quot;]) ? Options[&quot;g_type&quot;] : 1
-scalar do_joint = exists(Options[&quot;do_joint&quot;]) ? Options[&quot;do_joint&quot;] : 0
-scalar h_predict = exists(Options[&quot;h_predict&quot;]) ? Options[&quot;h_predict&quot;] : 0
-scalar Nrep = exists(Options[&quot;Nrep&quot;]) ? Options[&quot;Nrep&quot;] : 1e+06
-scalar burn = exists(Options[&quot;burn&quot;]) ? Options[&quot;burn&quot;] : 10
-scalar verbosity = exists(Options[&quot;verbosity&quot;]) ? Options[&quot;verbosity&quot;] : 1
-scalar show_progress = exists(Options[&quot;show_progress&quot;]) ? Options[&quot;show_progress&quot;] : 1
+scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress
+string err
 # Basic parsing and checking
+err = BMA_bcheck(Options, nelem(X_list), &amp;acc_type, &amp;av_model_size, &amp;alpha, &amp;l_rank, &amp;g_type, &amp;do_joint, &amp;h_predict, &amp;Nrep, &amp;burn, &amp;verbosity, &amp;show_progress)
+if strlen(err) != 0
+  funcerr &quot;@err !!!&quot;
+  return MODEL
+endif
 Norig = $nobs
 smpl Y X_list --no-missing --quiet
 if Norig != $nobs
@@ -1265,6 +1261,62 @@ if rep == percentage
   percentage += progress
 endif
 flush
+</code>
+</gretl-function>
+<gretl-function name="BMA_bcheck" type="string" private="1">
+ <params count="13">
+  <param name="OPTS" type="bundle" const="true"/>
+  <param name="k" type="scalar"/>
+  <param name="acc_type" type="scalarref"/>
+  <param name="av_model_size" type="scalarref"/>
+  <param name="alpha" type="scalarref"/>
+  <param name="l_rank" type="scalarref"/>
+  <param name="g_type" type="scalarref"/>
+  <param name="do_joint" type="scalarref"/>
+  <param name="h_predict" type="scalarref"/>
+  <param name="Nrep" type="scalarref"/>
+  <param name="burn" type="scalarref"/>
+  <param name="verbosity" type="scalarref"/>
+  <param name="show_progress" type="scalarref"/>
+ </params>
+<code>/*
+This function checks options bundle and returns error message in
+any problem found.
+*/
+string err = &quot;&quot;
+acc_type = exists(OPTS[&quot;acc_type&quot;]) ? int(OPTS[&quot;acc_type&quot;]) : 1
+av_model_size = exists(OPTS[&quot;av_model_size&quot;]) ? OPTS[&quot;av_model_size&quot;] : k/2
+alpha = exists(OPTS[&quot;alpha&quot;]) ? OPTS[&quot;alpha&quot;] : 0.6
+l_rank = exists(OPTS[&quot;l_rank&quot;]) ? int(OPTS[&quot;l_rank&quot;]) : 4
+g_type = exists(OPTS[&quot;g_type&quot;]) ? int(OPTS[&quot;g_type&quot;]) : 1
+do_joint = exists(OPTS[&quot;do_joint&quot;]) ? int(OPTS[&quot;do_joint&quot;]) : 0
+h_predict = exists(OPTS[&quot;h_predict&quot;]) ? int(OPTS[&quot;h_predict&quot;]) : 0
+Nrep = exists(OPTS[&quot;Nrep&quot;]) ? int(OPTS[&quot;Nrep&quot;]) : 1e+06
+burn = exists(OPTS[&quot;burn&quot;]) ? int(OPTS[&quot;burn&quot;]) : 10
+verbosity = exists(OPTS[&quot;verbosity&quot;]) ? int(OPTS[&quot;verbosity&quot;]) : 1
+show_progress = exists(OPTS[&quot;show_progress&quot;]) ? int(OPTS[&quot;show_progress&quot;]) : 1
+if acc_type &gt; 2
+  err = &quot;Model prior takes the integer values in the range [1; 2]&quot;
+elif alpha &lt; 0 || alpha &gt; 1
+  err = &quot;The significance level (alpha) takes the real values in the range [0; 1]&quot;
+elif g_type &lt; 0 || g_type &gt; 5
+  err = &quot;Zellner's g-prior takes the integer values in the range [1; 5]&quot;
+elif do_joint &lt; 0 || do_joint &gt; 7
+  err = &quot;Jointess type (do_joint) takes the integer values in the range [1; 7]&quot;
+elif h_predict &lt; 0
+  err = &quot;Number of out-of-sample forecasts (h_predict) takes the integer values&quot;
+elif h_predict &gt;= round($nobs/2)
+  printf(&quot;Number of out-of-sample forecasts is more than 50%s sample lenght.\n&quot;, &quot;%&quot;)
+elif Nrep &lt; 0
+  err = &quot;Total number of replications (Nrep) takes the integer values&quot;
+elif burn &lt; 0 || burn &gt; 99
+  err = &quot;Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]&quot;
+elif verbosity &lt; 1 || verbosity &gt; 2
+  err = &quot;Verbosity takes the integer values in the range [1; 2]&quot;
+elif show_progress &lt; 0 || show_progress &gt; 1
+  err = &quot;Show overall progress (show_progress) takes the boolean values&quot;
+endif
+return err
 </code>
 </gretl-function>
 <sample-script filename="examples/BMA_sample.inp">

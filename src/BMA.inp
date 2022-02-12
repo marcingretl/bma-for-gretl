@@ -1,26 +1,40 @@
+/*
+   BMA -- package implementing Bayesian Model Averaging for gretl
+   Copyright (C) 2012 Marcin Błażejowski and Jacek Kwiatkowski
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 function bundle BMA (series Y "Dependent variable",
                      list X_list "List of indenpendent variables (X)",
       bundle Options[null])
     /*
        Bundle-based to carry out BMA analysis.
        Function returns bundle MODEL with (formatted) results.
-       */
-    bundle MODEL   
+    */
+    bundle MODEL
     string Y_name = argname(Y)
     series @Y_name = Y
-    scalar acc_type = exists(Options["acc_type"]) ? Options["acc_type"] : 1
-    scalar av_model_size = exists(Options["av_model_size"]) ? Options["av_model_size"] : 1
-    scalar alpha = exists(Options["alpha"]) ? Options["alpha"] : 0.6
-    scalar l_rank = exists(Options["l_rank"]) ? Options["l_rank"] : 4
-    scalar g_type = exists(Options["g_type"]) ? Options["g_type"] : 1
-    scalar do_joint = exists(Options["do_joint"]) ? Options["do_joint"] : 0
-    scalar h_predict = exists(Options["h_predict"]) ? Options["h_predict"] : 0
-    scalar Nrep = exists(Options["Nrep"]) ? Options["Nrep"] : 1e+06
-    scalar burn = exists(Options["burn"]) ? Options["burn"] : 10
-    scalar verbosity = exists(Options["verbosity"]) ? Options["verbosity"] : 1
-    scalar show_progress = exists(Options["show_progress"]) ? Options["show_progress"] : 1
+    scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress
+    string err
 
-    # Basic parsing and checking    
+    # Basic parsing and checking
+    err = BMA_bcheck(Options, nelem(X_list), &acc_type, &av_model_size, &alpha,
+      &l_rank, &g_type, &do_joint, &h_predict, &Nrep, &burn, &verbosity, &show_progress)
+    if strlen(err) != 0
+        funcerr "@err !!!"
+        return MODEL
+    endif    
     Norig = $nobs
     smpl Y X_list --no-missing --quiet
     if Norig != $nobs
@@ -41,7 +55,7 @@ function bundle BMA (series Y "Dependent variable",
         BMA_summary(&MODEL)
         BMA_Print(&MODEL)
     endif
-    
-    set warnings on    
+
+    set warnings on
     return MODEL
 end function
