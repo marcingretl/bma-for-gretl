@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2017b" lives-in-subdir="true">
 <author email="marcin.blazejowski@wsb.torun.pl">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>2.2-svn</version>
-<date>2022-02-12</date>
+<date>2022-02-16</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -1265,7 +1265,7 @@ flush
 </gretl-function>
 <gretl-function name="BMA_bcheck" type="string" private="1">
  <params count="13">
-  <param name="OPTS" type="bundle" const="true"/>
+  <param name="UserOpts" type="bundle" const="true"/>
   <param name="k" type="scalar"/>
   <param name="acc_type" type="scalarref"/>
   <param name="av_model_size" type="scalarref"/>
@@ -1284,37 +1284,77 @@ This function checks options bundle and returns error message in
 any problem found.
 */
 string err = &quot;&quot;
-acc_type = exists(OPTS[&quot;acc_type&quot;]) ? int(OPTS[&quot;acc_type&quot;]) : 1
-av_model_size = exists(OPTS[&quot;av_model_size&quot;]) ? OPTS[&quot;av_model_size&quot;] : k/2
-alpha = exists(OPTS[&quot;alpha&quot;]) ? OPTS[&quot;alpha&quot;] : 0.6
-l_rank = exists(OPTS[&quot;l_rank&quot;]) ? int(OPTS[&quot;l_rank&quot;]) : 4
-g_type = exists(OPTS[&quot;g_type&quot;]) ? int(OPTS[&quot;g_type&quot;]) : 1
-do_joint = exists(OPTS[&quot;do_joint&quot;]) ? int(OPTS[&quot;do_joint&quot;]) : 0
-h_predict = exists(OPTS[&quot;h_predict&quot;]) ? int(OPTS[&quot;h_predict&quot;]) : 0
-Nrep = exists(OPTS[&quot;Nrep&quot;]) ? int(OPTS[&quot;Nrep&quot;]) : 1e+06
-burn = exists(OPTS[&quot;burn&quot;]) ? int(OPTS[&quot;burn&quot;]) : 10
-verbosity = exists(OPTS[&quot;verbosity&quot;]) ? int(OPTS[&quot;verbosity&quot;]) : 1
-show_progress = exists(OPTS[&quot;show_progress&quot;]) ? int(OPTS[&quot;show_progress&quot;]) : 1
-if acc_type &gt; 2
-  err = &quot;Model prior takes the integer values in the range [1; 2]&quot;
+scalar err2
+bundle Options
+scalar arg_val
+string arg_name
+strings Integers = defarray(&quot;acc_type&quot;, &quot;l_rank&quot;, &quot;g_type&quot;, &quot;do_joint&quot;, &quot;h_predict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
+strings Booleans = defarray(&quot;show_progress&quot;)
+strings Scalars = defarray(&quot;av_model_size&quot;, &quot;alpha&quot;)
+# Template bundle with default values
+scalar Options[&quot;acc_type&quot;] = 1
+scalar Options[&quot;av_model_size&quot;] = k/2
+scalar Options[&quot;alpha&quot;] = 0.6
+scalar Options[&quot;l_rank&quot;] = 4
+scalar Options[&quot;g_type&quot;] = 1
+scalar Options[&quot;do_joint&quot;] = 0
+scalar Options[&quot;h_predict&quot;] = 0
+scalar Options[&quot;Nrep&quot;] = 1e+06
+scalar Options[&quot;burn&quot;] = 10
+scalar Options[&quot;verbosity&quot;] = 1
+scalar Options[&quot;show_progress&quot;] = 1
+# General checking, but still needs some manual work
+err2 = bcheck(&amp;Options, UserOpts)
+if err2
+  err = &quot;Look at the PDF documentation for expected types of arguments.&quot;
+endif
+# We check integers
+loop i=1..nelem(Integers) --quiet
+  arg_name = Integers[i]
+  arg_val = Options[arg_name]
+  if arg_val != int(arg_val)
+    err += sprintf(&quot;Argument %s must be an integer&quot;, arg_name)
+  endif
+endloop
+# We check booleans
+loop i=1..nelem(Booleans) --quiet
+  arg_name = Booleans[i]
+  arg_val = Options[arg_name]
+  if arg_val != int(arg_val) || arg_val &lt; 0 || arg_val &gt; 1
+    err += sprintf(&quot;Argument %s must be a bool&quot;, arg_name)
+  endif
+endloop
+# We set arguments
+acc_type = Options[&quot;acc_type&quot;]
+av_model_size = Options[&quot;av_model_size&quot;]
+alpha = Options[&quot;alpha&quot;]
+l_rank = Options[&quot;l_rank&quot;]
+g_type = Options[&quot;g_type&quot;]
+do_joint = Options[&quot;do_joint&quot;]
+h_predict = Options[&quot;h_predict&quot;]
+Nrep = Options[&quot;Nrep&quot;]
+burn = Options[&quot;burn&quot;]
+verbosity = Options[&quot;verbosity&quot;]
+show_progress = Options[&quot;show_progress&quot;]
+# We check arguments for valid values
+if acc_type &lt; 1 || acc_type &gt; 2
+  err += &quot;Model prior takes the integer values in the range [1; 2]&quot;
 elif alpha &lt; 0 || alpha &gt; 1
-  err = &quot;The significance level (alpha) takes the real values in the range [0; 1]&quot;
+  err += &quot;The significance level (alpha) takes the real values in the range [0; 1]&quot;
 elif g_type &lt; 0 || g_type &gt; 5
-  err = &quot;Zellner's g-prior takes the integer values in the range [1; 5]&quot;
+  err += &quot;Zellner's g-prior takes the integer values in the range [1; 5]&quot;
 elif do_joint &lt; 0 || do_joint &gt; 7
-  err = &quot;Jointess type (do_joint) takes the integer values in the range [1; 7]&quot;
+  err += &quot;Jointess type (do_joint) takes the integer values in the range [1; 7]&quot;
 elif h_predict &lt; 0
-  err = &quot;Number of out-of-sample forecasts (h_predict) takes the integer values&quot;
+  err += &quot;Number of out-of-sample forecasts (h_predict) takes the integer values&quot;
 elif h_predict &gt;= round($nobs/2)
-  printf(&quot;Number of out-of-sample forecasts is more than 50%s sample lenght.\n&quot;, &quot;%&quot;)
+  printf(&quot;Number of out-of-sample forecasts is more than 50%s of sample length.\n&quot;, &quot;%&quot;)
 elif Nrep &lt; 0
-  err = &quot;Total number of replications (Nrep) takes the integer values&quot;
+  err += &quot;Total number of replications (Nrep) takes the integer values&quot;
 elif burn &lt; 0 || burn &gt; 99
-  err = &quot;Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]&quot;
+  err += &quot;Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]&quot;
 elif verbosity &lt; 1 || verbosity &gt; 2
-  err = &quot;Verbosity takes the integer values in the range [1; 2]&quot;
-elif show_progress &lt; 0 || show_progress &gt; 1
-  err = &quot;Show overall progress (show_progress) takes the boolean values&quot;
+  err += &quot;Verbosity takes the integer values in the range [1; 2]&quot;
 endif
 return err
 </code>

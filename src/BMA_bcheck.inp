@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function string BMA_bcheck (const bundle OPTS, scalar k, scalar *acc_type, scalar *av_model_size,
+function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, scalar *av_model_size,
                             scalar *alpha, scalar *l_rank, scalar *g_type, scalar *do_joint,
                             scalar *h_predict, scalar *Nrep, scalar *burn, scalar *verbosity,
                             scalar *show_progress)
@@ -24,38 +24,83 @@ function string BMA_bcheck (const bundle OPTS, scalar k, scalar *acc_type, scala
        any problem found.
     */
     string err = ""
-    acc_type = exists(OPTS["acc_type"]) ? int(OPTS["acc_type"]) : 1
-    av_model_size = exists(OPTS["av_model_size"]) ? OPTS["av_model_size"] : k/2
-    alpha = exists(OPTS["alpha"]) ? OPTS["alpha"] : 0.6
-    l_rank = exists(OPTS["l_rank"]) ? int(OPTS["l_rank"]) : 4
-    g_type = exists(OPTS["g_type"]) ? int(OPTS["g_type"]) : 1
-    do_joint = exists(OPTS["do_joint"]) ? int(OPTS["do_joint"]) : 0
-    h_predict = exists(OPTS["h_predict"]) ? int(OPTS["h_predict"]) : 0
-    Nrep = exists(OPTS["Nrep"]) ? int(OPTS["Nrep"]) : 1e+06
-    burn = exists(OPTS["burn"]) ? int(OPTS["burn"]) : 10
-    verbosity = exists(OPTS["verbosity"]) ? int(OPTS["verbosity"]) : 1
-    show_progress = exists(OPTS["show_progress"]) ? int(OPTS["show_progress"]) : 1
+    scalar err2
+    bundle Options
+    scalar arg_val
+    string arg_name
+    strings Integers = defarray("acc_type", "l_rank", "g_type", "do_joint", "h_predict", "Nrep", "burn", "verbosity")
+    strings Booleans = defarray("show_progress")
+    strings Scalars = defarray("av_model_size", "alpha")
 
-    if acc_type > 2
-        err = "Model prior takes the integer values in the range [1; 2]"
+    # Template bundle with default values
+    scalar Options["acc_type"] = 1
+    scalar Options["av_model_size"] = k/2
+    scalar Options["alpha"] = 0.6
+    scalar Options["l_rank"] = 4
+    scalar Options["g_type"] = 1
+    scalar Options["do_joint"] = 0
+    scalar Options["h_predict"] = 0
+    scalar Options["Nrep"] = 1e+06
+    scalar Options["burn"] = 10
+    scalar Options["verbosity"] = 1
+    scalar Options["show_progress"] = 1
+
+    # General checking, but still needs some manual work
+    err2 = bcheck(&Options, UserOpts)
+    if err2
+        err = "Look at the PDF documentation for expected types of arguments."
+    endif
+    
+    # We check integers
+    loop i=1..nelem(Integers) --quiet
+        arg_name = Integers[i]
+        arg_val = Options[arg_name]
+        if arg_val != int(arg_val)
+            err += sprintf("Argument %s must be an integer", arg_name)
+        endif
+    endloop
+
+    # We check booleans
+    loop i=1..nelem(Booleans) --quiet
+        arg_name = Booleans[i]
+        arg_val = Options[arg_name]
+        if arg_val != int(arg_val) || arg_val < 0 || arg_val > 1
+            err += sprintf("Argument %s must be a bool", arg_name)
+        endif
+    endloop
+
+    # We set arguments
+    acc_type = Options["acc_type"]
+    av_model_size = Options["av_model_size"]
+    alpha = Options["alpha"]
+    l_rank = Options["l_rank"]
+    g_type = Options["g_type"]
+    do_joint = Options["do_joint"]
+    h_predict = Options["h_predict"]
+    Nrep = Options["Nrep"]
+    burn = Options["burn"]
+    verbosity = Options["verbosity"]
+    show_progress = Options["show_progress"]
+
+    # We check arguments for valid values
+    if acc_type < 1 || acc_type > 2
+        err += "Model prior takes the integer values in the range [1; 2]"
     elif alpha < 0 || alpha > 1
-        err = "The significance level (alpha) takes the real values in the range [0; 1]"
+        err += "The significance level (alpha) takes the real values in the range [0; 1]"
     elif g_type < 0 || g_type > 5
-        err = "Zellner's g-prior takes the integer values in the range [1; 5]"
+        err += "Zellner's g-prior takes the integer values in the range [1; 5]"
     elif do_joint < 0 || do_joint > 7
-        err = "Jointess type (do_joint) takes the integer values in the range [1; 7]"
+        err += "Jointess type (do_joint) takes the integer values in the range [1; 7]"
     elif h_predict < 0
-        err = "Number of out-of-sample forecasts (h_predict) takes the integer values"
+        err += "Number of out-of-sample forecasts (h_predict) takes the integer values"
     elif h_predict >= round($nobs/2)
-        printf("Number of out-of-sample forecasts is more than 50%s sample lenght.\n", "%")
+        printf("Number of out-of-sample forecasts is more than 50%s of sample length.\n", "%")
     elif Nrep < 0
-        err = "Total number of replications (Nrep) takes the integer values"
+        err += "Total number of replications (Nrep) takes the integer values"
     elif burn < 0 || burn > 99
-        err = "Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]"
+        err += "Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]"
     elif verbosity < 1 || verbosity > 2
-        err = "Verbosity takes the integer values in the range [1; 2]"
-    elif show_progress < 0 || show_progress > 1
-        err = "Show overall progress (show_progress) takes the boolean values"
+        err += "Verbosity takes the integer values in the range [1; 2]"
     endif
 
     return err
