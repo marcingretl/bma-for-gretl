@@ -7,43 +7,41 @@ script. Finally, we will show the outputs that are returned.
 
 
 \subsection[The core of the BMA code]{The core of the \pkg{BMA} code}
-The \pkg{BMA} package consists of 3 public and 22 private functions, but
+The \pkg{BMA} package consists of 4 public and 23 private functions, but
 only 16 of them are used regularly. The name of each function starts
 with the prefix \code{BMA_}.
 
 \subsubsection{Public functions}
 The public functions are:
 \begin{enumerate}
+	\item \code{BMA}
 	\item \code{BMA_GUI}
 	\item \code{BMA_Print} 
 	\item \code{BMA_OldStyle}
 \end{enumerate}
 
 The core package function which runs and controls the main loop is:
-\begin{CodeChunk}
-	\begin{CodeInput}
-		function bundle BMA_GUI (series Y "Dependent variable",
-		list X_list "List of indenpendent variables (X)",
-		int acc_type[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
-		scalar av_model_size[0::1] "Prior average model size",
-		scalar alpha[0:1:0.6] "Significance level for the initial model",
-		int l_rank[2::4] "Number of the top ranked models",
-		int g_type[1:5:1] "g-prior type" {"Benchmark prior",
-			"Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)",
-			"Hannan and Quinn HQC", "Root of g-UIP"},
-		int do_joint[0:2:0] "Jointness analysis" {"None", "Ley-Steel Measure",
-			"Doppelhofer-Weeks Measure"},
-		int h_predict[0::0] "Number of out-of-sample forecasts",
-		int Nrep[1e+06] "Total number of replications",
-		int burn[0:99:10] "Percentage of burn-in draws",
-		int verbosity[1:2:1] "Verbosity",
-		bool show_progress[1] "Show overall progress",
-		bool force_dof_lack[0] "Force more variables than observations")
-	\end{CodeInput}
-\end{CodeChunk}
-%
-The words in quotation marks are the labels for the GUI shown in
-Figure~\ref{fig:Main window for BMA}.
+\begin{lstlisting}
+function bundle BMA (series Y "Dependent variable",
+ list X_list "List of indenpendent variables (X)",
+ bundle Options[null]
+\end{lstlisting}
+where 'Options' is a bundle with optional arguments. The default
+values for those arguments are
+\begin{lstlisting}
+ scalar Options["acc_type"] = 1
+ scalar Options["av_model_size"] = k/2
+ scalar Options["alpha"] = 0.6
+ scalar Options["l_rank"] = 4
+ scalar Options["g_type"] = 1
+ scalar Options["do_joint"] = 0
+ scalar Options["h_predict"] = 0
+ scalar Options["Nrep"] = 1e+06
+ scalar Options["burn"] = 10
+ scalar Options["verbosity"] = 1
+ scalar Options["show_progress"] = 1
+\end{lstlisting}
+and their meaning is defined here:
 \begin{itemize}
 	\item The \code{series Y} is just a series of dependent variable.
 	\item The \code{X_list} is a \pkg{gretl}'s object ``named list'' which
@@ -86,16 +84,37 @@ Figure~\ref{fig:Main window for BMA}.
 	\item The \code{bool show_progress[1]} switches progress printing during
 	the simulation. Note that it consumes a lot of CPU time and significantly
 	slows the package.
-	\item The \code{bool force_dof_lack[0]} makes the BMA analysis to run even
-	if there is not sufficient degrees of freedom.
+%	\item The \code{bool force_dof_lack[0]} makes the BMA analysis to run even
+%	if there is not sufficient degrees of freedom.
 \end{itemize}
 
+The GUI interface to BMA function is:
+\begin{lstlisting}
+function bundle BMA_GUI (series Y "Dependent variable",
+ list X_list "List of indenpendent variables (X)",
+ int acc_type[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
+ scalar av_model_size[0::1] "Prior average model size",
+ scalar alpha[0:1:0.6] "Significance level for the initial model",
+ int l_rank[2::4] "Number of the top ranked models",
+ int g_type[1:5:1] "g-prior type" {"Benchmark prior",
+	"Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)",
+	"Hannan and Quinn HQC", "Root of g-UIP"},
+ int do_joint[0:7:0] "Jointness analysis" {"None", "Ley-Steel Measure",
+	"Doppelhofer-Weeks Measure"},
+ int h_predict[0::0] "Number of out-of-sample forecasts",
+ int Nrep[1e+06] "Total number of replications",
+ int burn[0:99:10] "Percentage of burn-in draws",
+ int verbosity[1:2:1] "Verbosity",
+ bool show_progress[1] "Show overall progress")
+\end{lstlisting}
+%
+The words in quotation marks are the labels for the GUI shown in
+Figure~\ref{fig:Main window for BMA}.
+
 Function for results printing is: 
-\begin{CodeChunk}
-	\begin{CodeInput}
-		function void BMA_Print (bundle *MODEL)
-	\end{CodeInput}
-\end{CodeChunk}
+\begin{lstlisting}
+ function void BMA_Print (bundle *MODEL)
+\end{lstlisting}
 This function takes as an argument reference to the bundle MODEL
 with BMA results and prints results according to \code{verbosity} settings.
 
@@ -108,6 +127,7 @@ for old versions of BMA package (prior to 2.0).
 The main loop of the \pkg{BMA} package is split into five parts
 controlled by following functions:
 \begin{enumerate}
+	\item \code{BMA_bcheck} -- option bundle checks,
 	\item \code{BMA_parse} -- basic parsing and dataset checks,
 	\item \code{BMA_setup} -- bundle setup,
 	\item \code{BMA_main} -- MCMC,

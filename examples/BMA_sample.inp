@@ -3,30 +3,15 @@ set verbose off
 open greene9_1.gdt
 include BMA.gfn
 
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+
 list greene = capital labor nfirm
 
-/*
-# We set the seed in order to exact reproduction of results
-set seed 1000000
-BMA_GUI(valadd, greene, 1, 1.5, 0.6, 4, 1, 0, 0, 10000, 10, 1, 1)
-
-# We set the seed in order to exact reproduction of results
-set seed 1000000
 bundle opts = defbundle("acc_type", 1, "av_model_size", 1.5, \
   "alpha", 0.6, "l_rank", 4, "g_type", 1, "do_joint", 0, "h_predict", 0, \
   "Nrep", 10000, "burn", 10, "verbosity", 1, "show_progress", 1)
 BMA(valadd, greene, opts)
-
-# We set the seed in order to exact reproduction of results
-set seed 1000000
-BMA(valadd, greene, _(acc_type=1, av_model_size=1.5, alpha=0.6, \
-  l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=10000, \
-  burn=10, verbosity=1, show_progress=1))
-
-# We set the seed in order to exact reproduction of results
-set seed 1000000
-BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
-*/
 
 # The above example consists of three blocks.
 # The first block is just opening of the so called greene9_1 dataset,
@@ -45,8 +30,21 @@ BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
 # 4 top ranked models, Benchmark g-prior, without jointness analysis,
 # without out-of-sample predictions, 10000 replications with 10%
 # burn-in draws, basic output (verbosity set to 1)
-# and progress overall progress is printed.
+# and progress overall progress is printed. All those parameters
+# are stored in 'opts' bundle. At the end, BMA with all
+# these options are triggered.
 
+# As an alternative, we may define option bundle on-the-fly
+# using speciall '_()' syntax. To get this, we just need
+# to type the following lines.
+#BMA(valadd, greene, _(acc_type=1, av_model_size=1.5, alpha=0.6, \
+ # l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=10000, \
+ # burn=10, verbosity=1, show_progress=1))
+
+# But, since all option parameters have their default values
+# defined and only two of them have values different than
+# defaults, the above three liner call may be reduced to this:
+#BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
 
 # Suppose we want to run the same analysis but following
 # Occam's razor philosophy. The simplest way is setting the prior
@@ -70,7 +68,8 @@ BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
 # Finally, if we want to save results of the above Bayesian model
 # averaging analysis in the bundle results_b,
 # the code should be as follows:
-results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
+results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, \
+ g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
 
 # Suppose we want to compute Doppelhofer-Weeks Measure instead of
 # already computed Ley-Steel Measure. Since the type of jointness measure
