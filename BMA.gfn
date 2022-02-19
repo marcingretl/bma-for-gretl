@@ -1435,7 +1435,7 @@ BMA(valadd, greene, opts)
 # averaging analysis in the bundle results_b,
 # the code should be as follows:
 results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, \
- g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
+ g_type=3, l_rank=4, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
 
 # Suppose we want to compute Doppelhofer-Weeks Measure instead of
 # already computed Ley-Steel Measure. Since the type of jointness measure
