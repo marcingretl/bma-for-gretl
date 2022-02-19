@@ -53,7 +53,7 @@
   \vskip 0.2in plus 1fil minus 0.1in
   {
       \def\and{\unskip\enspace{\rm and}\enspace}%
-      \def\And{\\Department of Quantitative Methods\\87-100 Toru\'{n}, Poland\\\email{marcin.blazejowski@wsb.torun.pl}
+      \def\And{\\Department of Quantitative Methods\\87-100 Toru\'{n}, Poland\\\email{marcin@gretlconference.org}
       \end{tabular}\hss \egroup \hskip 1in plus 2fil
 	\hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\large\bf\rule{\z@}{24pt}\ignorespaces}%
       \def\AND{\end{tabular}\hss\egroup \hfil\hfil\egroup
@@ -116,7 +116,7 @@
 		eigengen, eigensym, eigsolve, epochday, errmsg, exp, fcstats, fdjac, fft,
 		ffti, filter, firstobs, floor, fracdiff, gammafun, getenv, ghk, gini, ginv,
 		halton, hdprod, hpfilt, I, imaxc, imaxr, imhof, iminc, iminr, inbundle,
-		infnorm, inlist, int, inv, invcdf, invmills, invpd, irf, irr, isconst,
+		infnorm, inlist, int(, inv, invcdf, invmills, invpd, irf, irr, isconst,
 		isnan, isnull, kdensity, kfilter, ksimul, ksmooth, kurtosis, lastobs, ldet,
 		lincomb, ljungbox, lngamma, log, log10, log2, loess, lower,
 		lrvar, max, maxc, maxr, mcorr, mcov, mcovg, mean, meanc, meanr,
@@ -133,7 +133,7 @@
 		transp, trimr, typestr, uniform, uniq, unvech, upper, urcpval, values,
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
 		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle, _},
-	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle, void, bundles},  
+	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle, void, bundles, null},  
 	%   alsoletter={-},
 	sensitive=false,  
 	morecomment=[l]{\#},
@@ -152,7 +152,7 @@
 	basicstyle={\footnotesize\ttfamily},
 	keywordstyle={\bfseries\color{hanslred}},
 	keywordstyle=[2]{\color{hanslteal}},
-	keywordstyle=[3]{\bfseries\color{hanslgreen}}, 
+	keywordstyle=[3]{\bfseries\color{hanslgreen}},
 	commentstyle={\color{hanslblue}},
 	stringstyle={\color{hanslmagenta}}
 }

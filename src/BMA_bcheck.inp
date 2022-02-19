@@ -36,7 +36,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     scalar Options["acc_type"] = 1
     scalar Options["av_model_size"] = k/2
     scalar Options["alpha"] = 0.6
-    scalar Options["l_rank"] = 4
+    scalar Options["l_rank"] = 10
     scalar Options["g_type"] = 1
     scalar Options["do_joint"] = 0
     scalar Options["h_predict"] = 0

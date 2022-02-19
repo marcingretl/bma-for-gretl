@@ -14,11 +14,13 @@ with the prefix \code{BMA_}.
 \subsubsection{Public functions}
 The public functions are:
 \begin{enumerate}
-	\item \code{BMA}
-	\item \code{BMA_GUI}
-	\item \code{BMA_Print} 
-	\item \code{BMA_OldStyle}
+	\item \code{BMA()}
+	\item \code{BMA_GUI()}
+	\item \code{BMA_Print()} 
+	\item \code{BMA_OldStyle()}
 \end{enumerate}
+
+{\noindent\large\texttt{BMA()}}\label{sec:BMA()}
 
 The core package function which runs and controls the main loop is:
 \begin{lstlisting}
@@ -27,12 +29,12 @@ function bundle BMA (series Y "Dependent variable",
  bundle Options[null]
 \end{lstlisting}
 where 'Options' is a bundle with optional arguments. The default
-values for those arguments are
+values for those arguments are:
 \begin{lstlisting}
  scalar Options["acc_type"] = 1
  scalar Options["av_model_size"] = k/2
  scalar Options["alpha"] = 0.6
- scalar Options["l_rank"] = 4
+ scalar Options["l_rank"] = 10
  scalar Options["g_type"] = 1
  scalar Options["do_joint"] = 0
  scalar Options["h_predict"] = 0
@@ -41,52 +43,64 @@ values for those arguments are
  scalar Options["verbosity"] = 1
  scalar Options["show_progress"] = 1
 \end{lstlisting}
-and their meaning is defined here:
+where \textit{k} stands for the number of independent variables.
+
+Meaning of optional arguments is as follows:
 \begin{itemize}
-	\item The \code{series Y} is just a series of dependent variable.
-	\item The \code{X_list} is a \pkg{gretl}'s object ``named list'' which
-	is just a set of \textit{K} indenpendent variables (defined by names or dataset
-	IDs). What is very important the \code{X_list} cannot contain a
-	\code{const} (\pkg{gretl}'s internal and automatically generated
-	constant term).
-	\item The \code{acc_type[1:2:1]} is an integer indicating model prior
-	type (the default is binomial, see
-	Equations~\ref{eq:model_prior_binomial} and
-	\ref{eq:model_prior_binomial-beta}).
-	\item The \code{scalar av_model_size[0::1]} is the scalar of the prior
-	average model size. Note, if \code{av_model_size} $ = \frac{K}{2}$
-	and the model prior is set to binomial, we get the uniform prior on
-	the model space. The default value is 1.
-	\item The \code{scalar alpha[0:1:0.6]} is the significance level in
-	OLS estimation. An independent variable enters the initial model if
-	its $p$~value is less than the significance level (see
-	\citealt{Koop2003}). The default value is $\alpha=0.6$, but setting
-	$\alpha=1$ results in a model consisting of 0 to \textit{K} randomly
-	chosen explanatory variables.
-	\item The \code{int l_rank[2::10]} is the number of the top ranked
-	models.  The default value is 10.
-	\item The \code{int g_type[1:5:1]} indicates the type of g-prior to be
-	used (the default value is 1: ``Benchmark prior''), see
-	Equations~\ref{eq:g-UIP}, \ref{eq:g-RIC}, \ref{eq:Benchmark_Prior},
-	\ref{eq:g-HQ} and~\ref{eq:root-g-UIP}.
-	\item The \code{int do_joint[0:2:0]} indicates whether we do jointness
-	analysis and if so, which measure to use. The default value is 0:
-	``None'', see Section~\ref{sec:jointness_measures}.
-	\item The \code{h_predict[0::]} is the number of out-of-sample
-	forecasts.
-	\item The \code{int Nrep[1000000]} is the total number of replications
-	in the Monte Carlo simulation.  The default value is 1000000.
-	\item The \code{int burn[0:99:10]} is the percentage of burn-in draws
-	ranging from 0\% to 99\%. The default value is 10\%.
-	\item The \code{int verbosity[1:2:1]} indicates the level of verbosity
-	of the \pkg{BMA} package for printing results. The default value is 1,
-	i.e., silent mode.
-	\item The \code{bool show_progress[1]} switches progress printing during
-	the simulation. Note that it consumes a lot of CPU time and significantly
-	slows the package.
+	\item The \lstinline!series Y! is just a series of dependent variable.
+	\item The \lstinline!list X_list! is a \pkg{gretl}'s
+		object ``named list'' which is just a set of \textit{k}
+		independent variables (defined by names or dataset IDs).
+		What is very important the \code{X_list} cannot contain a
+		\texttt{const} (\pkg{gretl}'s internal and automatically
+		generated constant term).
+	\item The \lstinline!int acc_type! is an integer $\in [1,2]$
+		indicating model prior	type (the default is binomia
+		$[\mathtt{acc\_type}=1]$, see Equations~\ref{eq:model_prior_binomial}
+		and \ref{eq:model_prior_binomial-beta}).
+	\item The \lstinline!scalar av_model_size! is the scalar $\geq0$
+		of the prior average model size. Note, if
+		$\mathtt{av\_model\_size} = \frac{k}{2}$ (the default value)
+		and the model prior is set to binomial, we get the uniform prior
+		on the model space\footnote{In GUI interface the default value is 1.}.
+	\item The \lstinline!scalar alpha! $\in [0,1]$ is the significance
+		level in OLS estimation. An independent variable enters the
+		initial model if its \textit{p}~value is less than the
+		significance level \citep[see][]{Koop2003}. The default value
+		is $\alpha=0.6$, but setting $\alpha=1$ results in a model
+		consisting of 0 to \textit{k} randomly chosen explanatory variables.
+	\item The \lstinline!int l_rank! is an integer $\geq 2$ defining
+		the number of the top ranked models. The default value is 10.
+	\item The \lstinline!int g_type! is an integer $\in [1,5]$
+		indicating the type of g-prior to be used (the default value
+		is 1: ``Benchmark prior''), see Equations~\ref{eq:g-UIP},
+		\ref{eq:g-RIC}, \ref{eq:Benchmark_Prior}, \ref{eq:g-HQ}
+		and~\ref{eq:root-g-UIP}.
+	\item The \lstinline!int do_joint! is an integer $\in [1,7]$
+		which indicates whether we do jointness analysis and if so,
+		which measure to use. The default value is 0: ``None'',
+		see Section~\ref{sec:jointness_measures}.
+	\item The \lstinline!int h_predict! is an integer $\geq 0$
+		which sets the number of out-of-sample forecasts.
+		The default value is 0.
+	\item The \lstinline!int Nrep! is an integer $\geq 0$ which
+		sets the total number of replications in the MC$^3$ simulation.
+		The default value is $10^6$.
+	\item The \lstinline!int burn! is an integer $\in [1,100]$ with
+		the percentage of burn-in draws	ranging from 0\% to 99\%.
+		The default value is 10\%.
+	\item The \lstinline!int verbosity! is an integer $\in [1,2]$
+		which indicates the level of verbosity of the \pkg{BMA} package
+		for printing results. The default value is 1, i.e., silent mode.
+	\item The \lstinline!bool show_progress! is a boolean value 
+		which switches progress printing during the simulation.
+		Note that it consumes a lot of CPU time and significantly
+		slows down the package.
 %	\item The \code{bool force_dof_lack[0]} makes the BMA analysis to run even
 %	if there is not sufficient degrees of freedom.
 \end{itemize}
+
+{\noindent\large\texttt{BMA\_GUI()}}\label{sec:BMA_GUI()}
 
 The GUI interface to BMA function is:
 \begin{lstlisting}
@@ -97,19 +111,23 @@ function bundle BMA_GUI (series Y "Dependent variable",
  scalar alpha[0:1:0.6] "Significance level for the initial model",
  int l_rank[2::4] "Number of the top ranked models",
  int g_type[1:5:1] "g-prior type" {"Benchmark prior",
-	"Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)",
-	"Hannan and Quinn HQC", "Root of g-UIP"},
- int do_joint[0:7:0] "Jointness analysis" {"None", "Ley-Steel Measure",
-	"Doppelhofer-Weeks Measure"},
+	"Unit Information Prior (g-UIP)", "Risk Inflation Criterion
+	(g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP"},
+ int do_joint[0:7:0] "Jointness analysis" {"None", "Ley-Steel Measure
+ 	(LS2)", "Doppelhofer-Weeks Measure (DW2)", "Ley-Steel Measure
+ 	(LS1)", "Doppelhofer-Weeks Measure (DW1)", "Strachan Measure",
+ 	"Yule's Q Measure (YQ)", "Modified Yule's Q Measure (YQM)"},
  int h_predict[0::0] "Number of out-of-sample forecasts",
  int Nrep[1e+06] "Total number of replications",
  int burn[0:99:10] "Percentage of burn-in draws",
  int verbosity[1:2:1] "Verbosity",
  bool show_progress[1] "Show overall progress")
 \end{lstlisting}
-%
+
 The words in quotation marks are the labels for the GUI shown in
 Figure~\ref{fig:Main window for BMA}.
+
+{\vspace*{10pt}\noindent\large\texttt{BMA\_Print()}}\label{sec:BMA_Print()}
 
 Function for results printing is: 
 \begin{lstlisting}
@@ -117,6 +135,8 @@ Function for results printing is:
 \end{lstlisting}
 This function takes as an argument reference to the bundle MODEL
 with BMA results and prints results according to \code{verbosity} settings.
+
+{\vspace*{10pt}\noindent\large\texttt{BMA\_OldStyle()}}\label{sec:BMA_OldStyle()}
 
 The last public function is \code{BMA_OldStyle} which is written
 for backwards compatibility and can be used with scripts prepared

@@ -6,43 +6,112 @@ identify whether different sets of two variables $x_i$ and $x_j$ are
 substitutes, complements or neither over the model space. For that
 reason, \cite{LeySteel2007} and \cite{DoppelhoferWeeks2009} define
 ex-post jointness measures of dependence between different sets of
-explanatory variables. The logarithm of the jointness statistic
-proposed by \cite{LeySteel2007} has the form
-\begin{equation}
-	J_{\mathit{LS}}= \ln\left[\frac {\Prob(i \cap j \mid y)}{\Prob(i\mid y)+\Prob(j\mid y)-2\Prob(i \cap j\mid y)}\right],
-	\label{LS_jointness}
-\end{equation}
-where $\Prob(i \cap j\mid y)$ represents the sum of the posterior
-probabilities of those models that contain both variables $x_i$ and
-$x_j$, $\Prob(i\mid y)$ and $\Prob(j\mid y)$ are the PIPs of $x_i$ and
-$x_j$.  $J_{\mathit{LS}}$ can be interpreted as the posterior odds
-ratio of the models including both \textit{i} and \textit{j} vs the
-models that include them only individually (see
-\citealt{LeySteel2007}).
+explanatory variables. Following \cite{BivariateJointness-2018},
+let's define \nameref{tab:GeneralContingencyTable}:
 
-An alternative jointness measure was proposed by
-\cite{DoppelhoferWeeks2009}. It can be written as follows
-\begin{equation}
-	J_{\mathit{DW}}= \ln\left[\frac {\Prob(i \cap j\mid y)\Prob(\tilde{i} \cap \tilde{j}\mid y)}
-	{\Prob(i \cap \tilde{j}\mid y)\Prob(\tilde{i} \cap j\mid y)}\right],
-	\label{DW_jointness}
-\end{equation}
-where $\Prob(\tilde{i} \cap \tilde{j}\mid y)$ denotes the sum of the
-posterior probabilities of the regression models in which neither
-$x_i$ and $x_j$ are included, $\Prob(i \cap \tilde{j}\mid y)$
-corresponds to the sum of the posterior probabilities of all models in
-which $x_i$ is included and $x_j$ is excluded. The last probability
-$\Prob(\tilde{i} \cap j\mid y)$ is defined analogously.
-
-$J_{\mathit{DW}}$ corresponds to the posterior odds of including $i$,
-given that $j$ is included, divided by the posterior odds of including
-$i$ given that $j$ is not included (see
-\citealt{DoppelhoferWeeks2009}).  According to
-\cite{DoppelhoferWeeks2009}, we use the classification of
-jointness among the variables given in Table~\ref{tab1}.
-
-\begin{table}[t!]
+\begin{table}[htb]
 	\centering
+	\caption{General contingency table for two binary variables.}
+	\begin{tabular}{l|ccc}\hline
+						&\textit{B}	&	$\overline{B}$	&Total	\\\hline
+		\textit{A}		&	a		&	b			& $a+b$		\\
+		$\overline{A}$	&	c		&	d			& $c+d$		\\
+		Total			&	$a+c$	&	$b+d$		& $a+b+c+d=N$\\\hline
+	\end{tabular}
+	\label{tab:GeneralContingencyTable}
+\end{table}
+
+\begin{enumerate}
+	\item The jointness measure was proposed for the first
+		time in \cite{DoppelhoferWeeks2005} as
+		(\lstinline!"Doppelhofer-Weeks Measure (DW1)"!
+		in our package):
+		\begin{equation}
+			J_{\mathit{DW1}}(A,B) = \ln\left(\frac{\Prob(AB\mid y)}
+			{\Prob(A\mid y) \Prob(B\mid y)}\right)\sim
+			J_{\mathit{DW1}} = \ln\left(\frac{aN}{(a+b)(a+c)}\right).
+			\label{DW_jointness1}
+		\end{equation}
+	\item An alternative jointness measure was proposed by
+		\cite{DoppelhoferWeeks2009} as
+		(\lstinline!"Doppelhofer-Weeks Measure (DW2)"!
+		in our package):
+		\begin{equation}
+			J_{\mathit{DW2}}(A,B) =
+			\ln\left(\frac {\Prob(AB \mid y)\Prob(\overline{A}\overline{B} \mid y)}
+			{\Prob(A\overline{B}\mid y)\Prob(\overline{A}B\mid y)}\right)\sim
+			J_{\mathit{DW2}} = \ln\left(\frac{ad}{bc}\right).
+			\label{DW_jointness2}
+		\end{equation}
+		%where $\Prob(\tilde{i} \cap \tilde{j}\mid y)$ denotes the sum of the
+		%posterior probabilities of the regression models in which neither
+		%$x_i$ and $x_j$ are included, $\Prob(i \cap \tilde{j}\mid y)$
+		%corresponds to the sum of the posterior probabilities of all models in
+		%which $x_i$ is included and $x_j$ is excluded. The last probability
+		%$\Prob(\tilde{i} \cap j\mid y)$ is defined analogously.
+		%$J_{\mathit{DW}}$ corresponds to the posterior odds of including $i$,
+		%given that $j$ is included, divided by the posterior odds of including
+		%$i$ given that $j$ is not included (see %\citealt{DoppelhoferWeeks2009}).,
+	\item Two jointness statistics were proposed
+		in \cite{LeySteel2007} as
+		(\lstinline!"Ley-Steel Measure (LS1)"! in our package):
+		\begin{equation}
+			J_{\mathit{LS1}}(A,B) =
+			\frac{\Prob(AB\mid y)}{\Prob(A\mid y)+\Prob(B\mid y)-\Prob(AB\mid y)}
+			\sim J_{\mathit{LS1}} = \frac{a}{a+b+c},
+			\label{LS_jointness1}
+		\end{equation}
+	\item and (\lstinline!"Ley-Steel Measure (LS2)"! in our package):
+	\begin{equation}
+		J_{\mathit{LS2}}(A,B) =
+		\frac{\Prob(AB\mid y)}{\Prob(A\overline{B}\mid y)+\Prob(\overline{A}B\mid y)}
+		\sim J_{\mathit{LS2}} = \frac{a}{b+c}.
+		\label{LS_jointness2}
+	\end{equation}
+%	where $\Prob(i \cap j\mid y)$ represents the sum of the posterior
+%	probabilities of those models that contain both variables $x_i$ and
+%	$x_j$, $\Prob(i\mid y)$ and $\Prob(j\mid y)$ are the PIPs of $x_i$ and
+%	$x_j$.  $J_{\mathit{LS}}$ can be interpreted as the posterior odds
+%	ratio of the models including both \textit{i} and \textit{j} vs the
+%	models that include them only individually (see
+%	\citealt{LeySteel2007}).
+	\item Another jointness measure was proposed in
+		\cite{Strachan-JAE-2009} as
+		(\lstinline!"Strachan Measure"! in our package):
+		\begin{equation}
+			J_{\mathit{St}}(A,B) = \Prob(A\mid y)\Prob(B\mid y)\ln\left(
+			\frac{\Prob(AB\mid y)}{\Prob(A\overline{B}\mid y)\Prob(\overline{A}B\mid y)}\right)
+			\sim J_{\mathit{ST}} = \frac{a+b}{N}\frac{a+c}{N}\ln\left(\frac{aN}{bc}\right).
+			\label{St_jointness}
+		\end{equation}
+	\item Next jointness measure is Yule's Q defined as
+		(\lstinline!"Yule's Q Measure (YQ)"! in our package):
+		\begin{equation}
+			J_{\mathit{YQ}}(A,B) = 
+			\frac{\Prob(AB)\Prob(\overline{AB})-\Prob(A\overline{B})\Prob(\overline{A}B)}
+			{\Prob(AB)\Prob(\overline{AB})+\Prob(A\overline{B})\Prob(\overline{A}B)}
+			\sim J_{\mathit{YQ}} = \frac{ad - bc}{ad + bc}.
+			\label{Yq_jointness}
+		\end{equation}
+		\item The last jointness measure (the default) is
+			modified Yule's Q defined as
+			(\lstinline!"Modified Yule's Q Measure (YQM)"! in our package):
+	\begin{equation}		
+		J_{\mathit{YQ}} = \frac
+		{\left(a+\frac{1}{2}\right)\left(d+\frac{1}{2}\right) -
+		\left(b+\frac{1}{2}\right)\left(c+\frac{1}{2}\right)} 
+		{\left(a+\frac{1}{2}\right)\left(d+\frac{1}{2}\right) +
+			\left(b+\frac{1}{2}\right)\left(c+\frac{1}{2}\right) - \frac{1}{2}}.
+		\label{YqM_jointness}
+	\end{equation}
+\end{enumerate}
+
+According to \cite{DoppelhoferWeeks2009}, we use the classification
+of jointness among the variables given in Table~\ref{tab1}.
+
+\begin{table}[hbt!]
+	\centering
+	\caption{Classification of strength of jointness measures.}\label{tab1}	
 	\begin{tabular}{lc}\hline
 		Evidence & Jointness statistics \\ \hline
 		strong substitutes & $J_{\mathit{LS}}, J_{\mathit{DW}} \le -2 $ \\
@@ -50,6 +119,5 @@ jointness among the variables given in Table~\ref{tab1}.
 		not significantly related & $-1< J_{\mathit{LS}}, J_{\mathit{DW}} <1 $ \\
 		significant complements & $ 1\ge J_{\mathit{LS}}, J_{\mathit{DW}} <2 $ \\
 		strong complements & $ J_{\mathit{LS}}, J_{\mathit{DW}} \ge 2 $ \\ \hline
-	\end{tabular}
-	\caption{Classification of strength of jointness measures.}\label{tab1}
+	\end{tabular}	
 \end{table} 
