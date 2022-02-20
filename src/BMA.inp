@@ -27,6 +27,9 @@ function bundle BMA (series Y "Dependent variable",
     series @Y_name = Y
     scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress
     string err
+    if !exists(Options)
+        bundle Options
+    endif
 
     # Basic parsing and checking
     err = BMA_bcheck(Options, nelem(X_list), &acc_type, &av_model_size, &alpha,
@@ -34,7 +37,7 @@ function bundle BMA (series Y "Dependent variable",
     if strlen(err) != 0
         funcerr "@err !!!"
         return MODEL
-    endif    
+    endif
     Norig = $nobs
     smpl Y X_list --no-missing --quiet
     if Norig != $nobs

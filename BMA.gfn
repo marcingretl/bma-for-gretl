@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>2.2</version>
-<date>2022-02-19</date>
+<date>2022-02-20</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -11,6 +11,58 @@
 <help>
 pdfdoc:BMA.pdf
 </help>
+<gretl-function name="BMA" type="bundle">
+ <params count="3">
+  <param name="Y" type="series">
+<description>Dependent variable</description>
+  </param>
+  <param name="X_list" type="list">
+<description>List of indenpendent variables (X)</description>
+  </param>
+  <param name="Options" type="bundle" optional="true"/>
+ </params>
+<code>/*
+Bundle-based to carry out BMA analysis.
+Function returns bundle MODEL with (formatted) results.
+*/
+bundle MODEL
+string Y_name = argname(Y)
+series @Y_name = Y
+scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress
+string err
+if !exists(Options)
+  bundle Options
+endif
+# Basic parsing and checking
+err = BMA_bcheck(Options, nelem(X_list), &amp;acc_type, &amp;av_model_size, &amp;alpha, &amp;l_rank, &amp;g_type, &amp;do_joint, &amp;h_predict, &amp;Nrep, &amp;burn, &amp;verbosity, &amp;show_progress)
+if strlen(err) != 0
+  funcerr &quot;@err !!!&quot;
+  return MODEL
+endif
+Norig = $nobs
+smpl Y X_list --no-missing --quiet
+if Norig != $nobs
+  printf &quot;\nThere are missing values in dataset!&quot;
+else
+  Norig = NA
+endif
+err = BMA_parse(&amp;MODEL, Y, argname(Y), X_list, av_model_size, l_rank)
+if strlen(err) != 0
+  funcerr &quot;@err !!!&quot;
+else
+  MODEL = BMA_setup(Y, MODEL.X_list, acc_type, av_model_size, alpha, l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity, argname(Y), show_progress, Norig)
+  # Setting sample for forecasting
+  if MODEL.h_predict &gt; 0
+    smpl 1 MODEL.last_obs
+  endif
+  BMA_main(&amp;MODEL)
+  BMA_summary(&amp;MODEL)
+  BMA_Print(&amp;MODEL)
+endif
+set warnings on
+return MODEL
+</code>
+</gretl-function>
 <gretl-function name="BMA_Print" type="void" pkg-role="bundle-print">
  <params count="1">
   <param name="M" type="bundleref"/>
@@ -317,55 +369,6 @@ else
   funcerr &quot;BMA needs at least one intenpendent variable.&quot;
 endif
 return OldStyle
-</code>
-</gretl-function>
-<gretl-function name="BMA" type="bundle">
- <params count="3">
-  <param name="Y" type="series">
-<description>Dependent variable</description>
-  </param>
-  <param name="X_list" type="list">
-<description>List of indenpendent variables (X)</description>
-  </param>
-  <param name="Options" type="bundle" optional="true"/>
- </params>
-<code>/*
-Bundle-based to carry out BMA analysis.
-Function returns bundle MODEL with (formatted) results.
-*/
-bundle MODEL
-string Y_name = argname(Y)
-series @Y_name = Y
-scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress
-string err
-# Basic parsing and checking
-err = BMA_bcheck(Options, nelem(X_list), &amp;acc_type, &amp;av_model_size, &amp;alpha, &amp;l_rank, &amp;g_type, &amp;do_joint, &amp;h_predict, &amp;Nrep, &amp;burn, &amp;verbosity, &amp;show_progress)
-if strlen(err) != 0
-  funcerr &quot;@err !!!&quot;
-  return MODEL
-endif
-Norig = $nobs
-smpl Y X_list --no-missing --quiet
-if Norig != $nobs
-  printf &quot;\nThere are missing values in dataset!&quot;
-else
-  Norig = NA
-endif
-err = BMA_parse(&amp;MODEL, Y, argname(Y), X_list, av_model_size, l_rank)
-if strlen(err) != 0
-  funcerr &quot;@err !!!&quot;
-else
-  MODEL = BMA_setup(Y, MODEL.X_list, acc_type, av_model_size, alpha, l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity, argname(Y), show_progress, Norig)
-  # Setting sample for forecasting
-  if MODEL.h_predict &gt; 0
-    smpl 1 MODEL.last_obs
-  endif
-  BMA_main(&amp;MODEL)
-  BMA_summary(&amp;MODEL)
-  BMA_Print(&amp;MODEL)
-endif
-set warnings on
-return MODEL
 </code>
 </gretl-function>
 <gretl-function name="BMA_model_switch" type="void" private="1">
@@ -1282,6 +1285,9 @@ flush
 <code>/*
 This function checks options bundle and returns error message in
 any problem found.
+Parameters:
+UserOpts - bundle with user-defined options for BMA
+k - number of independent variables
 */
 string err = &quot;&quot;
 scalar err2
@@ -1291,17 +1297,27 @@ string arg_name
 strings Integers = defarray(&quot;acc_type&quot;, &quot;l_rank&quot;, &quot;g_type&quot;, &quot;do_joint&quot;, &quot;h_predict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
 strings Booleans = defarray(&quot;show_progress&quot;)
 strings Scalars = defarray(&quot;av_model_size&quot;, &quot;alpha&quot;)
+# We set the default Nrep conditional on k
+if k &lt;= 10
+  Nrep = 1000
+elif k &lt;= 15
+  Nrep = 10000
+elif k &lt;= 19
+  Nrep = 100000
+else
+  Nrep = 1e+06
+endif
 # Template bundle with default values
 scalar Options[&quot;acc_type&quot;] = 1
 scalar Options[&quot;av_model_size&quot;] = k/2
 scalar Options[&quot;alpha&quot;] = 0.6
-scalar Options[&quot;l_rank&quot;] = 10
+scalar Options[&quot;l_rank&quot;] = xmin(2^(k-1), 40)
 scalar Options[&quot;g_type&quot;] = 1
 scalar Options[&quot;do_joint&quot;] = 0
 scalar Options[&quot;h_predict&quot;] = 0
-scalar Options[&quot;Nrep&quot;] = 1e+06
+scalar Options[&quot;Nrep&quot;] = Nrep
 scalar Options[&quot;burn&quot;] = 10
-scalar Options[&quot;verbosity&quot;] = 1
+scalar Options[&quot;verbosity&quot;] = 2
 scalar Options[&quot;show_progress&quot;] = 1
 # General checking, but still needs some manual work
 err2 = bcheck(&amp;Options, UserOpts)
@@ -1440,7 +1456,7 @@ results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, \
 # Suppose we want to compute Doppelhofer-Weeks Measure instead of
 # already computed Ley-Steel Measure. Since the type of jointness measure
 # is controlled by 'do_joint' field in the result bundle, the only thing
-# we have to do is to set the value of 'do_join' to 2 and print BMA
+# we have to do is to set the value of 'do_joint' to 2 and print BMA
 # results again. The code should be as follows:
 results_b.do_joint = 7
 BMA_Print(&amp;results_b)

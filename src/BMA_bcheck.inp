@@ -22,6 +22,10 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     /*
        This function checks options bundle and returns error message in
        any problem found.
+       Parameters:
+
+       UserOpts - bundle with user-defined options for BMA
+       k - number of independent variables
     */
     string err = ""
     scalar err2
@@ -32,17 +36,28 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     strings Booleans = defarray("show_progress")
     strings Scalars = defarray("av_model_size", "alpha")
 
+    # We set the default Nrep conditional on k
+    if k <= 10
+        Nrep = 1000
+    elif k <= 15
+        Nrep = 10000
+    elif k <= 19
+        Nrep = 100000
+    else
+        Nrep = 1e+06
+    endif
+
     # Template bundle with default values
     scalar Options["acc_type"] = 1
     scalar Options["av_model_size"] = k/2
     scalar Options["alpha"] = 0.6
-    scalar Options["l_rank"] = 10
+    scalar Options["l_rank"] = xmin(2^(k-1), 40)
     scalar Options["g_type"] = 1
     scalar Options["do_joint"] = 0
     scalar Options["h_predict"] = 0
-    scalar Options["Nrep"] = 1e+06
+    scalar Options["Nrep"] = Nrep
     scalar Options["burn"] = 10
-    scalar Options["verbosity"] = 1
+    scalar Options["verbosity"] = 2
     scalar Options["show_progress"] = 1
 
     # General checking, but still needs some manual work
@@ -50,7 +65,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     if err2
         err = "Look at the PDF documentation for expected types of arguments."
     endif
-    
+
     # We check integers
     loop i=1..nelem(Integers) --quiet
         arg_name = Integers[i]

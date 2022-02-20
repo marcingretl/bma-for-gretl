@@ -78,7 +78,7 @@ results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, \
 # Suppose we want to compute Doppelhofer-Weeks Measure instead of
 # already computed Ley-Steel Measure. Since the type of jointness measure
 # is controlled by 'do_joint' field in the result bundle, the only thing
-# we have to do is to set the value of 'do_join' to 2 and print BMA
+# we have to do is to set the value of 'do_joint' to 2 and print BMA
 # results again. The code should be as follows:
 results_b.do_joint = 7
 BMA_Print(&results_b)
