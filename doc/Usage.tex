@@ -17,62 +17,61 @@ According to Figure~\ref{fig:Main window for BMA}, we can specify the following
 entries in the GUI \pkg{BMA} window\label{text:module_parameters}
 \begin{itemize}
 	\item \textbf{Dependent variable} -- The dependent variable.
-	\item \textbf{List of indenpendent variables}
-	-- Loading variables from the database, which must have been
-	opened previously.  Note that by
-	default we assume that you want to estimate an intercept; therefore,
-	a constant is implicitly included in the list of the variables.
+	\item \textbf{List of independent variables}
+		-- Loading variables from the database, which must have been
+		opened previously.  Note that by
+		default we assume that you want to estimate an intercept; therefore,
+		a constant is implicitly included in the list of the variables.
 	\item \textbf{Model prior} -- Indicates the choice of model prior. One
-	can employ the binomial model prior or the binomial-beta model
-	prior. Note that the uniform model prior is a special case of the
-	binomial model prior. Therefore, in fact, our package allows for
-	three types of priors.
+		can employ the binomial model prior or the binomial-beta model
+		prior. Note that the uniform model prior is a special case of the
+		binomial model prior. Therefore, in fact, our package allows for
+		three types of priors.
 	\item \textbf{Prior average model size} -- Specifies the prior
-	expected model size $\E(\Xi)$.  The expected model size may range
-	from 0 to \textit{K}. The default value equals 1.  It is the
-	smallest reasonable prior expected model size. It means that we
-	penalize large models and we assign high probability to small ones
-	following Occam's razor philosophy.
+		expected model size $\E(\Xi)$.  The expected model size may range
+		from 0 to \textit{K}. The default value equals 1.  It is the
+		smallest reasonable prior expected model size. It means that we
+		penalize large models and we assign high probability to small ones
+		following Occam's razor philosophy.
 	
-	Note that for the binomial model prior and with $\E(\Xi)=0.5K$ one
-	can define the uniform prior on the model space. For example, for
-	$K=10$ regressors we can define the uniform prior with
-	$\E(\Xi)=5$. For $\E(\Xi) < 5$ we assign high probability to small
-	models.  The smaller the prior expected model size $\E(\Xi)$, the
-	less probable are larger models.
+		Note that for the binomial model prior and with $\E(\Xi)=0.5K$ one
+		can define the uniform prior on the model space. For example, for
+		$K=10$ regressors we can define the uniform prior with
+		$\E(\Xi)=5$. For $\E(\Xi) < 5$ we assign high probability to small
+		models.  The smaller the prior expected model size $\E(\Xi)$, the
+		less probable are larger models.
 	\item \textbf{Significance level for the initial model} -- Defines the
-	significance level which is used to build the initial model. An
-	explanatory variable enters the initial model if its $p$~value is
-	less than the significance level. If the significance level equals
-	1, the initial model will be randomly chosen (with equal
-	probability) from all available models. Note that if all available
-	explanatory variables enter the initial model, you will get the
-	following \pkg{gretl} error message ``No independent variables were
-	omitted''.
+		significance level which is used to build the initial model. An
+		explanatory variable enters the initial model if its $p$~value is
+		less than the significance level. If the significance level equals
+		1, the initial model will be randomly chosen (with equal
+		probability) from all available models. Note that if all available
+		explanatory variables enter the initial model, you will get the
+		following \pkg{gretl} error message ``No independent variables were
+		omitted''.
 	\item \textbf{Number of top ranked models} -- Specifies the number of
-	best models for which detailed information is stored.
+		best models for which detailed information is stored.
 	\item \textbf{g-prior type} -- One can choose between four Zellner's
-	g-priors for the regression coefficients. Choices include: benchmark
-	prior, unit information prior, risk inflation criterion, Hannan and
-	Quinn prior, root of g-UIP.
+		g-priors for the regression coefficients. Choices include: benchmark
+		prior, unit information prior, risk inflation criterion, Hannan and
+		Quinn prior, root of g-UIP.
 	\item \textbf{Jointness analysis} -- If \code{"None"} (the default),
-	the jointness analysis is omitted. Alternatively, one can choose the
-	jointness measures of \cite{LeySteel2007} or
-	\cite{DoppelhoferWeeks2009}.
+		the jointness analysis is omitted. Alternatively, one can choose
+		one of the jointness measures discussed in section~\ref{sec:jointness_measures}.
 	\item \textbf{Number of out-of-sample forecasts} -- Defines the total
-	number of out-of-sample forecasts of the dependent variable.
+		number of out-of-sample forecasts of the dependent variable.
 	\item \textbf{Total number of replications} -- Defines the total
-	number of iteration draws to be sampled.
+		number of iteration draws to be sampled.
 	\item \textbf{Percentage of burn-in draws} -- Specifies the number of
-	burn-in replications, calculated as the percentage of the total
-	number of iteration draws.
+		burn-in replications, calculated as the percentage of the total
+		number of iteration draws.
 	\item \textbf{Verbosity} -- An integer value of 1 or 2; the default is
-	1, which allows to see the basic Bayesian model averaging
-	results. If Verbosity equals 2, a more detailed description of the
-	analysis is provided (initial model, speed of convergence,
-	estimation results for top ranked models).
+		1, which allows to see the basic Bayesian model averaging
+		results. If Verbosity equals 2, a more detailed description of the
+		analysis is provided (initial model, speed of convergence,
+		estimation results for top ranked models).
 	\item \textbf{Show overall progress} -- The output is flushed every 10\%
-	of MC$^3$ and the progress is printed. Note: this consumes a lot of CPU time.
+		of MC$^3$ and the progress is printed. Note: this consumes a lot of CPU time.
 \end{itemize}     
 
 \subsubsection{Script}
@@ -82,26 +81,30 @@ A very minimal code could be as follows:
 \begin{lstlisting}
  open greene9_1.gdt
  include BMA.gfn
- set seed 1000000
+  
  list greene = capital labor nfirm
-
- bundle opts = defbundle("acc_type", 1, "av_model_size", 1.5, \
+ 
+ BMA(valadd, greene)
+\end{lstlisting}
+The above code triggers BMA analysis with default option
+described on page~\pageref{sec:default_option_bundle}.
+On contrary, the corresponding ''big call'', i.e. with
+setting all possible parameters, would be as follows:
+\begin{lstlisting}
+bundle opts = defbundle("acc_type", 1, "av_model_size", 1.5, \
  "alpha", 0.6, "l_rank", 4, "g_type", 1, "do_joint", 0, "h_predict", 0, \
- "Nrep", 10000, "burn", 10, "verbosity", 1, "show_progress", 1)
-
+ "Nrep", 1000, "burn", 10, "verbosity", 2, "show_progress", 1)
+ 
  BMA(valadd, greene, opts)
 \end{lstlisting}
-with two following alternative calls:
+
+or alternatively with the new syntax for creating a bundle
+on-the-fly:
 \begin{lstlisting}
  BMA(valadd, greene, _(acc_type=1, av_model_size=1.5, alpha=0.6, \
-  l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=10000, \
-  burn=10, verbosity=1, show_progress=1))
+  l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=1000, \
+  burn=10, verbosity=2, show_progress=1))
 \end{lstlisting}
-or
-\begin{lstlisting}
- BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
-\end{lstlisting}
-
 The above example consists of three blocks.
 
 The first block defines just the opening of the so-called \code{greene9_1}
@@ -122,48 +125,49 @@ averaging analysis: binomial model prior, prior average model size set
 to $1.5$ (which means that we have the uniform model prior), significance
 level for the initial model set to $0.6$, 4 top ranked models,
 Benchmark g-prior, without jointness analysis, without out-of-sample
-forecasts, 1000000 replications with 10\% burn-in draws basic output
-(verbosity set to 1) and progress overall progress is printed..
+forecasts, 1000 replications with 10\% burn-in draws and overall
+progress is printed.
 
 Suppose we want to run the same analysis but following Occam's razor
 philosophy.  The simplest way to do this, is to set the prior average
 model size to 1.  The code would be as follows:
 %
 \begin{lstlisting}
- BMA(valadd, greene, _(av_model_size=1, Nrep=10000))
+ BMA(valadd, greene, _(av_model_size=1))
 \end{lstlisting}
 %
 In this case, we penalize large models by assigning high probabilities
 to small ones. Apart from the binomial model prior, we can use the
-binomial-beta prior. To do this, we have to set the model prior to
-2. The code would be as follows
+binomial-beta prior. To do this, we have to set the model prior to 2.
+The code would be as follows:
 %
 \begin{lstlisting}
- BMA(valadd, greene, _(av_model_size=1, Nrep=10000, acc_type=2))
+ BMA(valadd, greene, _(av_model_size=1, acc_type=2))
 \end{lstlisting}
 %
-Suppose we want to set the g-prior to risk inflation criterion, select
-the uniform model prior, do jointness analysis with the Ley-Steel
-measure, compute forecasts for 3 observations and print additional
-information (verbosity set to 2). The code would then be as follows:
+Suppose we want to set the g-prior to risk inflation criterion,
+select the uniform model prior, do jointness analysis with the
+modified Yule's~Q (YQM) measure, compute forecasts for 3
+observations, print just basic output (verbosity set to 1) and
+switch off progress printing. The code would then be as follows:
 %
 \begin{lstlisting}
- BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, \
-  do_joint=1, h_predict=3, verbosity=2, show_progress=0))
+ BMA(valadd, greene, _(g_type=3, do_joint=7, h_predict=3, verbosity=1, show_progress=0))
 \end{lstlisting}
 %
-Finally, if we want to save results of the above Bayesian model averaging analysis in
-the the bundle \code{results_b}, the code should be as follows
+Finally, if we want to save results of the above Bayesian model
+averaging analysis in the the bundle \code{results_b}, the code
+should be as follows
 %
 \begin{lstlisting}
- results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, \
-  g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
+ results_b = BMA(valadd, greene, _(g_type=3, do_joint=7, \
+  h_predict=3, verbosity=1, show_progress=0))
 \end{lstlisting}
 %
-Suppose we want to compute Doppelhofer-Weeks Measure instead of
-already computed Ley-Steel Measure. Since the type of jointness measure
+Suppose we want to compute Doppelhofer-Weeks (DW2) Measure instead of
+already computed Yule's~Q (YQM). Since the type of jointness measure
 is controlled by 'do\_joint' field in the result bundle, the only thing
-we have to do is to set the value of 'do\_join' to 2 and print BMA
+we have to do is to set the value of 'do\_joint' to 2 and print BMA
 results again. The code should be as follows:
 
 \begin{lstlisting}
@@ -176,7 +180,7 @@ we can use the BMA\_OldStyle function to run the old style script.
 
 \begin{lstlisting}
  list greene_old = valadd capital labor nfirm
- BMA_OldStyle(greene_old, 1, 1.5, 0.6, 4, 1, 1, 3, 10000, 10, 2)
+ BMA_OldStyle(greene_old, 1, 1.5, 0.6, 4, 1, 1, 3, 1000, 10, 2)
 \end{lstlisting}
 
 \subsubsection{Outputs}\label{sec:outputs}
@@ -193,9 +197,9 @@ countries and 41 potential growth determinants for the period 1960 to
 		Applied Econometrics} online data archive
 	(\url{http://qed.econ.queensu.ca/jae/2001-v16.5/fernandez-ley-steel/}).
 	The reported chain (3000000 replications with 33\% burn-in draws)
-	took about 51 minutes of CPU time on a PC with AMD Phenom II X6
+	took about 37.5 minutes of CPU time on a PC with AMD Phenom II X6
 	1100T CPU, 6.0~Gb of RAM running under Debian GNU/Linux. We used
-	\pkg{gretl}~1.10.2 compiled by GCC~5.2.1. The seed for RNG was set
+	\pkg{gretl}~2022b-git compiled by GCC~11.2.0. The seed for RNG was set
 	to 1000000. The dependent variable is the growth rate from
 	1960--1992.}. The initial estimation sample consists of indices
 $i=1,\ldots,69$ and the out-of-sample evaluation indices are from 70
@@ -207,15 +211,15 @@ For example, for the FLS data, the following estimates should appear
 	\begin{CodeOutput}
 Posterior moments (unconditional and conditional on inclusion):
 PIP         Mean     Std.Dev.    Cond.Mean   Cond.Std.Dev        
-GDPsh560   0.998378    -1.444579     0.305391    -1.446927       0.300031
-Confuncious   0.890878     0.427081     0.189631     0.479393       0.123638
-Life_Exp   0.932297     0.988063     0.404005     1.059816       0.314688
+GDPsh560    0.998378    -1.444579     0.305391    -1.446927       0.300031
+Confuncious 0.890878     0.427081     0.189631     0.479393       0.123638
+Life_Exp    0.932297     0.988063     0.404005     1.059816       0.314688
 Equip_Inv   0.904971     0.549653     0.250217     0.607370       0.184734
 SubSahara   0.654270    -0.431560     0.369153    -0.659606       0.240550
-Muslim   0.363769     0.130498     0.197138     0.358739       0.157977
-Rule_of_Law   0.416318     0.206002     0.271416     0.494818       0.184491
-Yrs_Open   0.547074     0.312026     0.318952     0.570354       0.196508
-...        ...          ...          ...          ...            ...
+Muslim      0.363769     0.130498     0.197138     0.358739       0.157977
+Rule_of_Law 0.416318     0.206002     0.271416     0.494818       0.184491
+Yrs_Open    0.547074     0.312026     0.318952     0.570354       0.196508
+...         ...          ...          ...          ...            ...
 ----------------------------------
 Posterior probability of models:
 Model 1:    0.007899
@@ -248,41 +252,41 @@ draws. Moreover, the \pkg{BMA} estimate function produces the estimation
 results for the initial and top ranked models. The jointness analysis
 is inactive by default. If it is active, you will get: posterior joint
 probability of explanatory variables, jointness statistic as given in
-Equations~\ref{LS_jointness} or~\ref{DW_jointness} and classification
+Equations~\ref{DW_jointness1}--\ref{YqM_jointness} and classification
 of jointness measures.  The jointness analysis for the previous
 example should look like this:
 %
 \begin{CodeChunk}
 	\begin{CodeOutput}
 Posterior joint probability of variables:
-GDPsh560 Confuncious   Life_Exp  Equip_Inv ...  
-GDPsh560   0.000000    0.889256   0.932182   0.903349 ...
-Confuncious   0.000000    0.000000   0.826208   0.816956 ...
-Life_Exp   0.000000    0.000000   0.000000   0.839068 ...
+GDPsh560    Confuncious   Life_Exp  Equip_Inv ...  
+GDPsh560    0.000000    0.889256   0.932182   0.903349 ...
+Confuncious 0.000000    0.000000   0.826208   0.816956 ...
+Life_Exp    0.000000    0.000000   0.000000   0.839068 ...
 Equip_Inv   0.000000    0.000000   0.000000   0.000000 ...
-...        ...         ...        ...        ... ...
-Jointness statistics (Ley-Steel Measure):
-GDPsh560 Confuncious   Life_Exp  Equip_Inv ...
-GDPsh560   0.000000    2.083161   2.643181   2.235000 ...
-Confuncious   0.000000    0.000000   1.576599   1.618373 ...
-Life_Exp   0.000000    0.000000   0.000000   1.662559 ...
+...         ...         ...        ...        ... ...
+Jointness statistics (Ley-Steel Measure (LS2)):
+GDPsh560    Confuncious   Life_Exp  Equip_Inv ...
+GDPsh560    0.000000    2.083161   2.643181   2.235000 ...
+Confuncious 0.000000    0.000000   1.576599   1.618373 ...
+Life_Exp    0.000000    0.000000   0.000000   1.662559 ...
 Equip_Inv   0.000000    0.000000   0.000000   0.000000 ...  
-...        ...         ...        ...        ... ... 
+...         ...         ...        ...        ... ... 
 Strong substitutes:
-Rev_Coup,Area       -4.516140
-Rev_Coup,Publ_Edu_pct       -4.459739
+Rev_Coup,Area         -4.516140
+Rev_Coup,Publ_Edu_pct -4.459739
 ...             ...
 Significant substitutes:   
-GDPsh560,Hindu       -1.997989
-Mining,War_Dummy       -1.989541
-...             ...   
+GDPsh560,Hindu        -1.997989
+Mining,War_Dummy      -1.989541
+...                   ...   
 Significant complements:
-Confuncious,Life_Exp        1.576599
-Confuncious,Equip_Inv        1.618373
-...             ...
+Confuncious,Life_Exp   1.576599
+Confuncious,Equip_Inv  1.618373
+...                    ...
 Strong complements:   
-DPsh560,Confuncious        2.083161
-GDPsh560,Equip_Inv        2.235000
-...             ...  
+DPsh560,Confuncious    2.083161
+GDPsh560,Equip_Inv     2.235000
+...                    ...  
 	\end{CodeOutput}
 \end{CodeChunk} 

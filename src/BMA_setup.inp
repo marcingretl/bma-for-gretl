@@ -17,18 +17,18 @@
 */
 function bundle BMA_setup (const series Y,
                            matrix X_list_m,
-                           int acc_type[1:2:1],
-                           scalar av_model_size[0::1],
-                           scalar alpha[0:1:0.6],
-                           int l_rank[2::4],
-                           int g_type[1:5:1],
-                           int do_joint[0:2:0],
+                           int acc_type[1:2:],
+                           scalar av_model_size[0::],
+                           scalar alpha[0:1:],
+                           int l_rank[2::],
+                           int g_type[1:5:],
+                           int do_joint[0:7],
                            int h_predict[0::],
-                           int Nrep[1e+06],
-                           int burn[0:99:10],
-                           int verbosity[1:2:1],
+                           int Nrep,
+                           int burn[0:99:],
+                           int verbosity[1:2:],
                            string Y_name,
-                           bool show_progress[1],
+                           bool show_progress,
                            int Norig)
     /*
        This function creates BUNDLE holding all BMA information

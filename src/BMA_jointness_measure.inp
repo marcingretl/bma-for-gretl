@@ -41,7 +41,7 @@ function matrix BMA_jointness_measure (bundle *M)
             c = var_prob[j] - a	   # p(~i & j)
             d = 1 - b - c - a	   # p(~i & ~j)
             N = a + b + c + d
-            if M.do_joint == 1 # Ley-Steel Measure (LS2)
+            if M.do_joint == 4 # Ley-Steel Measure (LS2)
                 if a == 1
                     jointness_measure[i,j] = loghuge
                 elif a == 0
@@ -65,7 +65,7 @@ function matrix BMA_jointness_measure (bundle *M)
                 endif
             elif M.do_joint == 3 # Ley-Steel Measure (LS1)
                 jointness_measure[i,j] = log(a/(a + b + c))
-            elif M.do_joint == 4 # Doppelhofer-Weeks Measure (DW1)
+            elif M.do_joint == 1 # Doppelhofer-Weeks Measure (DW1)
                 jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
             elif M.do_joint == 5 # Strachan Measure
                 jointness_measure[i,j] = (a+b)/N * (a+c)/N * log(a*N/(b*c))

@@ -1,5 +1,5 @@
 gretl version 2022b-git
-Current session: 2022-02-08 12:46
+Current session: 2022-02-20 12:11
 
 ? set verbose off
 
@@ -20,7 +20,6 @@ Listing 43 variables:
  36) Pop_g         37) Brit_Col      38) Outwar_Or     39) Jewish       
  40) Rev_Coup      41) Publ_Edu      42) Area         
 
-BMA 2.2-svn, 2022-02-07 (Marcin Błażejowski, Jacek Kwiatkowski)
 
 Overall progress: 
 ----------------------------------
@@ -28,8 +27,8 @@ Prior: Binomial
 Prior average model size: 20.500000
 Significance level for the initial model: 0.600000
 g-prior: Benchmark prior
-Total number of iterations: 1000000
-Number of burn-in draws: 100000
+Total number of iterations: 3000000
+Number of burn-in draws: 990000
 
 The initial model:
 
@@ -78,83 +77,83 @@ SSR = 9.63014, R-squared = 0.959294
 
 ----------------------------------
 
-Posterior average model size: 10.433497
+Posterior average model size: 10.493840
 
 Posterior moments (unconditional and conditional on inclusion):
                         PIP           Mean       Std.Dev.      Cond.Mean   Cond.Std.Dev
-   GDPsh560        0.999457      -1.613673       0.311282      -1.614551       0.309084
-Confuncious        0.988839       5.646435       1.452746       5.710167       1.330553
-   Life_Exp        0.935439       0.084233       0.034008       0.090047       0.026700
-  Equip_Inv        0.921489      15.978527       6.883849      17.339902       5.274342
-  SubSahara        0.741337      -1.167467       0.849402      -1.574813       0.575956
-     Muslim        0.631502       0.865310       0.776664       1.370241       0.513145
-   Yrs_Open        0.504184       0.715410       0.794320       1.418945       0.503129
-Rule_of_Law        0.493274       0.732810       0.831855       1.485602       0.533370
-    Eco_Org        0.465821       0.120835       0.144006       0.259403       0.092596
-     Mining        0.457238       1.903750       2.347924       4.163589       1.627143
-Protestants        0.451249      -0.564170       0.703976      -1.250242       0.490398
- NEquip_Inv        0.433137       2.491770       3.187075       5.752850       2.165735
- LatAmerica        0.219937      -0.187800       0.426124      -0.853883       0.506804
-     Buddha        0.199134       0.261492       0.598536       1.313143       0.646562
-PrSc_Enroll        0.198752       0.406886       0.941382       2.047202       1.049169
-  Bl_Mkt_Pm        0.181802      -0.139412       0.335674      -0.766833       0.372358
-   Civl_Lib        0.128680      -0.028788       0.088151      -0.223715       0.129533
-      Hindu        0.126407      -0.340313       1.166889      -2.692210       2.107136
-   Catholic        0.125681      -0.024234       0.305886      -0.192822       0.843782
- Pol_Rights        0.094240      -0.014927       0.056423      -0.158390       0.105159
- Pr_Exports        0.093248      -0.090779       0.342787      -0.973523       0.633045
-        Age        0.082704      -0.000387       0.001555      -0.004685       0.003016
- R_FEX_Dist        0.078980      -0.000390       0.001665      -0.004941       0.003553
-  War_Dummy        0.075347      -0.029152       0.125381      -0.386906       0.265000
-  Lab_Force        0.074064       0.000718       0.003817       0.009700       0.010468
-    English        0.069716      -0.044128       0.200406      -0.632970       0.450968
-    Foreign        0.069042       0.028926       0.141042       0.418955       0.353158
-Spanish_Col        0.057909       0.023771       0.157415       0.410486       0.518811
-EthnoL_Frac        0.054996       0.031376       0.179927       0.570524       0.530154
- French_Col        0.052667       0.021161       0.122113       0.401785       0.360837
-    std_BMP        0.049320      -0.000643       0.003923      -0.013038       0.012263
-    Abs_Lat        0.045660       0.000990       0.032746       0.021692       0.151774
-High_Enroll        0.042951      -0.141135       1.016973      -3.285937       3.707518
-   Work_Pop        0.041764      -0.027001       0.219491      -0.646517       0.867751
-   Brit_Col        0.040408      -0.007138       0.069189      -0.176642       0.297537
-     Jewish        0.039340      -0.024438       0.300712      -0.621205       1.388492
-      Pop_g        0.038644       0.566265       4.887580      14.653214      20.291393
-  Outwar_Or        0.036741      -0.006783       0.057763      -0.184624       0.240786
-   Rev_Coup        0.032054      -0.000255       0.099523      -0.007951       0.555823
-   Publ_Edu        0.030672       0.088837       2.478539       2.896319      13.861911
-       Area        0.029670      -0.000499       0.010258      -0.016817       0.057202
+   GDPsh560        0.999246      -1.613570       0.311327      -1.614788       0.308271
+Confuncious        0.989724       5.653177       1.446116       5.711873       1.333304
+   Life_Exp        0.938069       0.084486       0.033699       0.090064       0.026613
+  Equip_Inv        0.924849      15.939099       6.781505      17.234276       5.234914
+  SubSahara        0.739114      -1.159253       0.846778      -1.568437       0.573015
+     Muslim        0.645506       0.884865       0.776197       1.370807       0.516927
+   Yrs_Open        0.507073       0.719953       0.794274       1.419820       0.500456
+Rule_of_Law        0.495167       0.734725       0.830823       1.483792       0.531553
+     Mining        0.466141       1.932952       2.346093       4.146713       1.621138
+    Eco_Org        0.460826       0.119895       0.144072       0.260175       0.092441
+Protestants        0.453708      -0.568157       0.705642      -1.252251       0.490724
+ NEquip_Inv        0.435687       2.497826       3.180312       5.733073       2.160298
+ LatAmerica        0.215787      -0.182187       0.421711      -0.844292       0.514914
+PrSc_Enroll        0.206216       0.422559       0.951275       2.049111       1.027254
+     Buddha        0.198922       0.261363       0.598649       1.313894       0.647068
+  Bl_Mkt_Pm        0.184434      -0.142323       0.339120      -0.771674       0.371334
+   Catholic        0.132716      -0.024617       0.314646      -0.185488       0.846245
+   Civl_Lib        0.128554      -0.028988       0.088433      -0.225496       0.128536
+      Hindu        0.127169      -0.354960       1.228157      -2.791255       2.249634
+ Pr_Exports        0.099833      -0.095904       0.348465      -0.960645       0.620967
+ Pol_Rights        0.095598      -0.014944       0.056698      -0.156317       0.107371
+        Age        0.088812      -0.000411       0.001595      -0.004629       0.003020
+ R_FEX_Dist        0.080690      -0.000400       0.001692      -0.004959       0.003587
+  War_Dummy        0.077401      -0.029494       0.125404      -0.381055       0.263087
+  Lab_Force        0.077033       0.000791       0.004146       0.010270       0.011213
+    English        0.069014      -0.044436       0.201221      -0.643864       0.448035
+    Foreign        0.066713       0.028377       0.140539       0.425357       0.356660
+EthnoL_Frac        0.059628       0.035905       0.197172       0.602158       0.557687
+Spanish_Col        0.055714       0.022972       0.158754       0.412313       0.540208
+ French_Col        0.052768       0.020949       0.122354       0.396996       0.366623
+    std_BMP        0.049680      -0.000643       0.003923      -0.012952       0.012262
+High_Enroll        0.045750      -0.172111       1.167022      -3.761963       4.032881
+    Abs_Lat        0.042785       0.000609       0.031391       0.014227       0.151122
+   Work_Pop        0.041343      -0.026605       0.216421      -0.643520       0.857860
+  Outwar_Or        0.039667      -0.007493       0.060597      -0.188893       0.241462
+      Pop_g        0.038736       0.532141       4.737617      13.737509      19.950487
+   Brit_Col        0.036883      -0.006057       0.065464      -0.164231       0.300362
+     Jewish        0.035764      -0.025056       0.282701      -0.700604       1.327168
+   Rev_Coup        0.030615      -0.000328       0.096963      -0.010729       0.554065
+   Publ_Edu        0.030290       0.083959       2.457259       2.771881      13.852658
+       Area        0.030214      -0.000427       0.010336      -0.014140       0.057811
 
 ----------------------------------
 
 Posterior probability of models:
-Model 1:	0.008060
-Model 2:	0.007027
-Model 3:	0.004472
-Model 4:	0.003096
-Model 5:	0.002993
-Model 6:	0.003173
-Model 7:	0.003309
-Model 8:	0.002664
-Model 9:	0.002522
-Model 10:	0.002292
-Model 11:	0.002197
-Model 12:	0.002129
-Model 13:	0.001896
-Model 14:	0.001753
-Model 15:	0.002017
-Model 16:	0.001910
-Model 17:	0.001736
-Model 18:	0.001747
-Model 19:	0.001836
-Model 20:	0.001574
-Total probability of the models in ranking (numerical): 0.058402
+Model 1:	0.008712
+Model 2:	0.007354
+Model 3:	0.004743
+Model 4:	0.003518
+Model 5:	0.003142
+Model 6:	0.002755
+Model 7:	0.002709
+Model 8:	0.002729
+Model 9:	0.002771
+Model 10:	0.002312
+Model 11:	0.002202
+Model 12:	0.002024
+Model 13:	0.002040
+Model 14:	0.001969
+Model 15:	0.001994
+Model 16:	0.001644
+Model 17:	0.001892
+Model 18:	0.001692
+Model 19:	0.001834
+Model 20:	0.001480
+Total probability of the models in ranking (numerical): 0.059517
 
 Correlation coefficient between the analytical
-and numerical probabilities of the above models: 0.993042
+and numerical probabilities of the above models: 0.997971
 
 ----------------------------------
 
-Model: 1, posterior probability: 0.008060
+Model: 1, posterior probability: 0.008712
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.65318      0.217533     -7.600   2.97e-14 ***
@@ -171,7 +170,7 @@ Model: 1, posterior probability: 0.008060
 
 ----------------------------------
 
-Model: 2, posterior probability: 0.007027
+Model: 2, posterior probability: 0.007354
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.84213      0.218578     -8.428   3.52e-17 ***
@@ -187,7 +186,7 @@ Model: 2, posterior probability: 0.007027
 
 ----------------------------------
 
-Model: 3, posterior probability: 0.004472
+Model: 3, posterior probability: 0.004743
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560       -1.66910     0.221089     -7.549   4.37e-14 ***
@@ -202,7 +201,7 @@ Model: 3, posterior probability: 0.004472
 
 ----------------------------------
 
-Model: 4, posterior probability: 0.003096
+Model: 4, posterior probability: 0.003518
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560       -1.30050     0.237147     -5.484   4.16e-08 ***
@@ -216,7 +215,7 @@ Model: 4, posterior probability: 0.003096
 
 ----------------------------------
 
-Model: 5, posterior probability: 0.002993
+Model: 5, posterior probability: 0.003142
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.61242      0.233679     -6.900   5.19e-12 ***
@@ -230,7 +229,7 @@ Model: 5, posterior probability: 0.002993
 
 ----------------------------------
 
-Model: 6, posterior probability: 0.003173
+Model: 6, posterior probability: 0.002755
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.66294      0.232817     -7.143   9.15e-13 ***
@@ -246,7 +245,7 @@ Model: 6, posterior probability: 0.003173
 
 ----------------------------------
 
-Model: 7, posterior probability: 0.003309
+Model: 7, posterior probability: 0.002709
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.85877      0.233578     -7.958   1.75e-15 ***
@@ -261,7 +260,7 @@ Model: 7, posterior probability: 0.003309
 
 ----------------------------------
 
-Model: 8, posterior probability: 0.002664
+Model: 8, posterior probability: 0.002729
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.48335      0.230501     -6.435   1.23e-10 ***
@@ -278,7 +277,7 @@ Model: 8, posterior probability: 0.002664
 
 ----------------------------------
 
-Model: 9, posterior probability: 0.002522
+Model: 9, posterior probability: 0.002771
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.66006      0.224425     -7.397   1.39e-13 ***
@@ -295,7 +294,7 @@ Model: 9, posterior probability: 0.002522
 
 ----------------------------------
 
-Model: 10, posterior probability: 0.002292
+Model: 10, posterior probability: 0.002312
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.53654      0.220027     -6.983   2.88e-12 ***
@@ -313,7 +312,7 @@ Model: 10, posterior probability: 0.002292
 
 ----------------------------------
 
-Model: 11, posterior probability: 0.002197
+Model: 11, posterior probability: 0.002202
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.87009      0.234205     -7.985   1.41e-15 ***
@@ -328,7 +327,7 @@ Model: 11, posterior probability: 0.002197
 
 ----------------------------------
 
-Model: 12, posterior probability: 0.002129
+Model: 12, posterior probability: 0.002024
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.55634      0.232794     -6.685   2.30e-11 ***
@@ -342,7 +341,7 @@ Model: 12, posterior probability: 0.002129
 
 ----------------------------------
 
-Model: 13, posterior probability: 0.001896
+Model: 13, posterior probability: 0.002040
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560       -1.32562     0.226887     -5.843   5.14e-09 ***
@@ -357,7 +356,7 @@ Model: 13, posterior probability: 0.001896
 
 ----------------------------------
 
-Model: 14, posterior probability: 0.001753
+Model: 14, posterior probability: 0.001969
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.64274      0.247714     -6.632   3.32e-11 ***
@@ -370,7 +369,7 @@ Model: 14, posterior probability: 0.001753
 
 ----------------------------------
 
-Model: 15, posterior probability: 0.002017
+Model: 15, posterior probability: 0.001994
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.51310      0.221242     -6.839   7.97e-12 ***
@@ -388,7 +387,7 @@ Model: 15, posterior probability: 0.002017
 
 ----------------------------------
 
-Model: 16, posterior probability: 0.001910
+Model: 16, posterior probability: 0.001644
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560       -1.82130     0.222442     -8.188   2.66e-16 ***
@@ -404,7 +403,7 @@ Model: 16, posterior probability: 0.001910
 
 ----------------------------------
 
-Model: 17, posterior probability: 0.001736
+Model: 17, posterior probability: 0.001892
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.67775      0.211336     -7.939   2.04e-15 ***
@@ -422,7 +421,7 @@ Model: 17, posterior probability: 0.001736
 
 ----------------------------------
 
-Model: 18, posterior probability: 0.001747
+Model: 18, posterior probability: 0.001692
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.63280      0.211390     -7.724   1.13e-14 ***
@@ -440,7 +439,7 @@ Model: 18, posterior probability: 0.001747
 
 ----------------------------------
 
-Model: 19, posterior probability: 0.001836
+Model: 19, posterior probability: 0.001834
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560       -1.49963     0.225145     -6.661   2.72e-11 ***
@@ -456,7 +455,7 @@ Model: 19, posterior probability: 0.001836
 
 ----------------------------------
 
-Model: 20, posterior probability: 0.001574
+Model: 20, posterior probability: 0.001480
                 coefficient   std. error     z      p-value 
   ----------------------------------------------------------
   GDPsh560      -1.38960      0.230085     -6.039   1.55e-09 ***
@@ -471,4 +470,4 @@ Model: 20, posterior probability: 0.001574
 ----------------------------------
 
 
-388.35738
+Total execution time: 801.34 sec.

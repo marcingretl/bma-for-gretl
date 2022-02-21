@@ -17,7 +17,17 @@ the above mentioned packages.  Furthermore we compare our \pkg{BMA} package
 to the \pkg{FLSBMA} program developed in \proglang{Fortran~77} by
 \cite{FernandezLeySteel2001b}.
 
-\begin{table}[t!]
+\begin{table}[ht!]
+	\caption{Main features of the selected Bayesian model averaging software packages.
+	Model sampling: Type of model sampling algorithms.
+	Model priors: Number of available model priors.
+	Zellner's g-priors: Number of available Zellner's factors of proportionality.
+	Jointness analysis: Information if the package provides jointness analysis.
+	Jointness measures: Number of available jointness measures.
+	Out-of-sample forecast: Information about which package can be used for out-of-sample forecasting.
+	No.~of burn-in draws.
+	No.~of draws and no.~of top ranked models: Number of user-defined parameters in the sampling algorithm.
+	Graphical user interface: Presence of a GUI in the package.}
 	\centering
 	\begin{tabular}{@{\extracolsep{-1pt}}lccccc}\hline
 		Main features			&\proglang{R}-\pkg{BMS}			& \proglang{R}-\pkg{BMA}		& \proglang{R}-\pkg{BAS}	    &\pkg{FLSBMA}	      &\pkg{gretl}-\pkg{BMA}\\\hline
@@ -34,16 +44,6 @@ to the \pkg{FLSBMA} program developed in \proglang{Fortran~77} by
 		No.\ of top ranked models  	&\checkmark			&			&	            &\checkmark		      &\checkmark\\
 		Graphical user interface	&				&			&		    &			      &\checkmark\\\hline
 	\end{tabular}
-	\caption{Main features of the selected Bayesian model averaging software packages.
-		Model sampling: Type of model sampling algorithms.
-		Model priors: Number of available model priors.
-		Zellner's g-priors: Number of available Zellner's factors of proportionality.
-		Jointness analysis: Information if the package provides jointness analysis.
-		Jointness measures: Number of available jointness measures.
-		Out-of-sample forecast: Information about which package can be used for out-of-sample forecasting.
-		No.~of burn-in draws.
-		No.~of draws and no.~of top ranked models: Number of user-defined parameters in the sampling algorithm.
-		Graphical user interface: Presence of a GUI in the package.}
 	\label{tab:features_BMA_software}
 \end{table}
 
@@ -62,8 +62,8 @@ g-priors may differ depending on the package starting from one for
 \pkg{gretl}-\pkg{BMA} and \pkg{FLSBMA} are the only packages which offer
 Bayesian model averaging together with accompanying jointness
 statistics.  \pkg{FLSBMA} contains one jointness measure (Ley-Steel)
-while \pkg{gretl}-\pkg{BMA} contains two measures (Ley-Steel and
-Doppelhofer-Weeks). The estimation of out-of-sample forecasts is
+while \pkg{gretl}-\pkg{BMA} contains seven measures.
+The estimation of out-of-sample forecasts is
 possible in almost all packages excluding \proglang{R}-\pkg{BMA}, where this
 option is not available.  Three out of five packages enable full
 control of the replication algorithm.  In \proglang{R}-\pkg{BMS}, \pkg{FLSBMA}
@@ -78,15 +78,15 @@ burn-in draws, 2000000 iterations.  Model prior was set to uniform. We
 considered two scenarios for our experiment: with or without jointness
 analysis.
 
-\begin{table}[t!]
+\begin{table}[ht!]
+	\caption{Run time in seconds of Bayesian model averaging software packages for FLS data.}
 	\centering
 	\begin{tabular}{lccccc}\hline
 		Run time &\proglang{R}-\pkg{BMS} &\proglang{R}-\pkg{BMA} &\proglang{R}-\pkg{BAS} &\pkg{FLSBMA} &\pkg{gretl}-\pkg{BMA}\\\hline
 		\\[-10pt]
-		Without jointness analysis &317 &92 &53 &1423 &1852\\
-		With jointness analysis 	&	&	&	&1423 &3073\\\hline  
-	\end{tabular} 
-	\caption{Run time in seconds of Bayesian model averaging software packages for FLS data.}
+		Without jointness analysis &317 &92 &53 &1423 &995\\
+		With jointness analysis 	&	&	&	&1423 &1032\\\hline  
+	\end{tabular}	
 	\label{tab:FLS_packages_timings}
 \end{table}
 

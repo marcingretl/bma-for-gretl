@@ -14,15 +14,16 @@ with the prefix \code{BMA_}.
 \subsubsection{Public functions}
 The public functions are:
 \begin{enumerate}
-	\item \code{BMA()}
-	\item \code{BMA_GUI()}
-	\item \code{BMA_Print()} 
-	\item \code{BMA_OldStyle()}
+	\item \code{BMA()}~see~\ref{sec:BMA()}
+	\item \code{BMA_GUI()}~see~\ref{sec:BMA_GUI()}
+	\item \code{BMA_Print()}~see~\ref{sec:BMA_Print()}
+	\item \code{BMA_OldStyle()}~see~\ref{sec:BMA_OldStyle()}
 \end{enumerate}
 
-{\noindent\large\texttt{BMA()}}\label{sec:BMA()}
 
-The core package function which runs and controls the main loop is:
+\paragraph{\texttt{BMA()}}\label{sec:BMA()}\mbox{}\\
+
+\noindent The core package function which runs and controls the main loop is:
 \begin{lstlisting}
 function bundle BMA (series Y "Dependent variable",
  list X_list "List of indenpendent variables (X)",
@@ -34,17 +35,28 @@ values for those arguments are:
  scalar Options["acc_type"] = 1
  scalar Options["av_model_size"] = k/2
  scalar Options["alpha"] = 0.6
- scalar Options["l_rank"] = 10
+ scalar Options["l_rank"] = xmin(2^(k-1), 40)
  scalar Options["g_type"] = 1
  scalar Options["do_joint"] = 0
  scalar Options["h_predict"] = 0
- scalar Options["Nrep"] = 1e+06
+ scalar Options["Nrep"] = Nrep
  scalar Options["burn"] = 10
- scalar Options["verbosity"] = 1
+ scalar Options["verbosity"] = 2
  scalar Options["show_progress"] = 1
-\end{lstlisting}
-where \textit{k} stands for the number of independent variables.
-
+\end{lstlisting}\label{sec:default_option_bundle}
+where \textit{k} stands for the number of independent variables
+and \lstinline!scalar Nrep! takes the following values:
+\begin{equation}
+	\mathtt{Nrep} = \left\{
+		\begin{array}{ccl}
+			10^3 & \mathrm{if} & k \leq 10,\\
+			10^4 & \mathrm{if} & k \in [11;15],\\
+			10^5 & \mathrm{if} & k \in [16;19],\\
+			10^6 & \mathrm{if} & k \geq 20.\\
+		\end{array}
+	\right.
+	\label{eq:Nrep_setup}
+\end{equation}
 Meaning of optional arguments is as follows:
 \begin{itemize}
 	\item The \lstinline!series Y! is just a series of dependent variable.
@@ -70,7 +82,8 @@ Meaning of optional arguments is as follows:
 		is $\alpha=0.6$, but setting $\alpha=1$ results in a model
 		consisting of 0 to \textit{k} randomly chosen explanatory variables.
 	\item The \lstinline!int l_rank! is an integer $\geq 2$ defining
-		the number of the top ranked models. The default value is 10.
+		the number of the top ranked models. The default value is 
+		$\min\{2^{k-1}; 40\}$.
 	\item The \lstinline!int g_type! is an integer $\in [1,5]$
 		indicating the type of g-prior to be used (the default value
 		is 1: ``Benchmark prior''), see Equations~\ref{eq:g-UIP},
@@ -85,13 +98,13 @@ Meaning of optional arguments is as follows:
 		The default value is 0.
 	\item The \lstinline!int Nrep! is an integer $\geq 0$ which
 		sets the total number of replications in the MC$^3$ simulation.
-		The default value is $10^6$.
+		The default value is set up according to formula~\eqref{eq:Nrep_setup}.
 	\item The \lstinline!int burn! is an integer $\in [1,100]$ with
 		the percentage of burn-in draws	ranging from 0\% to 99\%.
 		The default value is 10\%.
 	\item The \lstinline!int verbosity! is an integer $\in [1,2]$
 		which indicates the level of verbosity of the \pkg{BMA} package
-		for printing results. The default value is 1, i.e., silent mode.
+		for printing results. The default value is 2.
 	\item The \lstinline!bool show_progress! is a boolean value 
 		which switches progress printing during the simulation.
 		Note that it consumes a lot of CPU time and significantly
@@ -100,9 +113,10 @@ Meaning of optional arguments is as follows:
 %	if there is not sufficient degrees of freedom.
 \end{itemize}
 
-{\noindent\large\texttt{BMA\_GUI()}}\label{sec:BMA_GUI()}
 
-The GUI interface to BMA function is:
+\paragraph{\texttt{BMA\_GUI()}}\label{sec:BMA_GUI()}\mbox{}\\
+
+\noindent The GUI interface to BMA function is:
 \begin{lstlisting}
 function bundle BMA_GUI (series Y "Dependent variable",
  list X_list "List of indenpendent variables (X)",
@@ -127,18 +141,18 @@ function bundle BMA_GUI (series Y "Dependent variable",
 The words in quotation marks are the labels for the GUI shown in
 Figure~\ref{fig:Main window for BMA}.
 
-{\vspace*{10pt}\noindent\large\texttt{BMA\_Print()}}\label{sec:BMA_Print()}
+\paragraph{\texttt{BMA\_Print()}}\label{sec:BMA_Print()}\mbox{}\\
 
-Function for results printing is: 
+\noindent Function for results printing is: 
 \begin{lstlisting}
  function void BMA_Print (bundle *MODEL)
 \end{lstlisting}
 This function takes as an argument reference to the bundle MODEL
 with BMA results and prints results according to \code{verbosity} settings.
 
-{\vspace*{10pt}\noindent\large\texttt{BMA\_OldStyle()}}\label{sec:BMA_OldStyle()}
+\paragraph{\texttt{BMA\_OldStyle()}}\label{sec:BMA_OldStyle()}\mbox{}\\
 
-The last public function is \code{BMA_OldStyle} which is written
+\noindent The last public function is \code{BMA_OldStyle} which is written
 for backwards compatibility and can be used with scripts prepared
 for old versions of BMA package (prior to 2.0).
 
@@ -147,12 +161,12 @@ for old versions of BMA package (prior to 2.0).
 The main loop of the \pkg{BMA} package is split into five parts
 controlled by following functions:
 \begin{enumerate}
-	\item \code{BMA_bcheck} -- option bundle checks,
-	\item \code{BMA_parse} -- basic parsing and dataset checks,
-	\item \code{BMA_setup} -- bundle setup,
-	\item \code{BMA_main} -- MCMC,
-	\item \code{BMA_summary} -- final computations and bundle clean up,
-	\item \code{BMA_Print} -- results printing.
+	\item \code{BMA_bcheck()} -- option bundle checks,
+	\item \code{BMA_parse()} -- basic parsing and dataset checks,
+	\item \code{BMA_setup()} -- bundle setup,
+	\item \code{BMA_main()} -- MCMC,
+	\item \code{BMA_summary()} -- final computations and bundle clean up,
+	\item \code{BMA_Print()} -- results printing.
 \end{enumerate}
 
 Essentials of BMA analysis is the MCMC stuff driven by \code{BMA_main}.

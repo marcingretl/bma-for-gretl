@@ -13,9 +13,8 @@
   takes account of model uncertainty in
   conclusions about estimated parameters. It is an efficient tool for
   discovering the most probable models and obtaining estimates of
-  their posterior characteristics. We introduce
-  the \pkg{BMA} package for linear regression models with jointness measures
-  proposed by \cite{LeySteel2007} and \cite{DoppelhoferWeeks2009}.
+  their posterior characteristics. We introduce the \pkg{BMA} package
+  for linear regression models with 7 jointness measures.
   More information one can find in \cite{Blazejowski_Kwiatkowski_BMA_JSS}.}
 
 \Keywords{Bayesian model averaging, jointness measures, \pkg{gretl}, \proglang{Hansl}}
@@ -28,9 +27,9 @@
 	\centering	
 	\url{https://sourceforge.net/projects/bma-for-gretl}
 \end{quote}
-	
+
 \section*{Changelog}
-\begin{description}
+{\small\begin{description}
     \item[2.2] Interface changes and small fixes:
         \begin{itemize}
           \item Some code cleanups.
@@ -38,7 +37,7 @@
           \item Fix bug with incorrect order of variables.
           \item New bundle-based interface.
           \item Make bundle-based interface is default (BMA\_GUI works as wrapper).
-          \item (to doc) New jointness measures.
+          \item New jointness measures.
           \item Function \texttt{cdemean()} replaced by \texttt{stdize()}.
         \end{itemize}
 	\item[2.1] Small code refreshing:
@@ -50,7 +49,9 @@
 	\item[2.0] Bundle based version (most of internal
 		functions call only \texttt{bundle M}).
 	\item[1.0] Initial version.
-\end{description}
+\end{description}}
+
+\tableofcontents\newpage
 
 \input{Introduction}
 \input{Bayesian_inference}

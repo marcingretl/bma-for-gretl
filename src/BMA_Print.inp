@@ -78,13 +78,13 @@ function void BMA_Print (bundle *M)
     # Jointess analysis
     if M.do_joint != 0
         matrix jointess_measure = BMA_jointness_measure(&M)        
-        if M.do_joint == 1
+        if M.do_joint == 4
             string jointess_measure_name = "Ley-Steel Measure (LS2)"
         elif M.do_joint == 2
             string jointess_measure_name = "Doppelhofer-Weeks Measure (DW2)"
         elif M.do_joint == 3
             string jointess_measure_name = "Ley-Steel Measure (LS1)"
-        elif M.do_joint == 4
+        elif M.do_joint == 1
             string jointess_measure_name = "Doppelhofer-Weeks Measure (DW1)"
         elif M.do_joint == 5
             string jointess_measure_name = "Strachan Measure"

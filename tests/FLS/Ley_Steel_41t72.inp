@@ -1,5 +1,5 @@
 set verbose off
-set seed 123456789
+set seed 1000000
 
 open Ley_Steel_41t72.gdt
 include BMA.gfn
@@ -7,6 +7,6 @@ include BMA.gfn
 list Factors = { 2..42 }
 
 set stopwatch
-flsres = BMA_GUI(GDP_growth, Factors, 1, 20.5, 0.6, 20, 1, 0, 0, 1000000, \
-  10, 2, 0)
-eval $stopwatch
+flsres = BMA(GDP_growth, Factors, _(Nrep=3000000, l_rank=20, burn=33, show_progress=0))  
+
+printf "Total execution time: %.2f sec.\n", $stopwatch

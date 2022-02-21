@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>2.2</version>
-<date>2022-02-20</date>
+<date>2022-02-21</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -129,13 +129,13 @@ endif
 # Jointess analysis
 if M.do_joint != 0
   matrix jointess_measure = BMA_jointness_measure(&amp;M)
-  if M.do_joint == 1
+  if M.do_joint == 4
     string jointess_measure_name = &quot;Ley-Steel Measure (LS2)&quot;
   elif M.do_joint == 2
     string jointess_measure_name = &quot;Doppelhofer-Weeks Measure (DW2)&quot;
   elif M.do_joint == 3
     string jointess_measure_name = &quot;Ley-Steel Measure (LS1)&quot;
-  elif M.do_joint == 4
+  elif M.do_joint == 1
     string jointess_measure_name = &quot;Doppelhofer-Weeks Measure (DW1)&quot;
   elif M.do_joint == 5
     string jointess_measure_name = &quot;Strachan Measure&quot;
@@ -723,7 +723,7 @@ loop i=1..M.k --quiet
     c = var_prob[j] - a	   # p(~i &amp; j)
     d = 1 - b - c - a	   # p(~i &amp; ~j)
     N = a + b + c + d
-    if M.do_joint == 1 # Ley-Steel Measure (LS2)
+    if M.do_joint == 4 # Ley-Steel Measure (LS2)
       if a == 1
         jointness_measure[i,j] = loghuge
       elif a == 0
@@ -747,7 +747,7 @@ loop i=1..M.k --quiet
       endif
     elif M.do_joint == 3 # Ley-Steel Measure (LS1)
       jointness_measure[i,j] = log(a/(a + b + c))
-    elif M.do_joint == 4 # Doppelhofer-Weeks Measure (DW1)
+    elif M.do_joint == 1 # Doppelhofer-Weeks Measure (DW1)
       jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
     elif M.do_joint == 5 # Strachan Measure
       jointness_measure[i,j] = (a+b)/N * (a+c)/N * log(a*N/(b*c))
@@ -1086,18 +1086,18 @@ endloop
  <params count="15">
   <param name="Y" type="series" const="true"/>
   <param name="X_list_m" type="matrix"/>
-  <param name="acc_type" type="int" min="1" max="2" default="1"/>
-  <param name="av_model_size" type="scalar" min="0" default="1"/>
-  <param name="alpha" type="scalar" min="0" max="1" default="0.6"/>
-  <param name="l_rank" type="int" min="2" default="4"/>
-  <param name="g_type" type="int" min="1" max="5" default="1"/>
-  <param name="do_joint" type="int" min="0" max="2" default="0"/>
+  <param name="acc_type" type="int" min="1" max="2"/>
+  <param name="av_model_size" type="scalar" min="0"/>
+  <param name="alpha" type="scalar" min="0" max="1"/>
+  <param name="l_rank" type="int" min="2"/>
+  <param name="g_type" type="int" min="1" max="5"/>
+  <param name="do_joint" type="int" min="0" max="7"/>
   <param name="h_predict" type="int" min="0"/>
-  <param name="Nrep" type="int" default="1e+06"/>
-  <param name="burn" type="int" min="0" max="99" default="10"/>
-  <param name="verbosity" type="int" min="1" max="2" default="1"/>
+  <param name="Nrep" type="int"/>
+  <param name="burn" type="int" min="0" max="99"/>
+  <param name="verbosity" type="int" min="1" max="2"/>
   <param name="Y_name" type="string"/>
-  <param name="show_progress" type="bool" default="1"/>
+  <param name="show_progress" type="bool"/>
   <param name="Norig" type="int"/>
  </params>
 <code>/*
@@ -1389,82 +1389,9 @@ include BMA.gfn
 set seed 1000000
 
 list greene = capital labor nfirm
+results_b = BMA(valadd, greene)
 
-bundle opts = defbundle(&quot;acc_type&quot;, 1, &quot;av_model_size&quot;, 1.5, \
-  &quot;alpha&quot;, 0.6, &quot;l_rank&quot;, 4, &quot;g_type&quot;, 1, &quot;do_joint&quot;, 0, &quot;h_predict&quot;, 0, \
-  &quot;Nrep&quot;, 10000, &quot;burn&quot;, 10, &quot;verbosity&quot;, 1, &quot;show_progress&quot;, 1)
-BMA(valadd, greene, opts)
-
-# The above example consists of three blocks.
-# The first block is just opening of the so called greene9_1 dataset,
-# which is bundled in every standard gretl installation.
-# This dataset contains cross-sectional data on manufacturing
-# of transportation equipment # presented as Table 9.1 in
-# Greene, Econometric Analysis, 4e}.
-
-# The second block is the definition of the greene list which
-# contains three independend variables available in the greene9_1 dataset.
-
-# The third block contains the definition for Bayesian model
-# averaging analysis: binomial prior, prior average model size
-# set to 1.5 (which means that we have uniform model prior),
-# significance level for the initial model set to 0.6,
-# 4 top ranked models, Benchmark g-prior, without jointness analysis,
-# without out-of-sample predictions, 10000 replications with 10%
-# burn-in draws, basic output (verbosity set to 1)
-# and progress overall progress is printed. All those parameters
-# are stored in 'opts' bundle. At the end, BMA with all
-# these options are triggered.
-
-# As an alternative, we may define option bundle on-the-fly
-# using speciall '_()' syntax. To get this, we just need
-# to type the following lines.
-#BMA(valadd, greene, _(acc_type=1, av_model_size=1.5, alpha=0.6, \
- # l_rank=4, g_type=1, do_joint=0, h_predict=0, Nrep=10000, \
- # burn=10, verbosity=1, show_progress=1))
-
-# But, since all option parameters have their default values
-# defined and only two of them have values different than
-# defaults, the above three liner call may be reduced to this:
-#BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000))
-
-# Suppose we want to run the same analysis but following
-# Occam's razor philosophy. The simplest way is setting the prior
-# average model size to 1. The code would be as follows:
-#BMA(valadd, greene, _(av_model_size=1, Nrep=10000))
-
-# Because in the Occam's razor philosophy we penalize large
-# models assigning high probability for small ones, better distribution
-# then binomial is binomial-beta (which is right skewed). In order to
-# use binomial-beta distribution we have to set prior to 2.
-# The code would be as follows:
-#BMA(valadd, greene, _(av_model_size=1, Nrep=10000, acc_type=2))
-
-# Suppose we want to set g-prior to Risk Inflation Criterion (g-RIC),
-# uniform model prior, do jointness analysis with Ley-Steel Measure,
-# compute forecasts for 3 observations and print additional information
-# in results (verbosity set to 2) and we don't want to see any progress.
-# The code would be as follows:
-#BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, g_type=3, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
-
-# Finally, if we want to save results of the above Bayesian model
-# averaging analysis in the bundle results_b,
-# the code should be as follows:
-results_b = BMA(valadd, greene, _(av_model_size=1.5, Nrep=10000, \
- g_type=3, l_rank=4, do_joint=1, h_predict=3, verbosity=2, show_progress=0))
-
-# Suppose we want to compute Doppelhofer-Weeks Measure instead of
-# already computed Ley-Steel Measure. Since the type of jointness measure
-# is controlled by 'do_joint' field in the result bundle, the only thing
-# we have to do is to set the value of 'do_joint' to 2 and print BMA
-# results again. The code should be as follows:
-results_b.do_joint = 7
-BMA_Print(&amp;results_b)
-
-# If we need backwards compatibility with BMA_package prior to version 2
-# we can use the BMA_OldStyle function to run the old style script.
-#list greene_old = valadd capital labor nfirm
-#BMA_OldStyle(greene_old, 1, 1.5, 0.6, 4, 1, 1, 3, 10000, 10, 2)
+# More complex examples are described at section 4.2.2 of the PDF.
 </sample-script>
 </gretl-function-package>
 </gretl-functions>

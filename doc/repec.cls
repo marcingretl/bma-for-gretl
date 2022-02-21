@@ -15,12 +15,14 @@
 \RequirePackage{listings}
 \RequirePackage{color,ae,fancyvrb}
 
-
 \usepackage[pagebackref=true,unicode]{hyperref}
 %   \hypersetup{colorlinks=true}
 \usepackage[authoryear,round,longnamesfirst]{natbib}
 
 \DeclareGraphicsExtensions{.jpg,.png,.tif}
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
 
 \newcommand{\Plainauthor}[1]{\def\@Plainauthor{#1}}
 \newcommand{\Plaintitle}[1]{\def\@Plaintitle{#1}}
@@ -39,11 +41,9 @@
 
 \newenvironment{CodeChunk}{}{}
 
-
 \DefineVerbatimEnvironment{Code}{Verbatim}{}
 \DefineVerbatimEnvironment{CodeInput}{Verbatim}{fontshape=sl}
 \DefineVerbatimEnvironment{CodeOutput}{Verbatim}{}
-
 
 \def\@codex#1{{\normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
 \let\proglang=\textsf
