@@ -147,7 +147,9 @@ The code would be as follows:
 %
 Suppose we want to set the g-prior to risk inflation criterion,
 select the uniform model prior, do jointness analysis with the
-modified Yule's~Q (YQM) measure, compute forecasts for 3
+modified Yule's~Q (YQM) measure\footnote{Numbers assigned to
+	jointness measures are the same as those on
+	page~\pageref{sec:jointess_numbers}.}, compute forecasts for 3
 observations, print just basic output (verbosity set to 1) and
 switch off progress printing. The code would then be as follows:
 %
@@ -197,7 +199,7 @@ countries and 41 potential growth determinants for the period 1960 to
 		Applied Econometrics} online data archive
 	(\url{http://qed.econ.queensu.ca/jae/2001-v16.5/fernandez-ley-steel/}).
 	The reported chain (3000000 replications with 33\% burn-in draws)
-	took about 37.5 minutes of CPU time on a PC with AMD Phenom II X6
+	took about 37.5 minutes of CPU time on a PC with old AMD Phenom II X6
 	1100T CPU, 6.0~Gb of RAM running under Debian GNU/Linux. We used
 	\pkg{gretl}~2022b-git compiled by GCC~11.2.0. The seed for RNG was set
 	to 1000000. The dependent variable is the growth rate from
