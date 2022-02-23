@@ -27,21 +27,15 @@ function void BMA_new_X_matrix (string MODE,
             BMA_model_structure(&M)
         endif
         M.X_new_num = selifc(M.var_numbers2[2,], M.mod_struct_new)
-        M.X_new = selifc(M.big_mat_dem[,2:], M.mod_struct_new)
-        ### New Code ###
         M.X_new_num2 = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
-        M.X_new2 = M.big_cross_const[M.X_new_num2, M.X_new_num2]
-        ### End ###
+        M.X_new = M.big_cross_const[M.X_new_num2, M.X_new_num2]
         if M.h_predict > 0
-            M.X_new_predict = selifc(M.big_mat_dem_predict[,2:], M.mod_struct_new)
+            M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)
         endif
     else
-        ### New Code ###
         M.X_new_num2 = { 2 }
-        M.X_new2 = M.big_cross_const[M.X_new_num2, M.X_new_num2]
-        ### End ###
+        M.X_new = M.big_cross_const[M.X_new_num2, M.X_new_num2]
         M.X_new_num = {}
-        M.X_new = ones($nobs,1)
         if M.h_predict > 0
             M.X_new_predict = {}
         endif
