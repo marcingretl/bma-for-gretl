@@ -77,7 +77,7 @@ function void BMA_Print (bundle *M)
     endif
     # Jointess analysis
     if M.do_joint != 0
-        matrix jointess_measure = BMA_jointness_measure(&M)        
+        matrix jointess_measure = BMA_jointness_measure(&M)
         if M.do_joint == 4
             string jointess_measure_name = "Ley-Steel Measure (LS2)"
         elif M.do_joint == 2
@@ -182,10 +182,15 @@ function void BMA_Print (bundle *M)
                 printf "\n\n  %s\n", "None of the variables were significant."
                 printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
             else
-                BMA_matrix_precompute(&M_new)
-                BMA_ols(&M_new)
-                matrix coeffmat = M_new.bhat ~ sqrt(M_new.bvar)
-                coeffmat = coeffmat[2:M_new.k_new+1,]
+            /*
+               BMA_matrix_precompute(&M_new)
+               BMA_ols(&M_new)
+               matrix coeffmat = M_new.bhat ~ sqrt(M_new.bvar)
+               coeffmat = coeffmat[2:M_new.k_new+1,]
+                */
+                ### New Code ###
+                matrix coeffmat = M.mod_rank_estimates[i][2:,]
+                ### End ###
                 modprint coeffmat Xnames
             endif
         endloop

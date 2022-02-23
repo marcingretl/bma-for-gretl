@@ -26,6 +26,9 @@ function void BMA_matrix_precompute (bundle *M)
         matrix M.X_new = ones($nobs,1) ~ M.X_new
     endif
     matrix M.XtY = M.X_new'M.Y_mat
-    M.XtXinv = invpd(M.X_new'M.X_new)
+    #M.XtXinv = invpd(M.X_new'M.X_new)
+    ### New Code ###
+    M.XtXinv = invpd(M.X_new2)
+    ### End ###
     M.yMy = M.scaling_f[7] - qform(M.XtY',M.XtXinv)
 end function

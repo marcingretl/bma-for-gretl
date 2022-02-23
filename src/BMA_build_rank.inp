@@ -16,10 +16,10 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_build_rank (bundle *M)
-    /*
-    Function creates both analitycal and numerical model rankings.
-    Local variable:
-    nr - position (row) in rankings to be replaced
+/*
+   Function creates both analitycal and numerical model rankings.
+   Local variable:
+   nr - position (row) in rankings to be replaced
     */
     # Initial value
     scalar nr = 0
@@ -45,10 +45,18 @@ function void BMA_build_rank (bundle *M)
             M.mod_rank_prob[nr+1:M.l_rank,] = M.mod_rank_prob[nr:M.l_rank-1,] # analytical
             M.mod_nume_prob[nr+1:M.l_rank,] = M.mod_nume_prob[nr:M.l_rank-1,] # numerical
             M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
+            ### New Code ###
+            loop i=nr..M.l_rank-1 --quiet
+                M.mod_rank_estimates[i+1] = M.mod_rank_estimates[i]
+            endloop
+            ### End ###
         endif
         M.mod_rank_prob[nr] = M.lprob_old
         M.mod_nume_prob[nr] = 0
         M.mod_rank[nr,] = M.mod_struct
+        ### New Code ###
+        M.mod_rank_estimates[nr] = M.bhat ~ sqrt(M.bvar)
+        ### End ###
     endif
     # Now we compute numerical probs
     loop for j=1..M.l_rank --quiet
