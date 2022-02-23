@@ -49,7 +49,7 @@ function void BMA_main (bundle *M)
         if potential_var > 0
             M.mod_struct_new = M.mod_struct
             M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
-            # We create the new matrix of indenpendent variables and run some precomputes based on it
+            # We create the new matrix of independent variables and run some precomputes based on it
             M.k_new = sum(M.mod_struct_new)
             BMA_new_X_matrix("NORMAL", &M)
             BMA_matrix_precompute(&M)
