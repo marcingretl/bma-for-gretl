@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>2.2</version>
-<date>2022-02-22</date>
+<version>2.3-svn</version>
+<date>2022-02-27</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -199,45 +199,30 @@ if M.do_joint != 0
 endif
 # Printing models in ranking
 if M.verbosity == 2
+  matrix idx # indexes
+  strings Xnames_new
   # We copy the bundle
   bundle M_new = M
-  matrix k_new_mat = sumr(M_new.mod_rank)
-  loop for i=1..M_new.l_rank --quiet
+  #matrix k_new_mat = sumr(M_new.mod_rank)
+  loop i=1..M_new.l_rank --quiet
     if M_new.mod_nume_prob[i] == 0
       break
     endif
-    matrix M_new.X_new = {}
-    matrix M_new.XtY = {}
-    matrix M_new.XtXinv = {}
-    matrix M_new.bhat = {}
-    matrix M_new.bvar = {}
-    scalar M_new.yMy = 0
-    string Xnames = &quot;&quot;
-    list X = const
-    loop for j=1..M_new.k --quiet
-      if M_new.mod_rank[i,j] == 1
-        if rows(M_new.X_new) == 0
-          M_new.X_new = M_new.big_mat_dem[,j+1]
-        else
-          M_new.X_new = M_new.X_new ~ M_new.big_mat_dem[,j+1]
-        endif
-        Xnames += &quot;,&quot; ~ varname(M_new.var_numbers[j+1])
-      endif
-    endloop
     # Bayesian OLS for models in ranking
     printf &quot;\n&quot;
     print &quot;----------------------------------&quot;
     printf &quot;\nModel: %d, posterior probability: %f&quot;, i, M_new.Numerical_Likelihood[i]
-    M_new.k_new = k_new_mat[i]
+    M_new.k_new = sumr(M_new.mod_rank[i])
     if M_new.k_new == 0
       printf &quot;\n\n  %s\n&quot;, &quot;None of the variables were significant.&quot;
       printf &quot;  %s\n&quot;, &quot;Model includes only the intercept term which is simply the average of the dependent variable.&quot;
     else
-      BMA_matrix_precompute(&amp;M_new)
-      BMA_ols(&amp;M_new)
-      matrix coeffmat = M_new.bhat ~ sqrt(M_new.bvar)
-      coeffmat = coeffmat[2:M_new.k_new+1,]
-      modprint coeffmat Xnames
+      ### New Code ###
+      matrix coeffmat = M.mod_rank_estimates[i][2:,]
+      idx = selifc(M_new.var_numbers2_const[2,2:], M_new.mod_rank[i])
+      Xnames_new = M_new.all_names_sp_new[idx-2]
+      modprint coeffmat Xnames_new
+      ### End ###
     endif
   endloop
 endif
@@ -387,6 +372,9 @@ if MODE == &quot;SAVE&quot;
     M.ZtZinv_old = M.ZtZinv_new
     M.dj_old = M.dj_new
   endif
+  M.mod_struct_old = M.mod_struct
+  M.bhat_old = M.bhat
+  M.bvar_old = M.bvar
 elif MODE == &quot;RESTORE&quot;
   M.X_new_num = M.X_old_num
   M.k_new = M.k_old
@@ -395,6 +383,9 @@ elif MODE == &quot;RESTORE&quot;
     M.ZtZinv_new = M.ZtZinv_old
     M.dj_new = M.dj_old
   endif
+  M.mod_struct = M.mod_struct_old
+  M.bhat = M.bhat_old
+  M.bvar = M.bvar_old
 elif MODE == &quot;ACCEPT&quot;
   M.lprob_old = M.lprob_new
   M.k_old = M.k_new
@@ -544,10 +535,15 @@ loop for i=1..cols(M.StartModel) --quiet
   endloop
   #M.mod_struct_new[M.StartModel[i]-1] = 1 # old (and buggy) version: to get rid of
 endloop
+### New Code ###
+/*
+to get rid of
 # Filling in the mod_rank with starting structure
 loop for i=1..M.l_rank --quiet
   M.mod_rank[i,] = M.mod_struct_new
 endloop
+*/
+### End ###
 </code>
 </gretl-function>
 <gretl-function name="BMA_correlation_coeff" type="scalar" private="1">
@@ -597,9 +593,9 @@ nr - position (row) in rankings to be replaced
 scalar nr = 0
 # We look for the lowest probability and replace it by probability of the current model (if bigger)
 if M.lprob_old &gt; minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
-  loop for j=1..M.l_rank --quiet
-    if M.lprob_old == M.mod_rank_prob[j] &amp;&amp; sumc(M.mod_rank[j,]) == sumc(M.mod_struct)
-      if M.mod_rank[j,] == M.mod_struct
+  loop j=1..M.l_rank --quiet
+    if M.lprob_old == M.mod_rank_prob[j] &amp;&amp; sumr(M.mod_rank[j]) == sumr(M.mod_struct)
+      if M.mod_rank[j] == M.mod_struct #M.mod_rank[j,] == M.mod_struct
         break
       endif
     elif M.mod_rank_prob[j] == 0
@@ -616,15 +612,25 @@ if nr &gt; 0
   if nr &lt; M.l_rank
     M.mod_rank_prob[nr+1:M.l_rank,] = M.mod_rank_prob[nr:M.l_rank-1,] # analytical
     M.mod_nume_prob[nr+1:M.l_rank,] = M.mod_nume_prob[nr:M.l_rank-1,] # numerical
-    M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
+    ### New Code ###
+    #M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
+    loop for (i=M.l_rank; i&gt;nr; i--) --quiet
+      M.mod_rank_estimates[i] = M.mod_rank_estimates[i-1]
+      M.mod_rank[i] = M.mod_rank[i-1]
+    endloop
+    ### End ###
   endif
   M.mod_rank_prob[nr] = M.lprob_old
   M.mod_nume_prob[nr] = 0
-  M.mod_rank[nr,] = M.mod_struct
+  ### New Code ###
+  #M.mod_rank[nr,] = M.mod_struct
+  M.mod_rank_estimates[nr] = M.bhat ~ sqrt(M.bvar)
+  M.mod_rank[nr] = M.mod_struct
+  ### End ###
 endif
 # Now we compute numerical probs
-loop for j=1..M.l_rank --quiet
-  if M.mod_rank[j,] == M.mod_struct
+loop j=1..M.l_rank --quiet
+  if M.mod_rank[j] == M.mod_struct
     M.mod_nume_prob[j] += 1
     break
   endif
@@ -788,12 +794,11 @@ Function computes some linear algebra stuff for further computation.
 */
 if M.k_new &gt; 0
   if M.h_predict &gt; 0
-    M.ZtZinv_new = invpd(M.X_new'M.X_new)
+    M.ZtZinv_new = invpd(M.X_new[2:,2:])
   endif
-  matrix M.X_new = ones($nobs,1) ~ M.X_new
 endif
-matrix M.XtY = M.X_new'M.Y_mat
-M.XtXinv = invpd(M.X_new'M.X_new)
+matrix M.XtY = M.XtY_cross_const[M.X_new_num2]
+M.XtXinv = invpd(M.X_new)
 M.yMy = M.scaling_f[7] - qform(M.XtY',M.XtXinv)
 </code>
 </gretl-function>
@@ -856,21 +861,24 @@ MODE - mode in which function operates: START (for starting model) or NORMAL
 */
 # If we have at least one variable we create new X matrix, otherwise it includes &quot;Ones&quot; only.
 if M.k_new &gt; 0
-  if MODE == &quot;START&quot; # Note: this hapens only ones: for the starting model!!!
+  if MODE == &quot;START&quot; # Note: this happens only ones: for the starting model!!!
     BMA_model_structure(&amp;M)
   endif
   M.X_new_num = selifc(M.var_numbers2[2,], M.mod_struct_new)
-  M.X_new = selifc(M.big_mat_dem[,2:], M.mod_struct_new)
+  M.X_new_num2 = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
+  #M.X_new = M.big_cross_const[M.X_new_num2, M.X_new_num2]
   if M.h_predict &gt; 0
-    M.X_new_predict = selifc(M.big_mat_dem_predict[,2:], M.mod_struct_new)
+    M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)
   endif
 else
   M.X_new_num = {}
-  M.X_new = ones($nobs,1)
+  M.X_new_num2 = { 2 }
+  #M.X_new = M.big_cross_const[M.X_new_num2, M.X_new_num2]
   if M.h_predict &gt; 0
     M.X_new_predict = {}
   endif
 endif
+M.X_new = M.big_cross_const[M.X_new_num2, M.X_new_num2]
 </code>
 </gretl-function>
 <gretl-function name="BMA_forecast" type="void" private="1">
@@ -1044,7 +1052,7 @@ M.mod_struct = M.mod_struct_new
 # Part 2: Markov Chain Monte Carlo
 printf &quot;\nOverall progress: &quot;
 flush
-loop for rep=1..M.Nrep --quiet
+loop rep=1..M.Nrep --quiet
   # Saving data for the old model
   BMA_model_switch(&quot;SAVE&quot;, &amp;M)
   # Now we draw the number of candidate variable
@@ -1053,13 +1061,18 @@ loop for rep=1..M.Nrep --quiet
   if potential_var &gt; 0
     M.mod_struct_new = M.mod_struct
     M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
-    # We create the new matrix of indenpendent variables and run some precomputes based on it
+    # We create the new matrix of independent variables and run some precomputes based on it
     M.k_new = sum(M.mod_struct_new)
     BMA_new_X_matrix(&quot;NORMAL&quot;, &amp;M)
     BMA_matrix_precompute(&amp;M)
     BMA_lprob(&amp;M)
     # Now we decide if to accept the new model
     BMA_accep_model(&amp;M)
+    ### New Code ###
+    M[&quot;new&quot;] = 1
+  else
+    M[&quot;new&quot;] = 0
+    ### End ###
   endif
   # Essentials of MCMC: building of rankings, averaging the results and jointness stuff
   # Now we construct rankings
@@ -1106,9 +1119,19 @@ This function creates BUNDLE holding all BMA information
 Local variables:
 tmp_str - general purpose string
 */
+printf &quot;XXXXXXXXXXXXXXXXXXXXXX\n&quot;
+printf &quot;# TODO: change type of M.mod_rank_prob and M.mod_rank_prob to arrays.\n&quot;
+printf &quot;# TODO: clean up entire code.\n&quot;
+printf &quot;# TODO: merge X_new_num and X_new_num2.\n&quot;
+printf &quot;# TODO: change predict_obs_names to be an array.\n&quot;
+printf &quot;# TODO: change variables names to be an array [partially done].\n&quot;
+printf &quot;XXXXXXXXXXXXXXXXXXXXXX\n&quot;
 bundle M
 list X_list = X_list_m
 list big_list = Y X_list
+### New Code ###
+list big_list_const = Y const X_list
+### End ###
 string tmp_str = &quot;&quot;
 #
 # Basic parsing and checking
@@ -1134,16 +1157,23 @@ matrix M.StartModel = {} # list with variables selected in starting model
 matrix M.X_list = X_list # X_list
 scalar M.k = nelem(X_list) # total number of indenpendent variables
 scalar M.Nburn = round(burn/100*Nrep) # number of burn-in draws
-matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in dataset (not in the procedure)
+matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in the dataset (not in the procedure)
 matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
-matrix M.big_mat = { big_list } # matrix M.of all variables (including Y)
-matrix M.big_mat_dem = stdize(M.big_mat, -1) # matrix M.of all demeaned variables (including Y)
+matrix M.big_mat = { big_list } # matrix of all variables (including Y)
+matrix M.big_mat_dem = stdize(M.big_mat, -1) # matrix of all demeaned variables (including Y)
+### New Code ###
+matrix M.var_numbers_const = big_list_const # vector containing numbers of all variables (including Y) in the dataset (not in the procedure)
+matrix M.var_numbers2_const = transp(msortby(transp(M.var_numbers_const[2:2+M.k] | seq(2,2+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
+matrix M.big_mat_const = { big_list_const } # matrix of all variables (including Y)
+matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) # matrix of all demeaned variables (including Y)
+M.big_mat_dem_const[,2] = 1 # We need substitude bach zeros to ones (the former because of stdize() function)
+### End ###
 # In case of &quot;out-of-sample&quot; prediction
 if h_predict &gt; 0
   scalar M.last_obs = $nobs-h_predict # number of &quot;out-of-sample&quot; forecasts
-  matrix M.big_mat_predict = M.big_mat[M.last_obs+1:$nobs,] # &quot;out-of-sample&quot; matrix M.of all variables (including Y)
-  matrix M.big_mat_dem_predict = M.big_mat_dem[M.last_obs+1:$nobs,] # &quot;out-of-sample&quot; matrix M.of all demeaned variables (including Y)
-  matrix M.Y_mat_predict = M.big_mat_predict[,1] # &quot;out-of-sample&quot; matrix M.of the dependent variable
+  matrix M.big_mat_predict = M.big_mat_const[M.last_obs+1:$nobs,] # &quot;out-of-sample&quot; matrix of all variables (including Y)
+  matrix M.big_mat_dem_predict = M.big_mat_dem_const[M.last_obs+1:$nobs,] # &quot;out-of-sample&quot; matrix of all demeaned variables (including Y)
+  matrix M.Y_mat_predict = M.big_mat_predict[,1] # &quot;out-of-sample&quot; matrix of the dependent variable
   matrix M.Yhat = zeros(h_predict,1) # vector of Y predictions in current draw
   matrix M.precision = zeros(h_predict,1) # prediction precision
   matrix M.Yhat_avg = zeros(h_predict,1) # vector of Y predictions - average
@@ -1156,6 +1186,10 @@ if h_predict &gt; 0
   smpl 1 M.last_obs # setting sample
   matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
   matrix M.big_mat_dem = M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
+  ### New Code ###
+  matrix M.big_mat_const = M.big_mat_const[1:M.last_obs,] # big_mat for limited sample
+  matrix M.big_mat_dem_const = M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
+  ### End ###
 else
   matrix M.big_mat_dem_predict = {}
   matrix M.Yhat_avg = {}
@@ -1166,34 +1200,49 @@ endif
 # New model
 matrix M.ZtZinv_new = {} # inverse of Z'Z (X's without constant term)
 scalar M.k_new = 0 # number of variables in the current (new) model
-scalar M.lprob_new = 0 # scalar M.with natural logarithm of marginal density of the new model
+scalar M.lprob_new = 0 # scalar with natural logarithm of marginal density of the new model
 matrix M.X_new_num = {} # vector containing numbers of variables in the new model
-matrix M.X_new = {} # the X matrix M.for the current (new) model (demeaned)
+matrix M.X_new = {} # the X matrix for the current (new) model (demeaned)
 # Old model
 matrix M.ZtZinv_old = {} # old inverse of Z'Z (X's without constant term)
 scalar M.k_old = 0 # number of variables in the previous (old) model
-scalar M.lprob_old = 0 # scalar M.with natural logarithm of marginal density of the old model
+scalar M.lprob_old = 0 # scalar with natural logarithm of marginal density of the old model
 matrix M.X_old_num = {} # vector containing numbers of variables in the old model
 scalar M.dj_new = 0 # scalar M.needed for prediction precision computation
 scalar M.dj_old = 0 # scalar M.needed for prediction precision computation
-matrix M.X_new_predict = {} # &quot;out-of-sample&quot; the X matrix M.for the current (new) model (demeaned)
-matrix M.X_old_predict = {} # &quot;out-of-sample&quot; the X matrix M.for the previous (old) model (demeaned)
-matrix M.Y_mat = M.big_mat[,1] # matrix M.of the dependent variable
-scalar M.y_dem_sq = M.big_mat_dem[,1]'M.big_mat_dem[,1] # sum of squares of the demeaned Y
+matrix M.X_new_predict = {} # &quot;out-of-sample&quot; the X matrix for the current (new) model (demeaned)
+matrix M.X_old_predict = {} # &quot;out-of-sample&quot; the X matrix for the previous (old) model (demeaned)
+matrix M.Y_mat = M.big_mat[,1] # matrix of the dependent variable
+### New Code ###
+matrix M.big_cross = M.big_mat_dem'M.big_mat_dem
+matrix M.big_cross_const = M.big_mat_dem_const'M.big_mat_dem_const
+scalar M.y_dem_sq = M.big_cross_const[1,1] # sum of squares of the demeaned Y
+matrix M.XtY_cross_const = M.big_mat_dem_const'M.Y_mat
+#eval M.big_cross_const
+#eval M.XtY_cross_const
+### End ###
 scalar M.y_mean = meanc(M.Y_mat) # mean of the Y
 scalar M.mod_size = 0 # size of models in MCMC (sum)
 scalar M.yMy = 0 # scalar M.for P_y computation
 matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
 matrix M.mod_struct = zeros(1,M.k) # 0-1 vector containing the structure of the current model
 matrix M.mod_struct_new = zeros(1,M.k) # 0-1 vector containing the structure of the current model
-matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix M.containing structure of models in ranking
+#matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix containing structure of models in ranking
 matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
 matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
+### New Code ###
+matrices M.mod_rank_estimates = array(l_rank) # estimates of models in ranking
+matrices M.mod_rank = array(l_rank) # estimates of models in ranking
+strings M.all_names_sp_new = varnames(X_list)
+matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
+matrix M.bhat_old = {} # column vector containing the estimated coefficients for the old model
+matrix M.bvar_old = {} # column vector containing the variances of the coefficients for the old model
+### End ###
 matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
 string M.all_names_sp = strsub(varname(X_list), &quot;,&quot;, &quot; &quot;) # string with names of all independent variables
 string M.Y_name = Y_name # string with name of denpendent variable
 if do_joint != 0
-  matrix M.jointness_m = zeros(M.k,M.k) # square matrix M.containing counts of coexistence (jointness) of every pair of indenpendent variables
+  matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
 else
   matrix M.jointness_m = {}
 endif

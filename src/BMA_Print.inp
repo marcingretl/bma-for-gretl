@@ -148,50 +148,30 @@ function void BMA_Print (bundle *M)
     endif
     # Printing models in ranking
     if M.verbosity == 2
+        matrix idx # indexes
+        strings Xnames_new
         # We copy the bundle
         bundle M_new = M
-        matrix k_new_mat = sumr(M_new.mod_rank)
-        loop for i=1..M_new.l_rank --quiet
+        #matrix k_new_mat = sumr(M_new.mod_rank)
+        loop i=1..M_new.l_rank --quiet
             if M_new.mod_nume_prob[i] == 0
                 break
             endif
-            matrix M_new.X_new = {}
-            matrix M_new.XtY = {}
-            matrix M_new.XtXinv = {}
-            matrix M_new.bhat = {}
-            matrix M_new.bvar = {}
-            scalar M_new.yMy = 0
-            string Xnames = ""
-            list X = const
-            loop for j=1..M_new.k --quiet
-                if M_new.mod_rank[i,j] == 1
-                    if rows(M_new.X_new) == 0
-                        M_new.X_new = M_new.big_mat_dem[,j+1]
-                    else
-                        M_new.X_new = M_new.X_new ~ M_new.big_mat_dem[,j+1]
-                    endif
-                    Xnames += "," ~ varname(M_new.var_numbers[j+1])
-                endif
-            endloop
             # Bayesian OLS for models in ranking
             printf "\n"
             print "----------------------------------"
             printf "\nModel: %d, posterior probability: %f", i, M_new.Numerical_Likelihood[i]
-            M_new.k_new = k_new_mat[i]
+            M_new.k_new = sumr(M_new.mod_rank[i])
             if M_new.k_new == 0
                 printf "\n\n  %s\n", "None of the variables were significant."
                 printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
             else
-            /*
-               BMA_matrix_precompute(&M_new)
-               BMA_ols(&M_new)
-               matrix coeffmat = M_new.bhat ~ sqrt(M_new.bvar)
-               coeffmat = coeffmat[2:M_new.k_new+1,]
-                */
                 ### New Code ###
                 matrix coeffmat = M.mod_rank_estimates[i][2:,]
+                idx = selifc(M_new.var_numbers2_const[2,2:], M_new.mod_rank[i])
+                Xnames_new = M_new.all_names_sp_new[idx-2]
+                modprint coeffmat Xnames_new
                 ### End ###
-                modprint coeffmat Xnames
             endif
         endloop
     endif

@@ -18,8 +18,8 @@
 function void BMA_model_switch (string MODE,
                                 bundle *M)
     /*
-    This is general purpose model switching function which
-    save and restore old model or save new model
+       This is general purpose model switching function which
+       save and restore old model or save new model
     */
     if MODE == "SAVE"
         M.X_old_num = M.X_new_num
@@ -28,6 +28,9 @@ function void BMA_model_switch (string MODE,
             M.ZtZinv_old = M.ZtZinv_new
             M.dj_old = M.dj_new
         endif
+        M.mod_struct_old = M.mod_struct
+        M.bhat_old = M.bhat
+        M.bvar_old = M.bvar        
     elif MODE == "RESTORE"
         M.X_new_num = M.X_old_num
         M.k_new = M.k_old
@@ -36,6 +39,9 @@ function void BMA_model_switch (string MODE,
             M.ZtZinv_new = M.ZtZinv_old
             M.dj_new = M.dj_old
         endif
+        M.mod_struct = M.mod_struct_old
+        M.bhat = M.bhat_old
+        M.bvar = M.bvar_old
     elif MODE == "ACCEPT"
         M.lprob_old = M.lprob_new
         M.k_old = M.k_new

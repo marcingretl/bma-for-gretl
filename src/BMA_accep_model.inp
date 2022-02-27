@@ -16,8 +16,8 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_accep_model (bundle *M)
-    /*
-    Function computes "probability" of the new model and checks if it is bigger than some random value drawn form U(0,1).
+/*
+   Function computes "probability" of the new model and checks if it is bigger than some random value drawn form U(0,1).
     */
     if BMA_accept_prob(&M) > log(randgen1(u,0,1))
         # We accept new model

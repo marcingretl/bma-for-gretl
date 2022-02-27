@@ -35,12 +35,14 @@ function bundle BMA_setup (const series Y,
        #
        Local variables:
        tmp_str - general purpose string
-       */
-       printf "XXXXXXXXXXXXXXXXXXXXXX\n"
-       printf "# TODO: change type of M.mod_rank_prob and M.mod_rank_prob to arrays.\n"
-       printf "# TODO: clean up BMA_Print() [best models printing].\n"
-       printf "# TODO: combine X_new_num and X_new_num2.\n"
-       printf "XXXXXXXXXXXXXXXXXXXXXX\n"
+    */
+    printf "XXXXXXXXXXXXXXXXXXXXXX\n"
+    printf "# TODO: change type of M.mod_rank_prob and M.mod_rank_prob to arrays.\n"
+    printf "# TODO: clean up entire code.\n"
+    printf "# TODO: merge X_new_num and X_new_num2.\n"
+    printf "# TODO: change predict_obs_names to be an array.\n"
+    printf "# TODO: change variables names to be an array [partially done].\n"
+    printf "XXXXXXXXXXXXXXXXXXXXXX\n"
     bundle M
     list X_list = X_list_m
     list big_list = Y X_list
@@ -142,11 +144,16 @@ function bundle BMA_setup (const series Y,
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     matrix M.mod_struct = zeros(1,M.k) # 0-1 vector containing the structure of the current model
     matrix M.mod_struct_new = zeros(1,M.k) # 0-1 vector containing the structure of the current model
-    matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix containing structure of models in ranking
+    #matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix containing structure of models in ranking
     matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
     matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
     ### New Code ###
     matrices M.mod_rank_estimates = array(l_rank) # estimates of models in ranking
+    matrices M.mod_rank = array(l_rank) # estimates of models in ranking
+    strings M.all_names_sp_new = varnames(X_list)
+    matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
+    matrix M.bhat_old = {} # column vector containing the estimated coefficients for the old model
+    matrix M.bvar_old = {} # column vector containing the variances of the coefficients for the old model
     ### End ###
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables

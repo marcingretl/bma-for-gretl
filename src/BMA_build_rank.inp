@@ -25,9 +25,9 @@ function void BMA_build_rank (bundle *M)
     scalar nr = 0
     # We look for the lowest probability and replace it by probability of the current model (if bigger)
     if M.lprob_old > minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
-        loop for j=1..M.l_rank --quiet
-            if M.lprob_old == M.mod_rank_prob[j] && sumc(M.mod_rank[j,]) == sumc(M.mod_struct)
-                if M.mod_rank[j,] == M.mod_struct
+        loop j=1..M.l_rank --quiet
+            if M.lprob_old == M.mod_rank_prob[j] && sumr(M.mod_rank[j]) == sumr(M.mod_struct)
+                if M.mod_rank[j] == M.mod_struct #M.mod_rank[j,] == M.mod_struct
                     break
                 endif
             elif M.mod_rank_prob[j] == 0
@@ -44,23 +44,25 @@ function void BMA_build_rank (bundle *M)
         if nr < M.l_rank
             M.mod_rank_prob[nr+1:M.l_rank,] = M.mod_rank_prob[nr:M.l_rank-1,] # analytical
             M.mod_nume_prob[nr+1:M.l_rank,] = M.mod_nume_prob[nr:M.l_rank-1,] # numerical
-            M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
             ### New Code ###
-            loop i=nr..M.l_rank-1 --quiet
-                M.mod_rank_estimates[i+1] = M.mod_rank_estimates[i]
+            #M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
+            loop for (i=M.l_rank; i>nr; i--) --quiet
+                M.mod_rank_estimates[i] = M.mod_rank_estimates[i-1]
+                M.mod_rank[i] = M.mod_rank[i-1]
             endloop
             ### End ###
         endif
         M.mod_rank_prob[nr] = M.lprob_old
         M.mod_nume_prob[nr] = 0
-        M.mod_rank[nr,] = M.mod_struct
         ### New Code ###
+        #M.mod_rank[nr,] = M.mod_struct
         M.mod_rank_estimates[nr] = M.bhat ~ sqrt(M.bvar)
+        M.mod_rank[nr] = M.mod_struct        
         ### End ###
     endif
     # Now we compute numerical probs
-    loop for j=1..M.l_rank --quiet
-        if M.mod_rank[j,] == M.mod_struct
+    loop j=1..M.l_rank --quiet
+        if M.mod_rank[j] == M.mod_struct
             M.mod_nume_prob[j] += 1
             break
         endif
