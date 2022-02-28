@@ -150,6 +150,7 @@ function bundle BMA_setup (const series Y,
     ### New Code ###
     matrices M.mod_rank_estimates = array(l_rank) # estimates of models in ranking
     matrices M.mod_rank = array(l_rank) # estimates of models in ranking
+    matrix M.mod_rank_dect = zeros(l_rank) # Decimal representation of models in ranking
     strings M.all_names_sp_new = varnames(X_list)
     matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
     matrix M.bhat_old = {} # column vector containing the estimated coefficients for the old model

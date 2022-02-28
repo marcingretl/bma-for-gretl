@@ -1,0 +1,38 @@
+/*
+   BMA -- package implementing Bayesian Model Averaging for gretl
+   Copyright (C) 2012 Marcin Błażejowski and Jacek Kwiatkowski
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+function matrix BMA_dectobitconvert (const scalar num,
+                                     const scalar n)
+    /*
+    This code was written by Jack.
+    Function converts decimal digit into binary digit.
+    #
+    num - decimal digit to be converted
+    n - lenght of binary vector
+    Returns: binary vector holding model structure
+    */
+    x = num
+    ret = zeros(n, 1)
+    i = 1
+    loop while x>0 --quiet
+        y = x % 2
+        ret[i++] = 	y
+        x -= y
+        x /= 2
+    endloop
+    return transp(mreverse(ret))
+end function

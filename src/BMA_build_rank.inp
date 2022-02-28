@@ -23,17 +23,17 @@ function void BMA_build_rank (bundle *M)
     */
     # Initial value
     scalar nr = 0
+    scalar dect_value = BMA_bintodecconvert(M.mod_struct, M.k)
     # We look for the lowest probability and replace it by probability of the current model (if bigger)
     if M.lprob_old > minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
         loop j=1..M.l_rank --quiet
-            if M.lprob_old == M.mod_rank_prob[j] && sumr(M.mod_rank[j]) == sumr(M.mod_struct)
-                if M.mod_rank[j] == M.mod_struct #M.mod_rank[j,] == M.mod_struct
-                    break
-                endif
+            if M.mod_rank_prob[j] == M.lprob_old && M.mod_rank_dect[j] == dect_value
+            #if (M.lprob_old == M.mod_rank_prob[j] && sumr(M.mod_rank[j]) == sumr(M.mod_struct)) && (M.mod_rank[j] == M.mod_struct) #M.mod_rank[j,] == M.mod_struct
+                break
             elif M.mod_rank_prob[j] == 0
                 nr = j
                 break
-            elif M.lprob_old > M.mod_rank_prob[j]
+            elif M.mod_rank_prob[j] < M.lprob_old
                 nr = j
                 break
             endif
@@ -46,6 +46,7 @@ function void BMA_build_rank (bundle *M)
             M.mod_nume_prob[nr+1:M.l_rank,] = M.mod_nume_prob[nr:M.l_rank-1,] # numerical
             ### New Code ###
             #M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
+            M.mod_rank_dect[nr+1:M.l_rank] = M.mod_rank_dect[nr:M.l_rank-1]
             loop for (i=M.l_rank; i>nr; i--) --quiet
                 M.mod_rank_estimates[i] = M.mod_rank_estimates[i-1]
                 M.mod_rank[i] = M.mod_rank[i-1]
@@ -56,13 +57,14 @@ function void BMA_build_rank (bundle *M)
         M.mod_nume_prob[nr] = 0
         ### New Code ###
         #M.mod_rank[nr,] = M.mod_struct
+        M.mod_rank[nr] = M.mod_struct
         M.mod_rank_estimates[nr] = M.bhat ~ sqrt(M.bvar)
-        M.mod_rank[nr] = M.mod_struct        
+        M.mod_rank_dect[nr] = dect_value
         ### End ###
     endif
     # Now we compute numerical probs
     loop j=1..M.l_rank --quiet
-        if M.mod_rank[j] == M.mod_struct
+        if M.mod_rank_dect[j] == dect_value #M.mod_rank[j] == M.mod_struct
             M.mod_nume_prob[j] += 1
             break
         endif
