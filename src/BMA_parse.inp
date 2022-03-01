@@ -69,5 +69,6 @@ function string BMA_parse (bundle *M,
         return err
     endif
     matrix M.X_list = X_list
+
     return err
 end function

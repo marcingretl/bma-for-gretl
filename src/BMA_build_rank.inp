@@ -23,17 +23,13 @@ function void BMA_build_rank (bundle *M)
     */
     # Initial value
     scalar nr = 0
-    scalar dect_value = BMA_bintodecconvert(M.mod_struct, M.k)
+    scalar dec_value = BMA_bintodecconvert(M.mod_struct, M.k)
     # We look for the lowest probability and replace it by probability of the current model (if bigger)
     if M.lprob_old > minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
         loop j=1..M.l_rank --quiet
-            if M.mod_rank_prob[j] == M.lprob_old && M.mod_rank_dect[j] == dect_value
-            #if (M.lprob_old == M.mod_rank_prob[j] && sumr(M.mod_rank[j]) == sumr(M.mod_struct)) && (M.mod_rank[j] == M.mod_struct) #M.mod_rank[j,] == M.mod_struct
+            if M.mod_rank_prob[j] == M.lprob_old && M.mod_rank_dec[j] == dec_value
                 break
-            elif M.mod_rank_prob[j] == 0
-                nr = j
-                break
-            elif M.mod_rank_prob[j] < M.lprob_old
+            elif M.mod_rank_prob[j] == 0 || M.mod_rank_prob[j] < M.lprob_old
                 nr = j
                 break
             endif
@@ -42,29 +38,23 @@ function void BMA_build_rank (bundle *M)
     # Now we replace analytical probability and model structure by new one (taken from current draw)
     if nr > 0
         if nr < M.l_rank
-            M.mod_rank_prob[nr+1:M.l_rank,] = M.mod_rank_prob[nr:M.l_rank-1,] # analytical
-            M.mod_nume_prob[nr+1:M.l_rank,] = M.mod_nume_prob[nr:M.l_rank-1,] # numerical
-            ### New Code ###
-            #M.mod_rank[nr+1:M.l_rank,] = M.mod_rank[nr:M.l_rank-1,] # models in ranking (structure)
-            M.mod_rank_dect[nr+1:M.l_rank] = M.mod_rank_dect[nr:M.l_rank-1]
+            M.mod_rank_prob[nr+1:M.l_rank] = M.mod_rank_prob[nr:M.l_rank-1] # analytical
+            M.mod_nume_prob[nr+1:M.l_rank] = M.mod_nume_prob[nr:M.l_rank-1] # numerical
+            M.mod_rank_dec[nr+1:M.l_rank] = M.mod_rank_dec[nr:M.l_rank-1]
             loop for (i=M.l_rank; i>nr; i--) --quiet
                 M.mod_rank_estimates[i] = M.mod_rank_estimates[i-1]
                 M.mod_rank[i] = M.mod_rank[i-1]
             endloop
-            ### End ###
         endif
         M.mod_rank_prob[nr] = M.lprob_old
         M.mod_nume_prob[nr] = 0
-        ### New Code ###
-        #M.mod_rank[nr,] = M.mod_struct
         M.mod_rank[nr] = M.mod_struct
         M.mod_rank_estimates[nr] = M.bhat ~ sqrt(M.bvar)
-        M.mod_rank_dect[nr] = dect_value
-        ### End ###
+        M.mod_rank_dec[nr] = dec_value
     endif
     # Now we compute numerical probs
     loop j=1..M.l_rank --quiet
-        if M.mod_rank_dect[j] == dect_value #M.mod_rank[j] == M.mod_struct
+        if M.mod_rank[j] == M.mod_struct #M.mod_rank_dec[j] == dec_value
             M.mod_nume_prob[j] += 1
             break
         endif

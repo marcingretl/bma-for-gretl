@@ -43,5 +43,6 @@ function scalar BMA_correlation_coeff (bundle *M)
     tmp1 -= maxc(tmp1)
     tmp1 = exp(tmp1) ./ sumc(exp(tmp1))
     tmp2 = tmp2 ./ sumc(tmp2)
+    
     return corr(tmp1,tmp2)
 end function

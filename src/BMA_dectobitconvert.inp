@@ -34,5 +34,6 @@ function matrix BMA_dectobitconvert (const scalar num,
         x -= y
         x /= 2
     endloop
+    
     return transp(mreverse(ret))
 end function

@@ -40,5 +40,6 @@ function scalar BMA_gprior (scalar k,
     elif type == 5 # Root of g-UIP
         gprior = sqrt(1/$nobs)
     endif
+    
     return gprior
 end function

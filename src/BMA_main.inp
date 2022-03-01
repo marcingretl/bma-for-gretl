@@ -56,11 +56,6 @@ function void BMA_main (bundle *M)
             BMA_lprob(&M)
             # Now we decide if to accept the new model
             BMA_accep_model(&M)
-            ### New Code ###
-            M["new"] = 1
-        else
-            M["new"] = 0
-            ### End ###
         endif
         # Essentials of MCMC: building of rankings, averaging the results and jointness stuff
         # Now we construct rankings

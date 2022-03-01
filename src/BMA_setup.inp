@@ -37,11 +37,11 @@ function bundle BMA_setup (const series Y,
        tmp_str - general purpose string
     */
     printf "XXXXXXXXXXXXXXXXXXXXXX\n"
-    printf "# TODO: change type of M.mod_rank_prob and M.mod_rank_prob to arrays.\n"
-    printf "# TODO: clean up entire code.\n"
     printf "# TODO: merge X_new_num and X_new_num2.\n"
     printf "# TODO: change predict_obs_names to be an array.\n"
     printf "# TODO: change variables names to be an array [partially done].\n"
+    printf "# TODO: change variables names handling in jointness_pairs.\n"
+    printf "# TODO: change in summary (delete unnecessary items).\n"
     printf "XXXXXXXXXXXXXXXXXXXXXX\n"
     bundle M
     list X_list = X_list_m
@@ -78,13 +78,11 @@ function bundle BMA_setup (const series Y,
     matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
     matrix M.big_mat = { big_list } # matrix of all variables (including Y)
     matrix M.big_mat_dem = stdize(M.big_mat, -1) # matrix of all demeaned variables (including Y)
-    ### New Code ###
     matrix M.var_numbers_const = big_list_const # vector containing numbers of all variables (including Y) in the dataset (not in the procedure)
     matrix M.var_numbers2_const = transp(msortby(transp(M.var_numbers_const[2:2+M.k] | seq(2,2+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
     matrix M.big_mat_const = { big_list_const } # matrix of all variables (including Y)
     matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) # matrix of all demeaned variables (including Y)
     M.big_mat_dem_const[,2] = 1 # We need substitude bach zeros to ones (the former because of stdize() function)
-    ### End ###
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
@@ -103,10 +101,8 @@ function bundle BMA_setup (const series Y,
         smpl 1 M.last_obs # setting sample
         matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
         matrix M.big_mat_dem = M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
-        ### New Code ###
         matrix M.big_mat_const = M.big_mat_const[1:M.last_obs,] # big_mat for limited sample
         matrix M.big_mat_dem_const = M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
-        ### End ###
     else
         matrix M.big_mat_dem_predict = {}
         matrix M.Yhat_avg = {}
@@ -130,32 +126,25 @@ function bundle BMA_setup (const series Y,
     matrix M.X_new_predict = {} # "out-of-sample" the X matrix for the current (new) model (demeaned)
     matrix M.X_old_predict = {} # "out-of-sample" the X matrix for the previous (old) model (demeaned)
     matrix M.Y_mat = M.big_mat[,1] # matrix of the dependent variable
-    ### New Code ###
     matrix M.big_cross = M.big_mat_dem'M.big_mat_dem
     matrix M.big_cross_const = M.big_mat_dem_const'M.big_mat_dem_const
     scalar M.y_dem_sq = M.big_cross_const[1,1] # sum of squares of the demeaned Y
     matrix M.XtY_cross_const = M.big_mat_dem_const'M.Y_mat
-    #eval M.big_cross_const
-    #eval M.XtY_cross_const
-    ### End ###
     scalar M.y_mean = meanc(M.Y_mat) # mean of the Y
     scalar M.mod_size = 0 # size of models in MCMC (sum)
     scalar M.yMy = 0 # scalar M.for P_y computation
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     matrix M.mod_struct = zeros(1,M.k) # 0-1 vector containing the structure of the current model
     matrix M.mod_struct_new = zeros(1,M.k) # 0-1 vector containing the structure of the current model
-    #matrix M.mod_rank = -1 * ones(l_rank,M.k) # 0-1 matrix containing structure of models in ranking
     matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
     matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
-    ### New Code ###
     matrices M.mod_rank_estimates = array(l_rank) # estimates of models in ranking
     matrices M.mod_rank = array(l_rank) # estimates of models in ranking
-    matrix M.mod_rank_dect = zeros(l_rank) # Decimal representation of models in ranking
+    matrix M.mod_rank_dec = zeros(l_rank) # Decimal representation of models in ranking
     strings M.all_names_sp_new = varnames(X_list)
     matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
     matrix M.bhat_old = {} # column vector containing the estimated coefficients for the old model
     matrix M.bvar_old = {} # column vector containing the variances of the coefficients for the old model
-    ### End ###
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
     string M.Y_name = Y_name # string with name of denpendent variable
@@ -213,5 +202,6 @@ function bundle BMA_setup (const series Y,
     if verbosity == 1
         set warnings off
     endif
+
     return M
 end function

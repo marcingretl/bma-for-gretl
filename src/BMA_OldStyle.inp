@@ -38,5 +38,6 @@ function bundle BMA_OldStyle (list big_list "List of all variables (Y must be th
     else
         funcerr "BMA needs at least one intenpendent variable."
     endif
+    
     return OldStyle
 end function

@@ -27,6 +27,7 @@ function bundle BMA (series Y "Dependent variable",
     series @Y_name = Y
     scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress
     string err
+
     if !exists(Options)
         bundle Options
     endif
@@ -39,12 +40,14 @@ function bundle BMA (series Y "Dependent variable",
         return MODEL
     endif
     Norig = $nobs
+    
     smpl Y X_list --no-missing --quiet
     if Norig != $nobs
         printf "\nThere are missing values in dataset!"
     else
         Norig = NA
     endif
+
     err = BMA_parse(&MODEL, Y, argname(Y), X_list, av_model_size, l_rank)
     if strlen(err) != 0
         funcerr "@err !!!"
