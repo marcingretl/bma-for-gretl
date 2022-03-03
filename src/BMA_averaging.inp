@@ -24,7 +24,7 @@ function void BMA_averaging (bundle *M)
     M.var_prob += M.mod_struct
     # For coeffs
     if M.k_new > 0
-        matrix indexes = M.X_new_num - 1
+        matrix indexes = M.X_new_num[2:] - 2
         M.bhat_avg[indexes] += transp(M.bhat[2:,])
         M.bvar_avg[indexes] += transp(M.bvar[2:,] + M.bhat[2:,] .^ 2)
     endif

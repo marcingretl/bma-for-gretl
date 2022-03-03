@@ -92,5 +92,25 @@ function void BMA_summary (bundle *M)
         delete M.Yhat_avg
         delete M.Yhat_var_avg
         delete M.predict_obs_names
+        delete M.Yhat
     endif
+    ### New code ###
+    delete M.acc_type
+    delete M.g_type
+    delete M.bhat_old
+    delete M.bvar_old
+    delete M.big_cross
+    delete M.big_cross_const
+    delete M.big_mat_dem
+    delete M.big_mat_dem_const
+    delete M.big_mat_const    
+    delete M.mod_rank_dec
+    delete M.mod_struct_old
+    delete M.scaling_f
+    delete M.var_numbers_const
+    delete M.X_list
+    delete M.XtY_cross_const
+    delete M.Y_mat    
+    delete M.all_names_sp
+    ### End ###
 end function

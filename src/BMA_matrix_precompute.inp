@@ -24,7 +24,7 @@ function void BMA_matrix_precompute (bundle *M)
             M.ZtZinv_new = invpd(M.X_new[2:,2:])
         endif
     endif
-    matrix M.XtY = M.XtY_cross_const[M.X_new_num2]
+    matrix M.XtY = M.XtY_cross_const[M.X_new_num]
     M.XtXinv = invpd(M.X_new)
     M.yMy = M.scaling_f[7] - qform(M.XtY',M.XtXinv)
 end function

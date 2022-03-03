@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>2.3-svn</version>
-<date>2022-03-01</date>
+<date>2022-03-02</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -359,25 +359,25 @@ This is general purpose model switching function which
 save and restore old model or save new model
 */
 if MODE == &quot;SAVE&quot;
-  M.X_old_num = M.X_new_num
   if M.h_predict &gt; 0
     M.X_old_predict = M.X_new_predict
     M.ZtZinv_old = M.ZtZinv_new
     M.dj_old = M.dj_new
   endif
+  M.X_old_num = M.X_new_num
   /*
   M.mod_struct_old = M.mod_struct
   M.bhat_old = M.bhat
   M.bvar_old = M.bvar
   */
 elif MODE == &quot;RESTORE&quot;
-  M.X_new_num = M.X_old_num
   M.k_new = M.k_old
   if M.h_predict &gt; 0
     M.X_new_predict = M.X_old_predict
     M.ZtZinv_new = M.ZtZinv_old
     M.dj_new = M.dj_old
   endif
+  M.X_new_num = M.X_old_num
   /*
   M.mod_struct = M.mod_struct_old
   M.bhat = M.bhat_old
@@ -760,7 +760,7 @@ if M.k_new &gt; 0
     M.ZtZinv_new = invpd(M.X_new[2:,2:])
   endif
 endif
-matrix M.XtY = M.XtY_cross_const[M.X_new_num2]
+matrix M.XtY = M.XtY_cross_const[M.X_new_num]
 M.XtXinv = invpd(M.X_new)
 M.yMy = M.scaling_f[7] - qform(M.XtY',M.XtXinv)
 </code>
@@ -827,19 +827,17 @@ if M.k_new &gt; 0
   if MODE == &quot;START&quot; # Note: this happens only ones: for the starting model!!!
     BMA_model_structure(&amp;M)
   endif
-  M.X_new_num = selifc(M.var_numbers2[2,], M.mod_struct_new)
-  M.X_new_num2 = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
+  M.X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
   if M.h_predict &gt; 0
     M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)
   endif
 else
-  M.X_new_num = {}
-  M.X_new_num2 = { 2 }
+  M.X_new_num = { 2 }
   if M.h_predict &gt; 0
     M.X_new_predict = {}
   endif
 endif
-M.X_new = M.big_cross_const[M.X_new_num2, M.X_new_num2]
+M.X_new = M.big_cross_const[M.X_new_num, M.X_new_num]
 </code>
 </gretl-function>
 <gretl-function name="BMA_forecast" type="void" private="1">
@@ -896,7 +894,7 @@ M.mod_size += M.k_new
 M.var_prob += M.mod_struct
 # For coeffs
 if M.k_new &gt; 0
-  matrix indexes = M.X_new_num - 1
+  matrix indexes = M.X_new_num[2:] - 2
   M.bhat_avg[indexes] += transp(M.bhat[2:,])
   M.bvar_avg[indexes] += transp(M.bvar[2:,] + M.bhat[2:,] .^ 2)
 endif
@@ -982,7 +980,27 @@ if M.h_predict &gt; 0
   delete M.Yhat_avg
   delete M.Yhat_var_avg
   delete M.predict_obs_names
+  delete M.Yhat
 endif
+### New code ###
+delete M.acc_type
+delete M.g_type
+delete M.bhat_old
+delete M.bvar_old
+delete M.big_cross
+delete M.big_cross_const
+delete M.big_mat_dem
+delete M.big_mat_dem_const
+delete M.big_mat_const
+delete M.mod_rank_dec
+delete M.mod_struct_old
+delete M.scaling_f
+delete M.var_numbers_const
+delete M.X_list
+delete M.XtY_cross_const
+delete M.Y_mat
+delete M.all_names_sp
+### End ###
 </code>
 </gretl-function>
 <gretl-function name="BMA_main" type="void" private="1">
@@ -1076,18 +1094,12 @@ Local variables:
 tmp_str - general purpose string
 */
 printf &quot;XXXXXXXXXXXXXXXXXXXXXX\n&quot;
-printf &quot;# TODO: merge X_new_num and X_new_num2.\n&quot;
-printf &quot;# TODO: change predict_obs_names to be an array.\n&quot;
-printf &quot;# TODO: change variables names to be an array [partially done].\n&quot;
-printf &quot;# TODO: change variables names handling in jointness_pairs.\n&quot;
-printf &quot;# TODO: change in summary (delete unnecessary items).\n&quot;
+printf &quot;# TODO: change 999/-999 to inf/-inf in jointness measures.\n&quot;
 printf &quot;XXXXXXXXXXXXXXXXXXXXXX\n&quot;
 bundle M
 list X_list = X_list_m
 list big_list = Y X_list
-### New Code ###
 list big_list_const = Y const X_list
-### End ###
 string tmp_str = &quot;&quot;
 #
 # Basic parsing and checking
@@ -1133,10 +1145,7 @@ if h_predict &gt; 0
   matrix M.Yhat_avg = zeros(h_predict,1) # vector of Y predictions - average
   matrix M.Yhat_var_avg = zeros(h_predict,1) # predicion variance
   matrix M.prediction = {} # matrix with prediction results
-  loop for i=(M.last_obs + 1)..$nobs --quiet
-    tmp_str += strsub(obslabel(i), &quot; &quot;, &quot;&quot;) ~ &quot; &quot;
-  endloop
-  string M.predict_obs_names = tmp_str # obs labels for forecasts
+  strings M.predict_obs_names = obslabel(seq(M.last_obs + 1, $nobs)) # obs labels for forecasts
   smpl 1 M.last_obs # setting sample
   matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
   matrix M.big_mat_dem = M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
@@ -1147,7 +1156,7 @@ else
   matrix M.Yhat_avg = {}
   matrix M.Yhat_var_avg = {}
   matrix M.Y_mat_predict = {}
-  string M.predict_obs_names = &quot;&quot;
+  strings M.predict_obs_names = array(0)
 endif
 # New model
 matrix M.ZtZinv_new = {} # inverse of Z'Z (X's without constant term)
