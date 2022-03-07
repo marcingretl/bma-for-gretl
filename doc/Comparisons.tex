@@ -84,17 +84,17 @@ analysis.
 	\begin{tabular}{lccccc}\hline
 		Run time &\proglang{R}-\pkg{BMS} &\proglang{R}-\pkg{BMA} &\proglang{R}-\pkg{BAS} &\pkg{FLSBMA} &\pkg{gretl}-\pkg{BMA}\\\hline
 		\\[-10pt]
-		Without jointness analysis &317 &92 &53 &1423 &995\\
-		With jointness analysis 	&	&	&	&1423 &1032\\\hline  
+		Without jointness analysis &317 &92 &53 &1423 &945\\
+		With jointness analysis 	&	&	&	&1423 &990\\\hline  
 	\end{tabular}	
 	\label{tab:FLS_packages_timings}
 \end{table}
 
-According to the results presented in
-Table~\ref{tab:FLS_packages_timings}, the fastest Bayesian model
-averaging software package is \proglang{R}-\pkg{BAS}, while the slowest one is
-\pkg{gretl}-\pkg{BMA}. We are aware of this disadvantage of our package, but
-it strongly depends on the \pkg{gretl} development process, especially on
-the improvements of the \proglang{Hansl} interpreter. It is possible that in the
-near future \pkg{gretl} will be much faster than the current 1.10.2
-version (see Section~\ref{Conclusions} for more details). 
+%According to the results presented in
+%Table~\ref{tab:FLS_packages_timings}, the fastest Bayesian model
+%averaging software package is \proglang{R}-\pkg{BAS}, while the slowest one is
+%\pkg{gretl}-\pkg{BMA}. We are aware of this disadvantage of our package, but
+%it strongly depends on the \pkg{gretl} development process, especially on
+%the improvements of the \proglang{Hansl} interpreter. It is possible that in the
+%near future \pkg{gretl} will be much faster than the current 1.10.2
+%version (see Section~\ref{Conclusions} for more details). 

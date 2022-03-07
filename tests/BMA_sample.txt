@@ -1,0 +1,105 @@
+gretl version 2022b-git
+Current session: 2022-03-07 12:21
+
+#######################################################
+#   https://sourceforge.net/projects/bma-for-gretl/   #
+#######################################################
+# Usage:
+? set verbose off
+
+Read datafile /usr/local/share/gretl/data/greene/greene9_1.gdt
+periodicity: 1, maxobs: 25
+observations range: 1 to 25
+
+Listing 5 variables:
+  0) const      1) valadd     2) capital    3) labor      4) nfirm    
+
+BMA 2.3, 2022-03-07 (Marcin Błażejowski, Jacek Kwiatkowski)
+
+Overall progress: 10%..20%..30%..40%..50%..60%..70%..80%..90%..100%..
+----------------------------------
+Prior: Binomial
+Prior average model size: 1.500000
+Significance level for the initial model: 0.600000
+g-prior: Benchmark prior
+Total number of iterations: 1000
+Number of burn-in draws: 100
+
+The initial model:
+
+OLS, using observations 1-25
+Dependent variable: valadd
+
+             coefficient   std. error   t-ratio   p-value
+  -------------------------------------------------------
+  const      −24.3770      32.0162      −0.7614   0.4549 
+  capital      4.14768      0.876598     4.732    0.0001  ***
+  labor        4.14645      0.933105     4.444    0.0002  ***
+  nfirm        0.330802     0.217392     1.522    0.1430 
+
+SSR = 268686, R-squared = 0.988005
+
+----------------------------------
+
+Posterior average model size: 1.988889
+
+Posterior moments (unconditional and conditional on inclusion):
+                    PIP           Mean       Std.Dev.      Cond.Mean   Cond.Std.Dev
+  labor        0.970000       5.336247       1.774672       5.501286       1.529361
+capital        0.782222       2.684137       1.984159       3.431425       1.571205
+  nfirm        0.236667       0.059568       0.301888       0.251695       0.580281
+
+----------------------------------
+
+Posterior probability of models:
+Model 1:	0.603333
+Model 2:	0.148889
+Model 3:	0.160000
+Model 4:	0.030000
+Total probability of the models in ranking (numerical): 0.942222
+
+Correlation coefficient between the analytical
+and numerical probabilities of the above models: 0.996990
+
+----------------------------------
+
+Model: 1, posterior probability: 0.603333
+             coefficient   std. error     z      p-value 
+  -------------------------------------------------------
+  const       684.192      43.8221      15.61    5.94e-55 ***
+  capital       3.09267     1.21568      2.544   0.0110   **
+  labor         5.17195     0.897734     5.761   8.36e-09 ***
+
+
+----------------------------------
+
+Model: 2, posterior probability: 0.148889
+             coefficient   std. error      z      p-value 
+  --------------------------------------------------------
+  const      684.192       43.2752      15.81     2.64e-56 ***
+  capital      3.98815      1.67686      2.378    0.0174   **
+  labor        3.98697      1.78495      2.234    0.0255   **
+  nfirm        0.318078     0.415853     0.7649   0.4443  
+
+
+----------------------------------
+
+Model: 3, posterior probability: 0.160000
+             coefficient   std. error     z     p-value 
+  ------------------------------------------------------
+  const       684.192      49.6058      13.79   2.82e-43 ***
+  labor         7.26954     0.401935    18.09   4.08e-73 ***
+
+
+----------------------------------
+
+Model: 4, posterior probability: 0.030000
+             coefficient   std. error     z      p-value 
+  -------------------------------------------------------
+  const       684.192      47.7387      14.33    1.38e-46 ***
+  capital       7.48107     0.667823    11.20    3.98e-29 ***
+  nfirm         1.12428     0.227844     4.934   8.04e-07 ***
+
+----------------------------------
+
+

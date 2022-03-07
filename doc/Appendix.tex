@@ -1,0 +1,31 @@
+\section{Computational times -- simple script}\label{sec:CPU_time_data_nvars_nrep}
+\begin{lstlisting}
+set verbose off
+
+/*
+In order to experiment with CPU timings please set:
+nulldata - sample size
+nvars	 - half a number of independent variables
+nrep	 - number of MC replications
+*/
+
+nulldata 1000
+setobs 1 1 --cross-section
+delete index
+include BMA.gfn
+set seed 1000000
+
+nvars = 16
+nrep = 10000*5
+coeffs = mnormal(nvars+1, 1)
+
+list Xs = mat2list(mnormal($nobs, nvars), "x")
+list Zs = mat2list(mnormal($nobs, nvars), "z")
+list X = Xs Zs
+
+y = lincomb(const || Xs, coeffs) + normal()
+
+set stopwatch
+res = BMA(y, X, _(Nrep=nrep, show_progress=0))
+printf "Total time: %f\n", $stopwatch	
+\end{lstlisting} 

@@ -36,9 +36,6 @@ function bundle BMA_setup (const series Y,
        Local variables:
        tmp_str - general purpose string
     */
-    printf "XXXXXXXXXXXXXXXXXXXXXX\n"
-    printf "# TODO: change 999/-999 to inf/-inf in jointness measures.\n"
-    printf "XXXXXXXXXXXXXXXXXXXXXX\n"
     bundle M
     list X_list = X_list_m
     list big_list = Y X_list
@@ -141,6 +138,10 @@ function bundle BMA_setup (const series Y,
     string M.Y_name = Y_name # string with name of denpendent variable
     if do_joint != 0
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
+        strings M.jointess_measure_names = defarray("Doppelhofer-Weeks Measure (DW1)", \
+          "Doppelhofer-Weeks Measure (DW2)", "Ley-Steel Measure (LS1)", \
+          "Ley-Steel Measure (LS2)", "Strachan Measure", "Yule's Q Measure (YQ)", \
+          "Modified Yule's Q Measure (YQM)")
     else
         matrix M.jointness_m = {}
     endif

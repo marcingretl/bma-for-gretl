@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>2.3-svn</version>
-<date>2022-03-03</date>
+<version>2.3</version>
+<date>2022-03-07</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -127,23 +127,9 @@ if M.h_predict &gt; 0
   printf &quot;\n&quot;
 endif
 # Jointess analysis
-if M.do_joint != 0
+if M.do_joint
   matrix jointess_measure = BMA_jointness_measure(&amp;M)
-  if M.do_joint == 4
-    string jointess_measure_name = &quot;Ley-Steel Measure (LS2)&quot;
-  elif M.do_joint == 2
-    string jointess_measure_name = &quot;Doppelhofer-Weeks Measure (DW2)&quot;
-  elif M.do_joint == 3
-    string jointess_measure_name = &quot;Ley-Steel Measure (LS1)&quot;
-  elif M.do_joint == 1
-    string jointess_measure_name = &quot;Doppelhofer-Weeks Measure (DW1)&quot;
-  elif M.do_joint == 5
-    string jointess_measure_name = &quot;Strachan Measure&quot;
-  elif M.do_joint == 6
-    string jointess_measure_name = &quot;Yule's Q Measure (YQ)&quot;
-  elif M.do_joint == 7
-    string jointess_measure_name = &quot;Modified Yule's Q Measure (YQM)&quot;
-  endif
+  string jointess_measure_name = M.jointess_measure_names[M.do_joint]
   print &quot;----------------------------------&quot;
   printf &quot;\n&quot;
   print &quot;Posterior joint probability of variables:&quot;
@@ -199,7 +185,7 @@ if M.do_joint != 0
 endif
 # Printing models in ranking
 if M.verbosity == 2
-  matrix idx # indexes
+  matrix coeffmat
   strings Xnames # names of X-es
   loop i=1..M.l_rank --quiet
     if M.mod_nume_prob[i] == 0
@@ -212,9 +198,8 @@ if M.verbosity == 2
       printf &quot;\n\n  %s\n&quot;, &quot;None of the variables were significant.&quot;
       printf &quot;  %s\n&quot;, &quot;Model includes only the intercept term which is simply the average of the dependent variable.&quot;
     else
-      matrix coeffmat = M.mod_rank_estimates[i][2:,]
-      idx = selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])
-      Xnames = M.all_names_sp_new[idx-2]
+      coeffmat = M.mod_rank_estimates[i][,1:2]
+      Xnames = defarray(&quot;const&quot;) + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
       modprint coeffmat Xnames
     endif
   endloop
@@ -578,11 +563,10 @@ nr - position (row) in rankings to be replaced
 */
 # Initial value
 scalar nr = 0
-scalar dec_value = BMA_bintodecconvert(M.mod_struct, M.k)
 # We look for the lowest probability and replace it by probability of the current model (if bigger)
 if M.lprob_old &gt; minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
   loop j=1..M.l_rank --quiet
-    if M.mod_rank_prob[j] == M.lprob_old &amp;&amp; M.mod_rank_dec[j] == dec_value
+    if M.lprob_old == M.mod_rank_prob[j] &amp;&amp; sumc(M.mod_rank[j]) == sumc(M.mod_struct)
       break
     elif M.mod_rank_prob[j] == 0 || M.mod_rank_prob[j] &lt; M.lprob_old
       nr = j
@@ -595,21 +579,17 @@ if nr &gt; 0
   if nr &lt; M.l_rank
     M.mod_rank_prob[nr+1:M.l_rank] = M.mod_rank_prob[nr:M.l_rank-1] # analytical
     M.mod_nume_prob[nr+1:M.l_rank] = M.mod_nume_prob[nr:M.l_rank-1] # numerical
-    M.mod_rank_dec[nr+1:M.l_rank] = M.mod_rank_dec[nr:M.l_rank-1]
     loop for (i=M.l_rank; i&gt;nr; i--) --quiet
-      M.mod_rank_estimates[i] = M.mod_rank_estimates[i-1]
       M.mod_rank[i] = M.mod_rank[i-1]
     endloop
   endif
   M.mod_rank_prob[nr] = M.lprob_old
   M.mod_nume_prob[nr] = 0
   M.mod_rank[nr] = M.mod_struct
-  M.mod_rank_estimates[nr] = M.bhat ~ sqrt(M.bvar)
-  M.mod_rank_dec[nr] = dec_value
 endif
 # Now we compute numerical probs
 loop j=1..M.l_rank --quiet
-  if M.mod_rank[j] == M.mod_struct #M.mod_rank_dec[j] == dec_value
+  if M.mod_rank[j] == M.mod_struct
     M.mod_nume_prob[j] += 1
     break
   endif
@@ -804,13 +784,14 @@ loop i=1..n_pairs --quiet
   pair_names += &quot; &quot; ~ cnameget(jointness_m, pairs_related[i,2]) ~ &quot;,&quot; ~ cnameget(jointness_m, pairs_related[i,3])
 endloop
 matrix pairs_related = pairs_related[,1]
+loop i=1..nelem(pairs_related) --quiet
+  if abs(pairs_related[i]) == 999
+    pairs_related[i] = sgn(pairs_related[1]) * 1/0
+  endif
+endloop
 printf &quot;\n%s\n&quot;, MODE
-if rows(pairs_related) == 1
-  printf &quot;%s\t%f\n&quot;, pair_names, pairs_related
-else
-  rnameset(pairs_related, pair_names)
-  printf &quot;%15f&quot;, pairs_related
-endif
+rnameset(pairs_related, pair_names)
+eval pairs_related
 </code>
 </gretl-function>
 <gretl-function name="BMA_new_X_matrix" type="void" private="1">
@@ -940,6 +921,15 @@ if M.do_joint != 0
   cnameset(M.jointness_m, M.all_names_sp)
   rnameset(M.jointness_m, M.all_names_sp)
 endif
+# Best models coeffs
+loop i=1..M.l_rank --quiet
+  M.mod_struct_new = M.mod_rank[i]
+  M.k_new = sum(M.mod_struct_new)
+  BMA_new_X_matrix(&quot;SUM&quot;, &amp;M)
+  BMA_matrix_precompute(&amp;M)
+  BMA_ols(&amp;M)
+  M.mod_rank_estimates[i] = M.bhat ~ sqrt(M.bvar) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])-2))
+endloop
 # Cleaning up the bundle
 delete M.show_progress
 delete M.var_numbers2
@@ -982,7 +972,6 @@ if M.h_predict &gt; 0
   delete M.predict_obs_names
   delete M.Yhat
 endif
-### New code ###
 delete M.acc_type
 delete M.g_type
 delete M.bhat_old
@@ -1000,7 +989,6 @@ delete M.X_list
 delete M.XtY_cross_const
 delete M.Y_mat
 delete M.all_names_sp
-### End ###
 </code>
 </gretl-function>
 <gretl-function name="BMA_main" type="void" private="1">
@@ -1093,9 +1081,6 @@ This function creates BUNDLE holding all BMA information
 Local variables:
 tmp_str - general purpose string
 */
-printf &quot;XXXXXXXXXXXXXXXXXXXXXX\n&quot;
-printf &quot;# TODO: change 999/-999 to inf/-inf in jointness measures.\n&quot;
-printf &quot;XXXXXXXXXXXXXXXXXXXXXX\n&quot;
 bundle M
 list X_list = X_list_m
 list big_list = Y X_list
@@ -1198,6 +1183,7 @@ string M.all_names_sp = strsub(varname(X_list), &quot;,&quot;, &quot; &quot;) # 
 string M.Y_name = Y_name # string with name of denpendent variable
 if do_joint != 0
   matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
+  strings M.jointess_measure_names = defarray(&quot;Doppelhofer-Weeks Measure (DW1)&quot;, &quot;Doppelhofer-Weeks Measure (DW2)&quot;, &quot;Ley-Steel Measure (LS1)&quot;, &quot;Ley-Steel Measure (LS2)&quot;, &quot;Strachan Measure&quot;, &quot;Yule's Q Measure (YQ)&quot;, &quot;Modified Yule's Q Measure (YQM)&quot;)
 else
   matrix M.jointness_m = {}
 endif
@@ -1377,46 +1363,6 @@ elif verbosity &lt; 1 || verbosity &gt; 2
   err += &quot;Verbosity takes the integer values in the range [1; 2]&quot;
 endif
 return err
-</code>
-</gretl-function>
-<gretl-function name="BMA_bintodecconvert" type="scalar" private="1">
- <params count="2">
-  <param name="mod_struct" type="matrix" const="true"/>
-  <param name="k" type="scalar" const="true"/>
- </params>
-<code>/*
-Function treats current draw as a binary digit and converts it
-into decimal integer.
-#
-mod_struct - model structure (binary vector)
-k - lenght of the 'mod_struct' vector [possibly redundant]
-*/
-return sum(mod_struct .* 2 .^ seq(k-1, 0))
-</code>
-</gretl-function>
-<gretl-function name="BMA_dectobitconvert" type="matrix" private="1">
- <params count="2">
-  <param name="num" type="scalar" const="true"/>
-  <param name="n" type="scalar" const="true"/>
- </params>
-<code>/*
-This code was written by Jack.
-Function converts decimal digit into binary digit.
-#
-num - decimal digit to be converted
-n - lenght of binary vector
-Returns: binary vector holding model structure
-*/
-x = num
-ret = zeros(n, 1)
-i = 1
-loop while x&gt;0 --quiet
-  y = x % 2
-  ret[i++] = 	y
-  x -= y
-  x /= 2
-endloop
-return transp(mreverse(ret))
 </code>
 </gretl-function>
 <sample-script filename="examples/BMA_sample.inp">

@@ -9,12 +9,8 @@ results_b = BMA(valadd, greene, _(g_type=3, h_predict=3, do_joint=2, Nrep=10000)
 
 Results:
 gretl version 2022b-git
-Current session: 2022-02-21 11:43
+Current session: 2022-03-04 08:52
 
-#######################################################
-#   https://sourceforge.net/projects/bma-for-gretl/   #
-#######################################################
-# Usage:
 ? set verbose off
 
 Read datafile /usr/local/share/gretl/data/greene/greene9_1.gdt
@@ -24,6 +20,7 @@ observations range: 1 to 25
 Listing 5 variables:
   0) const      1) valadd     2) capital    3) labor      4) nfirm    
 
+BMA 2.3, 2022-03-04 (Marcin Błażejowski, Jacek Kwiatkowski)
 
 Overall progress: 10%..20%..30%..40%..50%..60%..70%..80%..90%..100%..
 ----------------------------------
@@ -93,8 +90,9 @@ capital        0.000000    -999.000000       0.834284
   nfirm        0.000000       0.000000       0.000000
 
 Strong substitutes:
-capital,labor     -999.000000
-  labor,nfirm       -4.379748
+capital,labor         -inf 
+  labor,nfirm      -4.3797 
+
 
 ----------------------------------
 

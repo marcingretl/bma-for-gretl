@@ -196,16 +196,15 @@ Let us consider the data used in \cite{FernandezLeySteel2001b}
 countries and 41 potential growth determinants for the period 1960 to
 1992%
 \footnote{The dataset is publicly available on the \emph{Journal of
-		Applied Econometrics} online data archive
+	Applied Econometrics} online data archive
 	(\url{http://qed.econ.queensu.ca/jae/2001-v16.5/fernandez-ley-steel/}).
 	The reported chain (3000000 replications with 33\% burn-in draws)
-	took about 37.5 minutes of CPU time on a PC with old AMD Phenom II X6
+	took about 37 minutes of CPU time on a PC with old AMD Phenom II X6
 	1100T CPU, 6.0~Gb of RAM running under Debian GNU/Linux. We used
 	\pkg{gretl}~2022b-git compiled by GCC~11.2.0. The seed for RNG was set
-	to 1000000. The dependent variable is the growth rate from
-	1960--1992.}. The initial estimation sample consists of indices
-$i=1,\ldots,69$ and the out-of-sample evaluation indices are from 70
-to 72.
+	to 1000000. The dependent variable is the growth rate from 1960--1992.}.
+The initial estimation sample consists of indices $i=1,\ldots,69$ and
+the out-of-sample evaluation indices are from 70 to 72.
 
 For example, for the FLS data, the following estimates should appear
 %
@@ -242,10 +241,7 @@ Obs.72    1.889700   2.465582   0.981258
 	\end{CodeOutput}
 \end{CodeChunk}
 %
-The \pkg{BMA} estimate function accepts a scalar, which sets the verbosity
-of the output. Its default value is 1, which causes the estimation
-output to be printed out. A value of 2 forces the \pkg{BMA} function to
-print out all the details of the estimation. You can print out the
+You can print out the
 above-mentioned results and additionally the following information:
 the total CPU time, type of model prior, prior average model size,
 significance level for the initial model, type of g-prior, total
@@ -275,20 +271,20 @@ Life_Exp    0.000000    0.000000   0.000000   1.662559 ...
 Equip_Inv   0.000000    0.000000   0.000000   0.000000 ...  
 ...         ...         ...        ...        ... ... 
 Strong substitutes:
-Rev_Coup,Area         -4.516140
-Rev_Coup,Publ_Edu_pct -4.459739
+Rev_Coup,Area         -4.5161
+Rev_Coup,Publ_Edu_pct -4.4597
 ...             ...
 Significant substitutes:   
-GDPsh560,Hindu        -1.997989
-Mining,War_Dummy      -1.989541
+GDPsh560,Hindu        -1.9980
+Mining,War_Dummy      -1.9895
 ...                   ...   
 Significant complements:
-Confuncious,Life_Exp   1.576599
-Confuncious,Equip_Inv  1.618373
+Confuncious,Life_Exp   1.5766
+Confuncious,Equip_Inv  1.6184
 ...                    ...
 Strong complements:   
-DPsh560,Confuncious    2.083161
-GDPsh560,Equip_Inv     2.235000
+DPsh560,Confuncious    2.0832
+GDPsh560,Equip_Inv     2.2350
 ...                    ...  
 	\end{CodeOutput}
 \end{CodeChunk} 

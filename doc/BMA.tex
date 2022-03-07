@@ -6,8 +6,8 @@
         Jacek Kwiatkowski\\Nicolaus Copernicus University in Toruń}
 \Plainauthor{Marcin Błażejowski, Jacek Kwiatkowski}
 
-\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 2.3-svn}
-\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 2.3-svn}
+\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 2.3}
+\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 2.3}
 
 \Abstract{Bayesian model averaging is a model-building strategy that
   takes account of model uncertainty in
@@ -32,14 +32,17 @@
 {\small\begin{description}
 	\item[2.3] New algebra strategy and code cleanups:
 		\begin{itemize}
-			\item New mechanism for algebra stuff.
-			\item Decimal representation of binary model vector
-				(new function).
+			\item New mechanism for algebra stuff -- increase in
+				speedup up to 60\%. What's more, now computational
+				time is more or less linear in relation to number of
+				MC replications, is not related with number
+				of observations, and depends only o the number
+				of independent variables (see~\ref{sec:CPU_time_data_nvars_nrep}).
 			\item New approach to printing models in ranking.
 			\item New approach to handling rankings (decimal
 				model representation).
 			\item Switch from strings to array of strings.
-			\item (to do) Printing infinities in jointness.			
+			\item Printing infinities in jointness.
 		\end{itemize}
     \item[2.2] Interface changes and small fixes:
         \begin{itemize}
@@ -79,4 +82,6 @@ for the helpful comments and suggestions of two referees and an
 associate editor.
 
 \bibliography{BMA}
+\appendix
+\input{Appendix}
 \end{document}

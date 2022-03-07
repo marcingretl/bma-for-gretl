@@ -27,5 +27,4 @@ include src/BMA_Print.inp
 include src/BMA_GUI.inp
 include src/BMA_OldStyle.inp
 include src/BMA.inp
-include src/BMA_bintodecconvert.inp
-include src/BMA_dectobitconvert.inp
+

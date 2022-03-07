@@ -16,11 +16,11 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_jointness_pairs (string MODE,
-                                    scalar *n_pairs,
-                                    matrix var_numbers,
-                                    scalar *shift,
-                                    matrix *pairs,
-                                    matrix jointness_m)
+                                   scalar *n_pairs,
+                                   matrix var_numbers,
+                                   scalar *shift,
+                                   matrix *pairs,
+                                   matrix jointness_m)
     /*
        Function for generating vector with pairs of hightly releated variables
        and jointness statistics for these pairs:
@@ -38,11 +38,12 @@ function void BMA_jointness_pairs (string MODE,
         pair_names += " " ~ cnameget(jointness_m, pairs_related[i,2]) ~ "," ~ cnameget(jointness_m, pairs_related[i,3])
     endloop
     matrix pairs_related = pairs_related[,1]
+    loop i=1..nelem(pairs_related) --quiet
+        if abs(pairs_related[i]) == 999
+            pairs_related[i] = sgn(pairs_related[1]) * 1/0
+        endif        
+    endloop    
     printf "\n%s\n", MODE
-    if rows(pairs_related) == 1
-        printf "%s\t%f\n", pair_names, pairs_related
-    else
-        rnameset(pairs_related, pair_names)
-        printf "%15f", pairs_related
-    endif
+    rnameset(pairs_related, pair_names)
+    eval pairs_related
 end function

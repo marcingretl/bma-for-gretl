@@ -76,23 +76,9 @@ function void BMA_Print (bundle *M)
         printf "\n"
     endif
     # Jointess analysis
-    if M.do_joint != 0
+    if M.do_joint
         matrix jointess_measure = BMA_jointness_measure(&M)
-        if M.do_joint == 4
-            string jointess_measure_name = "Ley-Steel Measure (LS2)"
-        elif M.do_joint == 2
-            string jointess_measure_name = "Doppelhofer-Weeks Measure (DW2)"
-        elif M.do_joint == 3
-            string jointess_measure_name = "Ley-Steel Measure (LS1)"
-        elif M.do_joint == 1
-            string jointess_measure_name = "Doppelhofer-Weeks Measure (DW1)"
-        elif M.do_joint == 5
-            string jointess_measure_name = "Strachan Measure"
-        elif M.do_joint == 6
-            string jointess_measure_name = "Yule's Q Measure (YQ)"
-        elif M.do_joint == 7
-            string jointess_measure_name = "Modified Yule's Q Measure (YQM)"
-        endif
+        string jointess_measure_name = M.jointess_measure_names[M.do_joint]
         print "----------------------------------"
         printf "\n"
         print "Posterior joint probability of variables:"
@@ -148,7 +134,7 @@ function void BMA_Print (bundle *M)
     endif
     # Printing models in ranking
     if M.verbosity == 2
-        matrix idx # indexes
+        matrix coeffmat
         strings Xnames # names of X-es
         loop i=1..M.l_rank --quiet
             if M.mod_nume_prob[i] == 0
@@ -161,9 +147,8 @@ function void BMA_Print (bundle *M)
                 printf "\n\n  %s\n", "None of the variables were significant."
                 printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
             else
-                matrix coeffmat = M.mod_rank_estimates[i][2:,]
-                idx = selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])
-                Xnames = M.all_names_sp_new[idx-2]
+                coeffmat = M.mod_rank_estimates[i][,1:2]
+                Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
                 modprint coeffmat Xnames
             endif
         endloop
