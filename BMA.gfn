@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>2.3</version>
-<date>2022-03-07</date>
+<date>2022-03-08</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -127,7 +127,7 @@ if M.h_predict &gt; 0
   printf &quot;\n&quot;
 endif
 # Jointess analysis
-if M.do_joint
+if M.do_joint &amp;&amp; nelem(M.jointness_m)
   matrix jointess_measure = BMA_jointness_measure(&amp;M)
   string jointess_measure_name = M.jointess_measure_names[M.do_joint]
   print &quot;----------------------------------&quot;
@@ -150,8 +150,8 @@ if M.do_joint
         pairs[pair,1] = jointess_measure[i,j]
         pairs[pair,2] = i
         pairs[pair,3] = j
-        if (jointess_measure[i,j] &lt; 0)
-          if (jointess_measure[i,j] &lt; -2)
+        if jointess_measure[i,j] &lt; 0
+          if jointess_measure[i,j] &lt; -2
             strong_sub += 1
           else
             significant_sub += 1
@@ -924,11 +924,13 @@ endif
 # Best models coeffs
 loop i=1..M.l_rank --quiet
   M.mod_struct_new = M.mod_rank[i]
-  M.k_new = sum(M.mod_struct_new)
-  BMA_new_X_matrix(&quot;SUM&quot;, &amp;M)
-  BMA_matrix_precompute(&amp;M)
-  BMA_ols(&amp;M)
-  M.mod_rank_estimates[i] = M.bhat ~ sqrt(M.bvar) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])-2))
+  if nelem(M.mod_struct_new)
+    M.k_new = sumr(M.mod_struct_new)
+    BMA_new_X_matrix(&quot;SUM&quot;, &amp;M)
+    BMA_matrix_precompute(&amp;M)
+    BMA_ols(&amp;M)
+    M.mod_rank_estimates[i] = M.bhat ~ sqrt(M.bvar) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])-2))
+  endif
 endloop
 # Cleaning up the bundle
 delete M.show_progress

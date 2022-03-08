@@ -76,7 +76,7 @@ function void BMA_Print (bundle *M)
         printf "\n"
     endif
     # Jointess analysis
-    if M.do_joint
+    if M.do_joint && nelem(M.jointness_m)
         matrix jointess_measure = BMA_jointness_measure(&M)
         string jointess_measure_name = M.jointess_measure_names[M.do_joint]
         print "----------------------------------"
@@ -99,8 +99,8 @@ function void BMA_Print (bundle *M)
                     pairs[pair,1] = jointess_measure[i,j]
                     pairs[pair,2] = i
                     pairs[pair,3] = j
-                    if (jointess_measure[i,j] < 0)
-                        if (jointess_measure[i,j] < -2)
+                    if jointess_measure[i,j] < 0
+                        if jointess_measure[i,j] < -2
                             strong_sub += 1
                         else
                             significant_sub += 1

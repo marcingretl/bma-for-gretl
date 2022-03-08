@@ -53,13 +53,15 @@ function void BMA_summary (bundle *M)
         rnameset(M.jointness_m, M.all_names_sp)
     endif
     # Best models coeffs
-    loop i=1..M.l_rank --quiet        
+    loop i=1..M.l_rank --quiet
         M.mod_struct_new = M.mod_rank[i]
-        M.k_new = sum(M.mod_struct_new)
-        BMA_new_X_matrix("SUM", &M)
-        BMA_matrix_precompute(&M)
-        BMA_ols(&M)
-        M.mod_rank_estimates[i] = M.bhat ~ sqrt(M.bvar) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])-2))
+        if nelem(M.mod_struct_new)
+            M.k_new = sumr(M.mod_struct_new)
+            BMA_new_X_matrix("SUM", &M)
+            BMA_matrix_precompute(&M)
+            BMA_ols(&M)
+            M.mod_rank_estimates[i] = M.bhat ~ sqrt(M.bvar) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])-2))
+        endif
     endloop
     # Cleaning up the bundle
     delete M.show_progress
@@ -111,13 +113,13 @@ function void BMA_summary (bundle *M)
     delete M.big_cross_const
     delete M.big_mat_dem
     delete M.big_mat_dem_const
-    delete M.big_mat_const    
+    delete M.big_mat_const
     delete M.mod_rank_dec
     delete M.mod_struct_old
     delete M.scaling_f
     delete M.var_numbers_const
     delete M.X_list
     delete M.XtY_cross_const
-    delete M.Y_mat    
+    delete M.Y_mat
     delete M.all_names_sp
 end function
