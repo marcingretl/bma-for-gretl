@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function void BMA_accep_model (bundle *M)
+function scalar BMA_accep_model (bundle *M)
 /*
    Function computes "probability" of the new model and checks if it is bigger than some random value drawn form U(0,1).
     */
@@ -23,8 +23,10 @@ function void BMA_accep_model (bundle *M)
         # We accept new model
         BMA_model_switch("ACCEPT", &M)
         BMA_ols(&M)
+        return 1
     else
         # We restore old model
         BMA_model_switch("RESTORE", &M)
+        return 0
     endif
 end function

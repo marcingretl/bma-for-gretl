@@ -22,6 +22,23 @@ function void BMA_main (bundle *M)
     # Local variables
     scalar progress = floor(M.Nrep/10) # progress of MCMC
     scalar percentage = progress # percentage of progress of MCMC
+    ### New Code ###
+    string model_id # string containing model id (0-1 'image')
+    scalar model_nr	= 1 # iteration number under which model's data are stored in matrices/arrays
+    scalar model_nr_old
+    scalar accepted = 0 # 1 if new model was accepted
+    bundle known_models
+    matrix models_counter = zeros(M.Nrep)
+    matrix models_lprob = zeros(M.Nrep)
+    matrices models_estimates = array(M.Nrep)
+    matrices models_structure = array(M.Nrep)
+    matrices models_X_new_num = array(M.Nrep)
+    if M.h_predict > 0
+        matrices models_forecasts = array(M.Nrep)
+    else
+        matrices models_forecasts = null
+    endif
+    ### End	###
     # Sample setting for prediction
     if M.h_predict > 0
         smpl 1 M.last_obs
@@ -49,17 +66,48 @@ function void BMA_main (bundle *M)
         if potential_var > 0
             M.mod_struct_new = M.mod_struct
             M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
+            ### New Code ###
+            model_id = sprintf("%d", M.mod_struct_new)
+            model_id = model_id[1:end-1] # trim the "\n" at the end !!!
+            model_nr_old = model_nr
+            if inbundle(known_models, model_id)
+                model_nr = known_models[model_id]
+                M.k_new = sum(M.mod_struct_new) # Wywalić!!!
+                /*
+                M.lprob_new = models_lprob[model_nr]
+                M.bhat = models_estimates[model_nr][,1]
+                M.bvar = models_estimates[model_nr][,2]                
+                */
+            else
+                # We create the new matrix of independent variables and run some precomputes based on it
+                model_nr = rep
+                M.k_new = sum(M.mod_struct_new)
+                BMA_new_X_matrix("NORMAL", &M)
+                BMA_matrix_precompute(&M)
+                BMA_lprob(&M)
+                BMA_ols(&M)
+                known_models[model_id] = rep
+                models_structure[model_nr] = M.mod_struct_new
+                models_lprob[model_nr] = M.lprob_new
+                models_estimates[model_nr] = M.bhat ~ M.bvar
+                models_X_new_num[model_nr] = M.X_new_num
+            endif
+            ### End	###
             # We create the new matrix of independent variables and run some precomputes based on it
-            M.k_new = sum(M.mod_struct_new)
+            #M.k_new = sum(M.mod_struct_new)
             BMA_new_X_matrix("NORMAL", &M)
             BMA_matrix_precompute(&M)
             BMA_lprob(&M)
             # Now we decide if to accept the new model
-            BMA_accep_model(&M)
+            accepted = BMA_accep_model(&M)
         endif
         # Essentials of MCMC: building of rankings, averaging the results and jointness stuff
         # Now we construct rankings
         if rep > M.Nburn
+            if !accepted
+                model_nr = model_nr_old
+            endif
+            models_counter[model_nr] += 1
             BMA_build_rank(&M)
             # Now we compute average model size, PIPs and average values of all coefficients and variances
             BMA_averaging(&M)
@@ -76,4 +124,7 @@ function void BMA_main (bundle *M)
             BMA_show_progress(&rep, &percentage, &progress, M.Nrep)
         endif
     endloop
+    printf "\n"   
+    BMA_collect_results(&M, &known_models, &models_counter, &models_lprob, \
+      &models_estimates, &models_structure, &models_X_new_num, &models_forecasts)
 end function
