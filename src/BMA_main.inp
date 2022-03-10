@@ -91,6 +91,10 @@ function void BMA_main (bundle *M)
                 models_lprob[model_nr] = M.lprob_new
                 models_estimates[model_nr] = M.bhat ~ M.bvar
                 models_X_new_num[model_nr] = M.X_new_num
+                if M.h_predict > 0 && M.k_new > 0
+                    BMA_forecast2(&M)
+                    models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
+                endif                
             endif
             ### End	###
             # We create the new matrix of independent variables and run some precomputes based on it

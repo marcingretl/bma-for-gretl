@@ -20,7 +20,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
                                    matrices *models_estimates, matrices *models_structure,
                                    matrices *models_X_new_num, matrices *models_forecasts[null])
     /*
-    Function collect results from MC3 experiment
+    Function collects results from MC3 experiment.
     */
     matrix idx, models_counter_full, var_idx  bhat, bvar_avg, mod_struct
     scalar weight = 0
@@ -29,6 +29,14 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     matrix bvar_avg = zeros(M.k)
     scalar mod_size = 0
     matrix var_prob = zeros(1,M.k)
+    matrix Post_Results, tmp
+    if M.do_joint
+        matrix jointness_m = zeros(M.k,M.k)
+    endif
+    if M.h_predict
+        Yhat_avg = zeros(M.h_predict)
+        Yhat_var_avg = zeros(M.h_predict)
+    endif    
     ###
     keys = getkeys(known_models)
     # We select objects only for accepted models
@@ -37,20 +45,30 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     models_X_new_num = models_X_new_num[idx]
     models_estimates = models_estimates[idx]
     models_structure = models_structure[idx]
-    # We averaging over all visited models
+    if M.h_predict
+        models_forecasts = models_forecasts[idx]
+    endif    
+    # We averaging over all accepted models
     loop i=1..nelem(models_counter_full) --quiet
         weight = models_counter_full[i]
+        mod_struct = models_structure[i]
         var_idx = (models_X_new_num[i][2:]) - 2
         bhat = models_estimates[i][2:,1]
         bhat_avg[var_idx] += weight * bhat
-        bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
-        mod_struct = models_structure[i]
-        mod_size += sumr(mod_struct)
-        var_prob += mod_struct
+        bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)        
+        mod_size += weight * sumr(mod_struct)
+        var_prob += weight * mod_struct
+        if M.do_joint
+            jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .> 0))
+        endif
+        if M.h_predict
+            Yhat_avg += weight * models_forecasts[i][,1]
+            Yhat_var_avg += weight * models_forecasts[i][,2]
+        endif
     endloop
-    
+
     #mread
-    # We build ranks    
+    # We build rankings 
     idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
     models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
     if M.l_rank < rows(models_lprob)
@@ -64,9 +82,20 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     eval mod_nume_prob / (M.Nrep - M.Nburn) # ok!
     bhat_avg = bhat_avg / (M.Nrep - M.Nburn) # ok!    
     bvar_avg = bvar_avg / (M.Nrep - M.Nburn) # ok!
-    eval bhat_avg
-    eval sqrt(bvar_avg - bhat_avg.^2)
-    eval mod_size / (M.Nrep - M.Nburn) # ok!
-    eval var_prob / (M.Nrep - M.Nburn) # ok!
+    Post_Results = transp(var_prob / (M.Nrep - M.Nburn)) # ok!
+    tmp = bhat_avg ~ sqrt(bvar_avg - bhat_avg.^2)
+    Post_Results = Post_Results ~ tmp
+    tmp = Post_Results[,2] ./ Post_Results[,1]
+    Post_Results = Post_Results ~ tmp
+    eval Post_Results
+    eval mod_size / (M.Nrep - M.Nburn)
+    eval M.mod_size / (M.Nrep - M.Nburn)
+    jointness_m[diag] = 0 # ok!
+    jointness_m = jointness_m / (M.Nrep - M.Nburn)
+    eval jointness_m
+    Yhat_avg = Yhat_avg / (M.Nrep - M.Nburn)
+    Yhat_var_avg = Yhat_var_avg / (M.Nrep - M.Nburn)
+    eval Yhat_avg
+    eval sqrt(Yhat_var_avg - Yhat_avg .^ 2)
 end function
 
