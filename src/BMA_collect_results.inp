@@ -22,7 +22,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     /*
        Function collects results from MC3 experiment.
     */
-    matrix idx, idx_old, models_counter_full, var_idx  bhat, bvar_avg, mod_struct
+    matrix idx, idx_old, models_counter_full, var_idx, bhat, mod_struct
     ###
     scalar weight = 0
     matrix bhat_avg = zeros(M.k)

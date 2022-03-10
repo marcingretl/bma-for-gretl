@@ -17,7 +17,6 @@ include src/BMA_new_X_matrix.inp
 include src/BMA_forecast.inp
 include src/BMA_accep_model.inp
 include src/BMA_lprob.inp
-include src/BMA_averaging.inp
 include src/BMA_summary.inp
 include src/BMA_main.inp
 include src/BMA_setup.inp
