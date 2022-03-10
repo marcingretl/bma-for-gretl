@@ -1,0 +1,116 @@
+/*
+   BMA -- package implementing Bayesian Model Averaging for gretl
+   Copyright (C) 2012 Marcin Błażejowski and Jacek Kwiatkowski
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+function void BMA_collect_results (bundle *M, bundle *known_models,
+                                   matrix *models_counter, matrix *models_lprob,
+                                   matrices *models_estimates, matrices *models_structure,
+                                   matrices *models_X_new_num, matrices *models_forecasts[null])
+    /*
+       Function collects results from MC3 experiment.
+    */
+    matrix idx, idx_old, models_counter_full, var_idx, bhat, mod_struct
+    scalar weight = 0
+    matrix bhat_avg = zeros(M.k)
+    matrix bvar_avg = zeros(M.k)
+    scalar mod_size = 0
+    matrix var_prob = zeros(1,M.k)
+    matrix Post_Results, tmp
+    if M.do_joint
+        matrix jointness_m = zeros(M.k,M.k)
+    endif
+    if M.h_predict
+        Yhat_avg = zeros(M.h_predict)
+        Yhat_var_avg = zeros(M.h_predict)
+    endif
+    
+    # Number of visited modles
+    M.post_n_models = nelem(known_models)
+    known_models = null
+    
+    # We select objects only for accepted models
+    idx = selifr(seq(1, M.Nrep)', models_counter .> 0)
+    M.post_n_models_accepted = nelem(idx)
+    models_counter_full = models_counter[idx]
+    models_X_new_num = models_X_new_num[idx]
+    models_estimates = models_estimates[idx]
+    models_structure = models_structure[idx]
+    if M.h_predict
+        models_forecasts = models_forecasts[idx]
+    endif
+
+    # We averaging over all accepted models
+    loop i=1..nelem(models_counter_full) --quiet
+        weight = models_counter_full[i]
+        mod_struct = models_structure[i]
+        var_idx = (models_X_new_num[i][2:]) - 2
+        bhat = models_estimates[i][2:,1]
+        bhat_avg[var_idx] += weight * bhat
+        bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
+        mod_size += weight * sumr(mod_struct)
+        var_prob += weight * mod_struct
+        if M.do_joint
+            jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .> 0))
+        endif
+        if M.h_predict
+            Yhat_avg += weight * models_forecasts[i][,1]
+            Yhat_var_avg += weight * models_forecasts[i][,2]
+        endif
+    endloop
+
+    # We save collected results in bundle M
+    # Coefficients and variances
+    M.bhat_avg = bhat_avg'
+    M.bvar_avg = bvar_avg'
+    # Probability of variables
+    M.var_prob = var_prob
+    # Average model size
+    M.mod_size = mod_size
+    # Jointness analysis
+    if M.do_joint
+        M.jointness_m = jointness_m
+    endif
+    # Forecasts
+    if M.h_predict
+        M.Yhat_avg = Yhat_avg
+        M.Yhat_var_avg = Yhat_var_avg
+    endif
+
+    # We build rankings (analytical and numerical)
+    idx_old = idx
+    idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
+    models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
+    if M.l_rank < rows(models_lprob)
+        models_lprob = models_lprob[1:M.l_rank,]
+    else
+        M.l_rank = rows(models_lprob)
+    endif
+    idx = models_lprob[,2]
+    M.mod_rank_prob = models_lprob[,1]
+    M.mod_nume_prob = models_counter[idx]
+    models_counter = {}
+    
+    # We restore estimates for models in ranking
+    loop i=1..nelem(idx) --quiet
+        loop j=1..nelem(idx_old) --quiet
+            if idx[i] == idx_old[j]
+                M.mod_rank[i] = models_structure[j]
+                M.mod_rank_estimates[i] = models_estimates[j][,1] ~ sqrt(models_estimates[j][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure[j])-2))
+                break
+            endif
+        endloop
+    endloop
+end function
