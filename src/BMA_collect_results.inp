@@ -23,7 +23,6 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
        Function collects results from MC3 experiment.
     */
     matrix idx, idx_old, models_counter_full, var_idx, bhat, mod_struct
-    ###
     scalar weight = 0
     matrix bhat_avg = zeros(M.k)
     matrix bvar_avg = zeros(M.k)
@@ -37,9 +36,11 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         Yhat_avg = zeros(M.h_predict)
         Yhat_var_avg = zeros(M.h_predict)
     endif
-    ###
+    
+    # Number of visited modles
     M.post_n_models = nelem(known_models)
     known_models = null
+    
     # We select objects only for accepted models
     idx = selifr(seq(1, M.Nrep)', models_counter .> 0)
     M.post_n_models_accepted = nelem(idx)
@@ -50,6 +51,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     if M.h_predict
         models_forecasts = models_forecasts[idx]
     endif
+
     # We averaging over all accepted models
     loop i=1..nelem(models_counter_full) --quiet
         weight = models_counter_full[i]
@@ -111,5 +113,4 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
             endif
         endloop
     endloop
-
 end function

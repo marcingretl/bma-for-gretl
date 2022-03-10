@@ -22,7 +22,6 @@ function scalar BMA_accep_model (bundle *M)
     if BMA_accept_prob(&M) > log(randgen1(u,0,1))
         # We accept new model
         BMA_model_switch("ACCEPT", &M)
-        #BMA_ols(&M)
         return 1
     else
         # We restore old model

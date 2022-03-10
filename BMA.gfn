@@ -561,50 +561,6 @@ tmp2 = tmp2 ./ sumc(tmp2)
 return corr(tmp1,tmp2)
 </code>
 </gretl-function>
-<gretl-function name="BMA_build_rank" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function creates both analitycal and numerical model rankings.
-Local variable:
-nr - position (row) in rankings to be replaced
-*/
-# Initial value
-scalar nr = 0
-# We look for the lowest probability and replace it by probability of the current model (if bigger)
-if M.lprob_old &gt; minc(M.mod_rank_prob) || maxc(M.mod_rank_prob) == 0
-  loop j=1..M.l_rank --quiet
-    if M.lprob_old == M.mod_rank_prob[j] &amp;&amp; sumc(M.mod_rank[j]) == sumc(M.mod_struct)
-      break
-    elif M.mod_rank_prob[j] == 0 || M.mod_rank_prob[j] &lt; M.lprob_old
-      nr = j
-      break
-    endif
-  endloop
-endif
-# Now we replace analytical probability and model structure by new one (taken from current draw)
-if nr &gt; 0
-  if nr &lt; M.l_rank
-    M.mod_rank_prob[nr+1:M.l_rank] = M.mod_rank_prob[nr:M.l_rank-1] # analytical
-    M.mod_nume_prob[nr+1:M.l_rank] = M.mod_nume_prob[nr:M.l_rank-1] # numerical
-    loop for (i=M.l_rank; i&gt;nr; i--) --quiet
-      M.mod_rank[i] = M.mod_rank[i-1]
-    endloop
-  endif
-  M.mod_rank_prob[nr] = M.lprob_old
-  M.mod_nume_prob[nr] = 0
-  M.mod_rank[nr] = M.mod_struct
-endif
-# Now we compute numerical probs
-loop j=1..M.l_rank --quiet
-  if M.mod_rank[j] == M.mod_struct
-    M.mod_nume_prob[j] += 1
-    break
-  endif
-endloop
-</code>
-</gretl-function>
 <gretl-function name="BMA_gprior" type="scalar" private="1">
  <params count="2">
   <param name="k" type="scalar"/>
@@ -655,17 +611,6 @@ elif M.acc_type == 2 # Binomial-beta
   B = lngamma(M.a + M.k_new) + lngamma(M.k + M.b - M.k_new) - lngamma(M.a + M.b + M.k)
   return A + B + M.c
 endif
-</code>
-</gretl-function>
-<gretl-function name="BMA_jointness_matrix" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function counts coexistence (jointness) of every pair of variables in the given draw.
-This piece of code was written by Jack (instead of our version which was much much slower)
-*/
-M.jointness_m = upper(M.jointness_m .+ ((M.mod_struct .* M.mod_struct') .&gt; 0))
 </code>
 </gretl-function>
 <gretl-function name="BMA_jointness_measure" type="matrix" private="1">
@@ -854,7 +799,6 @@ Function computes &quot;probability&quot; of the new model and checks if it is b
 if BMA_accept_prob(&amp;M) &gt; log(randgen1(u,0,1))
   # We accept new model
   BMA_model_switch(&quot;ACCEPT&quot;, &amp;M)
-  #BMA_ols(&amp;M)
   return 1
 else
   # We restore old model
@@ -871,24 +815,6 @@ endif
 Function computes lprob for current draw
 */
 M.lprob_new = M.scaling_f[5]*(M.k_new + 1) - M.scaling_f[6]*log(M.scaling_f[3]*M.yMy + M.scaling_f[4])
-</code>
-</gretl-function>
-<gretl-function name="BMA_averaging" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function &quot;averages&quot; posterior results (values must be normalised after MC3)
-*/
-# For PiPs and average model size
-M.mod_size += M.k_new
-M.var_prob += M.mod_struct
-# For coeffs
-if M.k_new &gt; 0
-  matrix indexes = M.X_new_num[2:] - 2
-  M.bhat_avg[indexes] += transp(M.bhat[2:,])
-  M.bvar_avg[indexes] += transp(M.bvar[2:,] + M.bhat[2:,] .^ 2)
-endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_summary" type="void" private="1">
@@ -931,19 +857,6 @@ if M.do_joint != 0
   cnameset(M.jointness_m, M.all_names_sp)
   rnameset(M.jointness_m, M.all_names_sp)
 endif
-# Best models coeffs
-/*
-loop i=1..M.l_rank --quiet
-  M.mod_struct_new = M.mod_rank[i]
-  if nelem(M.mod_struct_new)
-    M.k_new = sumr(M.mod_struct_new)
-    BMA_new_X_matrix(&quot;SUM&quot;, &amp;M)
-    BMA_matrix_precompute(&amp;M)
-    BMA_ols(&amp;M)
-    #M.mod_rank_estimates[i] = M.bhat ~ sqrt(M.bvar) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], M.mod_rank[i])-2))
-  endif
-endloop
-*/
 # Cleaning up the bundle
 delete M.show_progress
 delete M.var_numbers2
@@ -1014,7 +927,6 @@ This is main BMA function with complete MC3 simulation procedure
 # Local variables
 scalar progress = floor(M.Nrep/10) # progress of MCMC
 scalar percentage = progress # percentage of progress of MCMC
-### New Code ###
 string model_id # string containing model id (0-1 'image')
 scalar model_nr	= 1 # iteration number under which model's data are stored in matrices/arrays
 scalar model_nr_old
@@ -1030,7 +942,6 @@ if M.h_predict &gt; 0
 else
   matrices models_forecasts = null
 endif
-### End	###
 # Sample setting for prediction
 if M.h_predict &gt; 0
   smpl 1 M.last_obs
@@ -1058,7 +969,6 @@ loop rep=1..M.Nrep --quiet
   if potential_var &gt; 0
     M.mod_struct_new = M.mod_struct
     M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
-    ### New Code ###
     model_id = sprintf(&quot;%d&quot;, M.mod_struct_new)
     model_id = model_id[1:end-1] # trim the &quot;\n&quot; at the end !!!
     model_nr_old = model_nr
@@ -1085,12 +995,6 @@ loop rep=1..M.Nrep --quiet
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
       endif
     endif
-    ### End	###
-    # We create the new matrix of independent variables and run some precomputes based on it
-    #M.k_new = sum(M.mod_struct_new)
-    #BMA_new_X_matrix(&quot;NORMAL&quot;, &amp;M)
-    #BMA_matrix_precompute(&amp;M)
-    #BMA_lprob(&amp;M)
     # Now we decide if to accept the new model
     accepted = BMA_accep_model(&amp;M)
   endif
@@ -1101,9 +1005,6 @@ loop rep=1..M.Nrep --quiet
       model_nr = model_nr_old
     endif
     models_counter[model_nr] += 1
-    #BMA_build_rank(&amp;M)
-    # Now we compute average model size, PIPs and average values of all coefficients and variances
-    #BMA_averaging(&amp;M)
   endif
   if M.show_progress == 1
     BMA_show_progress(&amp;rep, &amp;percentage, &amp;progress, M.Nrep)
@@ -1437,8 +1338,7 @@ return err
 <code>/*
 Function collects results from MC3 experiment.
 */
-matrix idx, idx_old, models_counter_full, var_idx  bhat, bvar_avg, mod_struct
-###
+matrix idx, idx_old, models_counter_full, var_idx, bhat, mod_struct
 scalar weight = 0
 matrix bhat_avg = zeros(M.k)
 matrix bvar_avg = zeros(M.k)
@@ -1452,7 +1352,7 @@ if M.h_predict
   Yhat_avg = zeros(M.h_predict)
   Yhat_var_avg = zeros(M.h_predict)
 endif
-###
+# Number of visited modles
 M.post_n_models = nelem(known_models)
 known_models = null
 # We select objects only for accepted models
