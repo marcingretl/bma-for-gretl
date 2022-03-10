@@ -74,6 +74,8 @@ function bundle BMA_setup (const series Y,
     matrix M.big_mat_const = { big_list_const } # matrix of all variables (including Y)
     matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) # matrix of all demeaned variables (including Y)
     M.big_mat_dem_const[,2] = 1 # We need substitude bach zeros to ones (the former because of stdize() function)
+    scalar M.post_n_models = 0
+    scalar M.post_n_models_accepted = 0
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
@@ -82,7 +84,6 @@ function bundle BMA_setup (const series Y,
         matrix M.Y_mat_predict = M.big_mat_predict[,1] # "out-of-sample" matrix of the dependent variable
         matrix M.Yhat = zeros(h_predict,1) # vector of Y predictions in current draw
         matrix M.Yhat_var = zeros(h_predict) # vector of Y variances of predictions in current draw
-        matrix M.precision = zeros(h_predict,1) # prediction precision
         matrix M.Yhat_avg = zeros(h_predict,1) # vector of Y predictions - average
         matrix M.Yhat_var_avg = zeros(h_predict,1) # predicion variance
         matrix M.prediction = {} # matrix with prediction results

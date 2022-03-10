@@ -72,12 +72,8 @@ function void BMA_main (bundle *M)
             model_nr_old = model_nr
             if inbundle(known_models, model_id)
                 model_nr = known_models[model_id]
-                M.k_new = sum(M.mod_struct_new) # Wywalić!!!
-                /*
+                M.k_new = sum(M.mod_struct_new)
                 M.lprob_new = models_lprob[model_nr]
-                M.bhat = models_estimates[model_nr][,1]
-                M.bvar = models_estimates[model_nr][,2]                
-                */
             else
                 # We create the new matrix of independent variables and run some precomputes based on it
                 model_nr = rep
@@ -91,17 +87,18 @@ function void BMA_main (bundle *M)
                 models_lprob[model_nr] = M.lprob_new
                 models_estimates[model_nr] = M.bhat ~ M.bvar
                 models_X_new_num[model_nr] = M.X_new_num
+                # Out-of-sample forecasts
                 if M.h_predict > 0 && M.k_new > 0
-                    BMA_forecast2(&M)
+                    BMA_forecast(&M)
                     models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
                 endif                
             endif
             ### End	###
             # We create the new matrix of independent variables and run some precomputes based on it
             #M.k_new = sum(M.mod_struct_new)
-            BMA_new_X_matrix("NORMAL", &M)
-            BMA_matrix_precompute(&M)
-            BMA_lprob(&M)
+            #BMA_new_X_matrix("NORMAL", &M)
+            #BMA_matrix_precompute(&M)
+            #BMA_lprob(&M)
             # Now we decide if to accept the new model
             accepted = BMA_accep_model(&M)
         endif
@@ -112,23 +109,15 @@ function void BMA_main (bundle *M)
                 model_nr = model_nr_old
             endif
             models_counter[model_nr] += 1
-            BMA_build_rank(&M)
+            #BMA_build_rank(&M)
             # Now we compute average model size, PIPs and average values of all coefficients and variances
-            BMA_averaging(&M)
-            # Out-of-sample forecasts
-            if M.h_predict > 0 && M.k_new > 0
-                BMA_forecast(&M)
-            endif
-            # Jointness analysis
-            if M.do_joint != 0
-                BMA_jointness_matrix(&M)
-            endif
+            #BMA_averaging(&M)
         endif
         if M.show_progress == 1
             BMA_show_progress(&rep, &percentage, &progress, M.Nrep)
         endif
     endloop
-    printf "\n"   
+    printf "\n"    
     BMA_collect_results(&M, &known_models, &models_counter, &models_lprob, \
       &models_estimates, &models_structure, &models_X_new_num, &models_forecasts)
 end function

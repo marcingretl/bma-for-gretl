@@ -27,18 +27,27 @@ function void BMA_Print (bundle *M)
     string Y_name = M.Y_name
     series @Y_name = M.Y
     # Additional information in summary
+    model_space = 2^M.k
     printf "\n"
     if M.verbosity == 2
         print "----------------------------------"
-        printf "Prior: %s\n", M.prior_name
+        printf "Model prior: %s\n", M.prior_name
         printf "Prior average model size: %f\n", M.av_model_size
         printf "Significance level for the initial model: %f\n", M.alpha
         printf "g-prior: %s\n", M.gtype
         printf "Total number of iterations: %d\n", M.Nrep
         printf "Number of burn-in draws: %d\n", M.Nburn
+        if model_space < 2^31
+            printf "Total number of possible models: %d\n", model_space
+        else
+            printf "Total number of possible models: %g\n", model_space
+        endif
+        printf "Number of models visited: %d\n", M.post_n_models
+        printf "Number of models accepted: %d\n", M.post_n_models_accepted
         if exists(M.Norig) == 1
             printf "Original number of observations (with missing): %d\n", M.Norig
         endif
+        print "----------------------------------"
         printf "\n"
         print "The initial model:"
         list start_model = M.StartModel
@@ -136,20 +145,20 @@ function void BMA_Print (bundle *M)
     if M.verbosity == 2
         matrix coeffmat
         strings Xnames # names of X-es
+        printf "\n\nBest models estimates:"
         loop i=1..M.l_rank --quiet
-            if M.mod_nume_prob[i] == 0
-                break
-            endif
-            printf "\n"
-            print "----------------------------------"
-            printf "\nModel: %d, posterior probability: %f", i, M.Numerical_Likelihood[i]
-            if sumr(M.mod_rank[i]) == 0
-                printf "\n\n  %s\n", "None of the variables were significant."
-                printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
-            else
-                coeffmat = M.mod_rank_estimates[i][,1:2]
-                Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
-                modprint coeffmat Xnames
+            if M.mod_nume_prob[i]
+                printf "\n"
+                print "----------------------------------"
+                printf "\nModel: %d, posterior probability: %f", i, M.Numerical_Likelihood[i]
+                if sumr(M.mod_rank[i]) == 0
+                    printf "\n\n  %s\n", "None of the variables were significant."
+                    printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
+                else
+                    coeffmat = M.mod_rank_estimates[i][,1:2]
+                    Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
+                    modprint coeffmat Xnames
+                endif
             endif
         endloop
     endif
