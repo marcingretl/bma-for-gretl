@@ -960,22 +960,36 @@ M.mod_struct = M.mod_struct_new
 # Part 2: Markov Chain Monte Carlo
 printf &quot;\nOverall progress: &quot;
 flush
+###
+a = 0
+b = 0
+c = 0
+d = 0
+e = 0
+f = 0
+g = 0
+###
 loop rep=1..M.Nrep --quiet
+  set stopwatch
   # Saving data for the old model
   BMA_model_switch(&quot;SAVE&quot;, &amp;M)
+  a += $stopwatch
   # Now we draw the number of candidate variable
   scalar potential_var = randint(0, M.k)
   # Now we modify the list of variables (remove an existing variable or add a new variable)
   if potential_var &gt; 0
+    set stopwatch
     M.mod_struct_new = M.mod_struct
     M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
     model_id = sprintf(&quot;%d&quot;, M.mod_struct_new)
     model_id = model_id[1:end-1] # trim the &quot;\n&quot; at the end !!!
     model_nr_old = model_nr
+    b += $stopwatch
     if inbundle(known_models, model_id)
       model_nr = known_models[model_id]
       M.k_new = sum(M.mod_struct_new)
       M.lprob_new = models_lprob[model_nr]
+      c += $stopwatch
     else
       # We create the new matrix of independent variables and run some precomputes based on it
       model_nr = rep
@@ -994,9 +1008,11 @@ loop rep=1..M.Nrep --quiet
         BMA_forecast(&amp;M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
       endif
+      d += $stopwatch
     endif
     # Now we decide if to accept the new model
     accepted = BMA_accep_model(&amp;M)
+    e += $stopwatch
   endif
   # Essentials of MCMC: building of rankings, averaging the results and jointness stuff
   # Now we construct rankings
@@ -1006,12 +1022,23 @@ loop rep=1..M.Nrep --quiet
     endif
     models_counter[model_nr] += 1
   endif
+  f += $stopwatch
   if M.show_progress == 1
     BMA_show_progress(&amp;rep, &amp;percentage, &amp;progress, M.Nrep)
   endif
 endloop
 printf &quot;\n&quot;
+set stopwatch
 BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_lprob, &amp;models_estimates, &amp;models_structure, &amp;models_X_new_num, &amp;models_forecasts)
+g += $stopwatch
+suma = a+b+c+d+e+f+g
+printf(&quot;a: %f\n&quot;, a*100/suma)
+printf(&quot;b: %f\n&quot;, b*100/suma)
+printf(&quot;c: %f\n&quot;, c*100/suma)
+printf(&quot;d: %f\n&quot;, d*100/suma)
+printf(&quot;e: %f\n&quot;, e*100/suma)
+printf(&quot;f: %f\n&quot;, f*100/suma)
+printf(&quot;g: %f\n&quot;, g*100/suma)
 </code>
 </gretl-function>
 <gretl-function name="BMA_setup" type="bundle" private="1">
