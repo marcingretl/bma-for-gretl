@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-10</date>
+<date>2022-03-11</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -936,7 +936,7 @@ matrix models_counter = zeros(M.Nrep)
 matrix models_lprob = zeros(M.Nrep)
 matrices models_estimates = array(M.Nrep)
 matrices models_structure = array(M.Nrep)
-matrices models_X_new_num = array(M.Nrep)
+matrices models_X_new_num = null #array(M.Nrep)
 if M.h_predict &gt; 0
   matrices models_forecasts = array(M.Nrep)
 else
@@ -988,7 +988,7 @@ loop rep=1..M.Nrep --quiet
       models_structure[model_nr] = M.mod_struct_new
       models_lprob[model_nr] = M.lprob_new
       models_estimates[model_nr] = M.bhat ~ M.bvar
-      models_X_new_num[model_nr] = M.X_new_num
+      #models_X_new_num[model_nr] = M.X_new_num
       # Out-of-sample forecasts
       if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
         BMA_forecast(&amp;M)
@@ -1338,7 +1338,7 @@ return err
 <code>/*
 Function collects results from MC3 experiment.
 */
-matrix idx, idx_old, models_counter_full, var_idx, bhat, mod_struct
+matrix idx, var_idx, bhat, mod_struct, X_new_num
 scalar weight = 0
 matrix bhat_avg = zeros(M.k)
 matrix bvar_avg = zeros(M.k)
@@ -1352,24 +1352,50 @@ if M.h_predict
   Yhat_avg = zeros(M.h_predict)
   Yhat_var_avg = zeros(M.h_predict)
 endif
-# Number of visited modles
+# We set the number of visited models
 M.post_n_models = nelem(known_models)
 known_models = null
+# We build rankings (analytical and numerical)
+idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
+models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
+if M.l_rank &lt; rows(models_lprob)
+  models_lprob = models_lprob[1:M.l_rank,]
+else
+  M.l_rank = rows(models_lprob)
+endif
+idx = models_lprob[,2]
+M.mod_rank_prob = models_lprob[,1]
+M.mod_nume_prob = models_counter[idx]
+models_structure_rank = models_structure[idx]
+models_estimates_rank = models_estimates[idx]
+# We restore estimates for models in ranking
+loop i=1..nelem(idx) --quiet
+  M.mod_rank[i] = models_structure_rank[i]
+  M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
+endloop
 # We select objects only for accepted models
 idx = selifr(seq(1, M.Nrep)', models_counter .&gt; 0)
 M.post_n_models_accepted = nelem(idx)
-models_counter_full = models_counter[idx]
-models_X_new_num = models_X_new_num[idx]
+models_counter = models_counter[idx]
+#models_X_new_num = models_X_new_num[idx]
 models_estimates = models_estimates[idx]
 models_structure = models_structure[idx]
 if M.h_predict
   models_forecasts = models_forecasts[idx]
 endif
 # We averaging over all accepted models
-loop i=1..nelem(models_counter_full) --quiet
-  weight = models_counter_full[i]
+loop i=1..nelem(models_counter) --quiet
+  weight = models_counter[i]
   mod_struct = models_structure[i]
-  var_idx = (models_X_new_num[i][2:]) - 2
+  #var_idx = (models_X_new_num[i][2:]) - 2
+  ###
+  if sum(mod_struct)
+    X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
+  else
+    X_new_num = { 2 }
+  endif
+  var_idx = X_new_num[2:] - 2
+  ###
   bhat = models_estimates[i][2:,1]
   bhat_avg[var_idx] += weight * bhat
   bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
@@ -1400,29 +1426,6 @@ if M.h_predict
   M.Yhat_avg = Yhat_avg
   M.Yhat_var_avg = Yhat_var_avg
 endif
-# We build rankings (analytical and numerical)
-idx_old = idx
-idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
-models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
-if M.l_rank &lt; rows(models_lprob)
-  models_lprob = models_lprob[1:M.l_rank,]
-else
-  M.l_rank = rows(models_lprob)
-endif
-idx = models_lprob[,2]
-M.mod_rank_prob = models_lprob[,1]
-M.mod_nume_prob = models_counter[idx]
-models_counter = {}
-# We restore estimates for models in ranking
-loop i=1..nelem(idx) --quiet
-  loop j=1..nelem(idx_old) --quiet
-    if idx[i] == idx_old[j]
-      M.mod_rank[i] = models_structure[j]
-      M.mod_rank_estimates[i] = models_estimates[j][,1] ~ sqrt(models_estimates[j][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure[j])-2))
-      break
-    endif
-  endloop
-endloop
 </code>
 </gretl-function>
 <sample-script filename="examples/BMA_sample.inp">

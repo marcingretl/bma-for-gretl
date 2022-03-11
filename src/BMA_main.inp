@@ -31,7 +31,7 @@ function void BMA_main (bundle *M)
     matrix models_lprob = zeros(M.Nrep)
     matrices models_estimates = array(M.Nrep)
     matrices models_structure = array(M.Nrep)
-    matrices models_X_new_num = array(M.Nrep)
+    matrices models_X_new_num = null #array(M.Nrep)
     if M.h_predict > 0
         matrices models_forecasts = array(M.Nrep)
     else
@@ -83,7 +83,7 @@ function void BMA_main (bundle *M)
                 models_structure[model_nr] = M.mod_struct_new
                 models_lprob[model_nr] = M.lprob_new
                 models_estimates[model_nr] = M.bhat ~ M.bvar
-                models_X_new_num[model_nr] = M.X_new_num
+                #models_X_new_num[model_nr] = M.X_new_num
                 # Out-of-sample forecasts
                 if M.h_predict > 0 && M.k_new > 0
                     BMA_forecast(&M)
