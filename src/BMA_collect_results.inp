@@ -22,7 +22,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     /*
        Function collects results from MC3 experiment.
     */
-    matrix idx, idx_old, models_counter_full, var_idx, bhat, mod_struct
+    matrix idx, var_idx, bhat, mod_struct, X_new_num
     scalar weight = 0
     matrix bhat_avg = zeros(M.k)
     matrix bvar_avg = zeros(M.k)
@@ -36,16 +36,36 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         Yhat_avg = zeros(M.h_predict)
         Yhat_var_avg = zeros(M.h_predict)
     endif
-    
-    # Number of visited modles
+
+    # We set the number of visited models
     M.post_n_models = nelem(known_models)
     known_models = null
-    
+
+    # We build rankings (analytical and numerical)
+    idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
+    models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
+    if M.l_rank < rows(models_lprob)
+        models_lprob = models_lprob[1:M.l_rank,]
+    else
+        M.l_rank = rows(models_lprob)
+    endif
+    idx = models_lprob[,2]
+    M.mod_rank_prob = models_lprob[,1]
+    M.mod_nume_prob = models_counter[idx]
+    models_structure_rank = models_structure[idx]
+    models_estimates_rank = models_estimates[idx]
+
+    # We restore estimates for models in ranking
+    loop i=1..nelem(idx) --quiet
+        M.mod_rank[i] = models_structure_rank[i]
+        M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
+    endloop
+
     # We select objects only for accepted models
     idx = selifr(seq(1, M.Nrep)', models_counter .> 0)
     M.post_n_models_accepted = nelem(idx)
-    models_counter_full = models_counter[idx]
-    models_X_new_num = models_X_new_num[idx]
+    models_counter = models_counter[idx]
+    #models_X_new_num = models_X_new_num[idx]
     models_estimates = models_estimates[idx]
     models_structure = models_structure[idx]
     if M.h_predict
@@ -53,10 +73,18 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     endif
 
     # We averaging over all accepted models
-    loop i=1..nelem(models_counter_full) --quiet
-        weight = models_counter_full[i]
+    loop i=1..nelem(models_counter) --quiet
+        weight = models_counter[i]
         mod_struct = models_structure[i]
-        var_idx = (models_X_new_num[i][2:]) - 2
+        #var_idx = (models_X_new_num[i][2:]) - 2
+        ###
+        if sum(mod_struct)
+            X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
+        else
+            X_new_num = { 2 }
+        endif
+        var_idx = X_new_num[2:] - 2
+        ###
         bhat = models_estimates[i][2:,1]
         bhat_avg[var_idx] += weight * bhat
         bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
@@ -88,29 +116,4 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         M.Yhat_avg = Yhat_avg
         M.Yhat_var_avg = Yhat_var_avg
     endif
-
-    # We build rankings (analytical and numerical)
-    idx_old = idx
-    idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
-    models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
-    if M.l_rank < rows(models_lprob)
-        models_lprob = models_lprob[1:M.l_rank,]
-    else
-        M.l_rank = rows(models_lprob)
-    endif
-    idx = models_lprob[,2]
-    M.mod_rank_prob = models_lprob[,1]
-    M.mod_nume_prob = models_counter[idx]
-    models_counter = {}
-    
-    # We restore estimates for models in ranking
-    loop i=1..nelem(idx) --quiet
-        loop j=1..nelem(idx_old) --quiet
-            if idx[i] == idx_old[j]
-                M.mod_rank[i] = models_structure[j]
-                M.mod_rank_estimates[i] = models_estimates[j][,1] ~ sqrt(models_estimates[j][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure[j])-2))
-                break
-            endif
-        endloop
-    endloop
 end function

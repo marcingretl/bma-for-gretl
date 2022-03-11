@@ -6,8 +6,8 @@
         Jacek Kwiatkowski\\Nicolaus Copernicus University in Toruń}
 \Plainauthor{Marcin Błażejowski, Jacek Kwiatkowski}
 
-\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 2.3}
-\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 2.3}
+\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.0-svn}
+\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.0-svn}
 
 \Abstract{Bayesian model averaging is a model-building strategy that
   takes account of model uncertainty in
@@ -30,6 +30,16 @@
 
 \section*{Changelog}
 {\small\begin{description}
+	\item[3.0] New MC3 strategy:
+		\begin{itemize}
+			\item Mechanism for storing characteristics 
+				of already visited models in memory and
+				reuse this data instead of re-estimating.
+			\item Averaging done at the end of MC$^3$ simulation
+				instead of on-the-fly strategy. This may cause
+				slightly different posterior results.
+			\item Get rid off unnecessary functions.
+		\end{itemize}
 	\item[2.3] New algebra strategy and code cleanups:
 		\begin{itemize}
 			\item New mechanism for algebra stuff -- increase in
