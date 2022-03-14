@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-11</date>
+<date>2022-03-13</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -353,30 +353,20 @@ This is general purpose model switching function which
 save and restore old model or save new model
 */
 if MODE == &quot;SAVE&quot;
+  M.X_old_num = M.X_new_num
   if M.h_predict &gt; 0
     M.X_old_predict = M.X_new_predict
     M.ZtZinv_old = M.ZtZinv_new
     M.dj_old = M.dj_new
   endif
-  M.X_old_num = M.X_new_num
-  /*
-  M.mod_struct_old = M.mod_struct
-  M.bhat_old = M.bhat
-  M.bvar_old = M.bvar
-  */
 elif MODE == &quot;RESTORE&quot;
   M.k_new = M.k_old
+  M.X_new_num = M.X_old_num
   if M.h_predict &gt; 0
     M.X_new_predict = M.X_old_predict
     M.ZtZinv_new = M.ZtZinv_old
     M.dj_new = M.dj_old
   endif
-  M.X_new_num = M.X_old_num
-  /*
-  M.mod_struct = M.mod_struct_old
-  M.bhat = M.bhat_old
-  M.bvar = M.bvar_old
-  */
 elif MODE == &quot;ACCEPT&quot;
   M.lprob_old = M.lprob_new
   M.k_old = M.k_new
@@ -928,17 +918,18 @@ This is main BMA function with complete MC3 simulation procedure
 scalar progress = floor(M.Nrep/10) # progress of MCMC
 scalar percentage = progress # percentage of progress of MCMC
 string model_id # string containing model id (0-1 'image')
-scalar model_nr	= 1 # iteration number under which model's data are stored in matrices/arrays
-scalar model_nr_old
+scalar model_nr	# iteration number under which model's data are stored in matrices/arrays
+scalar model_nr_old = 1
 scalar accepted = 0 # 1 if new model was accepted
 bundle known_models
-matrix models_counter = zeros(M.Nrep)
-matrix models_lprob = zeros(M.Nrep)
-matrices models_estimates = array(M.Nrep)
-matrices models_structure = array(M.Nrep)
-matrices models_X_new_num = null #array(M.Nrep)
+matrix models_counter = zeros(M.Nrep+1) # this is because starting model has labeled as 1
+matrix models_lprob = zeros(M.Nrep+1)
+matrices models_estimates = array(M.Nrep+1)
+matrices models_structure = array(M.Nrep+1)
+matrices models_X_new_num = null #array(M.Nrep+1)
+matrix mod_struct_draw
 if M.h_predict &gt; 0
-  matrices models_forecasts = array(M.Nrep)
+  matrices models_forecasts = array(M.Nrep+1)
 else
   matrices models_forecasts = null
 endif
@@ -956,6 +947,20 @@ BMA_lprob(&amp;M)
 BMA_ols(&amp;M)
 M.lprob_old = M.lprob_new
 M.mod_struct = M.mod_struct_new
+#
+model_id = sprintf(&quot;%d&quot;, M.mod_struct)
+model_id = model_id[1:end-1] # we trim the &quot;\n&quot; at the end !!!
+model_nr = M.Nrep+1
+known_models[model_id] = model_nr
+models_structure[model_nr] = M.mod_struct_new
+models_lprob[model_nr] = M.lprob_new
+models_estimates[model_nr] = M.bhat ~ M.bvar
+#models_X_new_num[model_nr] = M.X_new_num
+if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
+  BMA_forecast(&amp;M)
+  models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
+endif
+model_nr_old = model_nr
 ##################
 # Part 2: Markov Chain Monte Carlo
 printf &quot;\nOverall progress: &quot;
@@ -968,7 +973,11 @@ d = 0
 e = 0
 f = 0
 g = 0
+h = 0
+i = 0
+klucz = ones(1,7)
 ###
+printf &quot;\n\n&quot;
 loop rep=1..M.Nrep --quiet
   set stopwatch
   # Saving data for the old model
@@ -976,29 +985,35 @@ loop rep=1..M.Nrep --quiet
   a += $stopwatch
   # Now we draw the number of candidate variable
   scalar potential_var = randint(0, M.k)
-  # Now we modify the list of variables (remove an existing variable or add a new variable)
+  # Now we modify the list of variables (remove an existing variable or add a new one)
   if potential_var &gt; 0
     set stopwatch
-    M.mod_struct_new = M.mod_struct
-    M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
-    model_id = sprintf(&quot;%d&quot;, M.mod_struct_new)
-    model_id = model_id[1:end-1] # trim the &quot;\n&quot; at the end !!!
-    model_nr_old = model_nr
+    #model_nr_old = model_nr
+    #M.mod_struct_new = M.mod_struct
+    mod_struct_draw = M.mod_struct
+    #M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
+    mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
+    #M.k_new = sum(M.mod_struct_new)
+    M.k_new = sum(mod_struct_draw)
+    #model_id = sprintf(&quot;%d&quot;, M.mod_struct_new)
+    model_id = sprintf(&quot;%d&quot;, mod_struct_draw)
+    M.mod_struct_new = mod_struct_draw
+    h += $stopwatch
+    model_id = model_id[1:end-1] # we trim the &quot;\n&quot; at the end !!!
     b += $stopwatch
     if inbundle(known_models, model_id)
       model_nr = known_models[model_id]
-      M.k_new = sum(M.mod_struct_new)
       M.lprob_new = models_lprob[model_nr]
       c += $stopwatch
     else
       # We create the new matrix of independent variables and run some precomputes based on it
-      model_nr = rep
-      M.k_new = sum(M.mod_struct_new)
       BMA_new_X_matrix(&quot;NORMAL&quot;, &amp;M)
       BMA_matrix_precompute(&amp;M)
       BMA_lprob(&amp;M)
       BMA_ols(&amp;M)
-      known_models[model_id] = rep
+      i += $stopwatch
+      model_nr = rep
+      known_models[model_id] = model_nr
       models_structure[model_nr] = M.mod_struct_new
       models_lprob[model_nr] = M.lprob_new
       models_estimates[model_nr] = M.bhat ~ M.bvar
@@ -1012,15 +1027,14 @@ loop rep=1..M.Nrep --quiet
     endif
     # Now we decide if to accept the new model
     accepted = BMA_accep_model(&amp;M)
+    if accepted
+      model_nr_old = model_nr
+    endif
     e += $stopwatch
   endif
-  # Essentials of MCMC: building of rankings, averaging the results and jointness stuff
-  # Now we construct rankings
+  # Now we count models
   if rep &gt; M.Nburn
-    if !accepted
-      model_nr = model_nr_old
-    endif
-    models_counter[model_nr] += 1
+    models_counter[model_nr_old] += 1
   endif
   f += $stopwatch
   if M.show_progress == 1
@@ -1031,10 +1045,12 @@ printf &quot;\n&quot;
 set stopwatch
 BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_lprob, &amp;models_estimates, &amp;models_structure, &amp;models_X_new_num, &amp;models_forecasts)
 g += $stopwatch
-suma = a+b+c+d+e+f+g
+suma = a+b+c+d+e+f+g+h+i
 printf(&quot;a: %f\n&quot;, a*100/suma)
+printf(&quot;h: %f\n&quot;, h*100/suma)
 printf(&quot;b: %f\n&quot;, b*100/suma)
 printf(&quot;c: %f\n&quot;, c*100/suma)
+printf(&quot;i: %f\n&quot;, i*100/suma)
 printf(&quot;d: %f\n&quot;, d*100/suma)
 printf(&quot;e: %f\n&quot;, e*100/suma)
 printf(&quot;f: %f\n&quot;, f*100/suma)
@@ -1060,16 +1076,20 @@ printf(&quot;g: %f\n&quot;, g*100/suma)
   <param name="Norig" type="int"/>
  </params>
 <code>/*
-This function creates BUNDLE holding all BMA information
-#
-Local variables:
-tmp_str - general purpose string
+This function creates BUNDLE holding all BMA information.
 */
+printf &quot;\n#############################################################################\n&quot;
+printf &quot;To do:&quot;
+printf &quot;\n * Check if starting model is printed correctly.&quot;
+printf &quot;\n * Work on speed:&quot;
+printf &quot;\n\t * Move generating model string to function.&quot;
+printf &quot;\n\t * Check if data with NEW/OLD models could be stored in separate bundles.&quot;
+printf &quot;\n * Clean up the code.&quot;
+printf &quot;\n#############################################################################\n&quot;
 bundle M
 list X_list = X_list_m
 list big_list = Y X_list
 list big_list_const = Y const X_list
-string tmp_str = &quot;&quot;
 #
 # Basic parsing and checking
 # Global variables
@@ -1383,7 +1403,7 @@ endif
 M.post_n_models = nelem(known_models)
 known_models = null
 # We build rankings (analytical and numerical)
-idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
+idx = selifr(seq(1, M.Nrep+1)', models_lprob .!= 0)
 models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
 if M.l_rank &lt; rows(models_lprob)
   models_lprob = models_lprob[1:M.l_rank,]
@@ -1401,7 +1421,7 @@ loop i=1..nelem(idx) --quiet
   M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
 endloop
 # We select objects only for accepted models
-idx = selifr(seq(1, M.Nrep)', models_counter .&gt; 0)
+idx = selifr(seq(1, M.Nrep+1)', models_counter .&gt; 0)
 M.post_n_models_accepted = nelem(idx)
 models_counter = models_counter[idx]
 #models_X_new_num = models_X_new_num[idx]
@@ -1415,14 +1435,12 @@ loop i=1..nelem(models_counter) --quiet
   weight = models_counter[i]
   mod_struct = models_structure[i]
   #var_idx = (models_X_new_num[i][2:]) - 2
-  ###
-  if sum(mod_struct)
+  if nelem(mod_struct) &gt; 0 &amp;&amp; sum(mod_struct) &gt; 0
     X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
   else
     X_new_num = { 2 }
   endif
   var_idx = X_new_num[2:] - 2
-  ###
   bhat = models_estimates[i][2:,1]
   bhat_avg[var_idx] += weight * bhat
   bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
