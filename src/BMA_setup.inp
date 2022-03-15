@@ -35,9 +35,8 @@ function bundle BMA_setup (const series Y,
     */
     printf "\n#############################################################################\n"
     printf "To do:"
-    printf "\n * Check if starting model is printed correctly."
-    printf "\n * Work on speed:"
-    printf "\n\t * Check if data with NEW/OLD models could be stored in separate bundles."
+    printf "\n * Work on speed."
+    printf "\n * Change M.mod_struct into M.mod_struct_old to be consistent with other parts of the code."
     printf "\n * Clean up the code."
     printf "\n#############################################################################\n"
     bundle M
