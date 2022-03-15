@@ -37,7 +37,6 @@ function bundle BMA_setup (const series Y,
     printf "To do:"
     printf "\n * Check if starting model is printed correctly."
     printf "\n * Work on speed:"
-    printf "\n\t * Move generating model string to function."
     printf "\n\t * Check if data with NEW/OLD models could be stored in separate bundles."
     printf "\n * Clean up the code."
     printf "\n#############################################################################\n"
