@@ -80,30 +80,30 @@ function void BMA_main (bundle *M)
     h = 0
     i = 0
     ###
-    printf "\n\n"
+    #printf "\n\n"
     loop rep=1..M.Nrep --quiet
-        set stopwatch
+        #set stopwatch
         # Saving data for the old model
         BMA_model_switch("SAVE", &M)
-        a += $stopwatch
+        #a += $stopwatch
 
         # Now we draw the number of candidate variable
         scalar potential_var = randint(0, M.k)
 
         # Now we modify the list of variables (remove an existing variable or add a new one)
         if potential_var > 0
-            set stopwatch
+            #set stopwatch
             mod_struct_draw = M.mod_struct
             mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
             M.k_new = sum(mod_struct_draw)
             M.mod_struct_new = mod_struct_draw
-            h += $stopwatch
+            #h += $stopwatch
             model_id = sprintf("%d", mod_struct_draw)[1:end-1] # we trim the "\n" at the end !!!
             b += $stopwatch
             if inbundle(known_models, model_id)
                 model_nr = known_models[model_id]
                 M.lprob_new = models_lprob[model_nr]
-                c += $stopwatch
+                #c += $stopwatch
             else
                 # We create the new matrix of independent variables and run some precomputes based on it
                 #BMA_new_X_matrix("NORMAL", &M)
@@ -111,7 +111,7 @@ function void BMA_main (bundle *M)
                 #BMA_lprob(&M)
                 #BMA_ols(&M)
                 BMA_estimate(&M, "NORMAL")
-                i += $stopwatch
+                #i += $stopwatch
                 model_nr = rep
                 known_models[model_id] = model_nr
                 models_structure[model_nr] = M.mod_struct_new
@@ -123,31 +123,32 @@ function void BMA_main (bundle *M)
                     BMA_forecast(&M)
                     models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
                 endif
-                d += $stopwatch
+                #d += $stopwatch
             endif
 
             # Now we decide if to accept the new model
             BMA_accep_model(&M, &model_nr_old, &model_nr)
-            e += $stopwatch
+            #e += $stopwatch
         endif
 
         # Now we count models
         if rep > M.Nburn
             models_counter[model_nr_old] += 1
         endif
-        f += $stopwatch
+        #f += $stopwatch
         
         # Flushing output - showing progress
         if M.show_progress == 1
             BMA_show_progress(&rep, &percentage, &progress, M.Nrep)
         endif
     endloop
-    printf "\n"
-    set stopwatch
+    #printf "\n"
+    #set stopwatch
     # Now we collect results (averaging and rankings)
     BMA_collect_results(&M, &known_models, &models_counter, &models_lprob, \
       &models_estimates, &models_structure, &models_X_new_num, &models_forecasts)
-    g += $stopwatch
+    #g += $stopwatch
+    /*
     suma = a+b+c+d+e+f+g+h+i
     printf("a: %f\n", a*100/suma)
     printf("h: %f\n", h*100/suma)
@@ -159,4 +160,5 @@ function void BMA_main (bundle *M)
     printf("f: %f\n", f*100/suma)
     printf("g: %f\n", g*100/suma)
     printf("Total: %f\n", suma)
+    */
 end function
