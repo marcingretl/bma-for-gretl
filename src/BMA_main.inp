@@ -46,10 +46,11 @@ function void BMA_main (bundle *M)
     # Part 1: Starting model
     # We estimate starting model and construct starting mod_rank_struct and mod_rank
     BMA_initial_model(&M)
-    BMA_new_X_matrix("START", &M)
-    BMA_matrix_precompute(&M)
-    BMA_lprob(&M)
-    BMA_ols(&M)
+    #BMA_new_X_matrix("START", &M)
+    #BMA_matrix_precompute(&M)
+    #BMA_lprob(&M)
+    #BMA_ols(&M)
+    BMA_estimate(&M, "START")
     M.lprob_old = M.lprob_new
     M.mod_struct = M.mod_struct_new
     #
@@ -95,14 +96,9 @@ function void BMA_main (bundle *M)
         # Now we modify the list of variables (remove an existing variable or add a new one)
         if potential_var > 0
             set stopwatch
-            #model_nr_old = model_nr
-            #M.mod_struct_new = M.mod_struct
             mod_struct_draw = M.mod_struct
-            #M.mod_struct_new[potential_var] = !M.mod_struct_new[potential_var]
             mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
-            #M.k_new = sum(M.mod_struct_new)
             M.k_new = sum(mod_struct_draw)
-            #model_id = sprintf("%d", M.mod_struct_new)
             M.mod_struct_new = mod_struct_draw
             h += $stopwatch
             model_id = sprintf("%d", mod_struct_draw)
@@ -114,11 +110,11 @@ function void BMA_main (bundle *M)
                 c += $stopwatch
             else
                 # We create the new matrix of independent variables and run some precomputes based on it
-                BMA_new_X_matrix("NORMAL", &M)
-                BMA_matrix_precompute(&M)
-                BMA_lprob(&M)
-                BMA_ols(&M)
-                #BMA_estimate(&M)
+                #BMA_new_X_matrix("NORMAL", &M)
+                #BMA_matrix_precompute(&M)
+                #BMA_lprob(&M)
+                #BMA_ols(&M)
+                BMA_estimate(&M, "NORMAL")
                 i += $stopwatch
                 model_nr = rep
                 known_models[model_id] = model_nr
@@ -147,12 +143,15 @@ function void BMA_main (bundle *M)
             models_counter[model_nr_old] += 1
         endif
         f += $stopwatch
+        
+        # Flushing output - showing progress
         if M.show_progress == 1
             BMA_show_progress(&rep, &percentage, &progress, M.Nrep)
         endif
     endloop
     printf "\n"
     set stopwatch
+    # Now we collect results (averaging and rankings)
     BMA_collect_results(&M, &known_models, &models_counter, &models_lprob, \
       &models_estimates, &models_structure, &models_X_new_num, &models_forecasts)
     g += $stopwatch
