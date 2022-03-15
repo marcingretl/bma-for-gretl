@@ -31,16 +31,19 @@ function bundle BMA_setup (const series Y,
                            bool show_progress,
                            int Norig)
     /*
-       This function creates BUNDLE holding all BMA information
-       #
-       Local variables:
-       tmp_str - general purpose string
+       This function creates BUNDLE holding all BMA information.
     */
+    printf "\n#############################################################################\n"
+    printf "To do:"
+    printf "\n * Check if starting model is printed correctly."
+    printf "\n * Work on speed:"
+    printf "\n\t * Check if data with NEW/OLD models could be stored in separate bundles."
+    printf "\n * Clean up the code."
+    printf "\n#############################################################################\n"
     bundle M
     list X_list = X_list_m
     list big_list = Y X_list
     list big_list_const = Y const X_list
-    string tmp_str = ""
     #
     # Basic parsing and checking
     # Global variables

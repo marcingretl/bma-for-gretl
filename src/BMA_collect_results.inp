@@ -42,7 +42,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     known_models = null
 
     # We build rankings (analytical and numerical)
-    idx = selifr(seq(1, M.Nrep)', models_lprob .!= 0)
+    idx = selifr(seq(1, M.Nrep+1)', models_lprob .!= 0)
     models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
     if M.l_rank < rows(models_lprob)
         models_lprob = models_lprob[1:M.l_rank,]
@@ -62,7 +62,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     endloop
 
     # We select objects only for accepted models
-    idx = selifr(seq(1, M.Nrep)', models_counter .> 0)
+    idx = selifr(seq(1, M.Nrep+1)', models_counter .> 0)
     M.post_n_models_accepted = nelem(idx)
     models_counter = models_counter[idx]
     #models_X_new_num = models_X_new_num[idx]
@@ -76,15 +76,13 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     loop i=1..nelem(models_counter) --quiet
         weight = models_counter[i]
         mod_struct = models_structure[i]
-        #var_idx = (models_X_new_num[i][2:]) - 2
-        ###
-        if sum(mod_struct)
+        #var_idx = (models_X_new_num[i][2:]) - 2        
+        if nelem(mod_struct) > 0 && sum(mod_struct) > 0
             X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
         else
             X_new_num = { 2 }
         endif
-        var_idx = X_new_num[2:] - 2
-        ###
+        var_idx = X_new_num[2:] - 2        
         bhat = models_estimates[i][2:,1]
         bhat_avg[var_idx] += weight * bhat
         bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
