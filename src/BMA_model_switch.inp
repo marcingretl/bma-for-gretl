@@ -15,19 +15,18 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function void BMA_model_switch (string MODE,
-                                bundle *M)
+function void BMA_model_switch (string MODE, bundle *M)
     /*
        This is general purpose model switching function which
-       save and restore old model or save new model
+       save and restore old model or save new model.
     */
     if MODE == "SAVE"
-        M.X_old_num = M.X_new_num        
+        M.X_old_num = M.X_new_num
         if M.h_predict > 0
             M.X_old_predict = M.X_new_predict
             M.ZtZinv_old = M.ZtZinv_new
             M.dj_old = M.dj_new
-        endif        
+        endif
     elif MODE == "RESTORE"
         M.k_new = M.k_old
         M.X_new_num = M.X_old_num
@@ -35,7 +34,7 @@ function void BMA_model_switch (string MODE,
             M.X_new_predict = M.X_old_predict
             M.ZtZinv_new = M.ZtZinv_old
             M.dj_new = M.dj_old
-        endif        
+        endif
     elif MODE == "ACCEPT"
         M.lprob_old = M.lprob_new
         M.k_old = M.k_new
