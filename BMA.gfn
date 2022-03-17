@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-15</date>
+<date>2022-03-17</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -353,20 +353,24 @@ This is general purpose model switching function which
 save and restore old model or save new model.
 */
 if MODE == &quot;SAVE&quot;
-  M.X_old_num = M.X_new_num
+  #M.X_old_num = M.X_new_num
+  /*
   if M.h_predict &gt; 0
     M.X_old_predict = M.X_new_predict
     M.ZtZinv_old = M.ZtZinv_new
     M.dj_old = M.dj_new
   endif
+  */
 elif MODE == &quot;RESTORE&quot;
-  M.k_new = M.k_old
-  M.X_new_num = M.X_old_num
+  #M.k_new = M.k_old
+  #M.X_new_num = M.X_old_num
+  /*
   if M.h_predict &gt; 0
     M.X_new_predict = M.X_old_predict
     M.ZtZinv_new = M.ZtZinv_old
     M.dj_new = M.dj_old
   endif
+  */
 elif MODE == &quot;ACCEPT&quot;
   M.lprob_old = M.lprob_new
   M.k_old = M.k_new
@@ -790,11 +794,31 @@ Function computes &quot;probability&quot; of the new model and checks if it is b
 */
 if BMA_accept_prob(&amp;M) &gt; log(randgen1(u,0,1))
   # We accept new model
+<<<<<<< .working
   BMA_model_switch(&quot;ACCEPT&quot;, &amp;M)
   model_nr_old = model_nr
 else
+||||||| .merge-left.r75
+  BMA_model_switch(&quot;ACCEPT&quot;, &amp;M)
+  return 1
+else
+=======
+  #BMA_model_switch(&quot;ACCEPT&quot;, &amp;M)
+  M.lprob_old = M.lprob_new
+  M.mod_struct = M.mod_struct_new
+  M.k_old = M.k_new
+  model_nr_old = model_nr
+  #else
+>>>>>>> .merge-right.r82
   # We restore old model
+<<<<<<< .working
   BMA_model_switch(&quot;RESTORE&quot;, &amp;M)
+||||||| .merge-left.r75
+  BMA_model_switch(&quot;RESTORE&quot;, &amp;M)
+  return 0
+=======
+  #BMA_model_switch(&quot;RESTORE&quot;, &amp;M)
+>>>>>>> .merge-right.r82
 endif
 </code>
 </gretl-function>
@@ -980,7 +1004,7 @@ i = 0
 loop rep=1..M.Nrep --quiet
   #set stopwatch
   # Saving data for the old model
-  BMA_model_switch(&quot;SAVE&quot;, &amp;M)
+  #BMA_model_switch(&quot;SAVE&quot;, &amp;M)
   #a += $stopwatch
   # Now we draw the number of candidate variable
   scalar potential_var = randint(0, M.k)
@@ -991,8 +1015,17 @@ loop rep=1..M.Nrep --quiet
     mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
     M.k_new = sum(mod_struct_draw)
     M.mod_struct_new = mod_struct_draw
+<<<<<<< .working
     #h += $stopwatch
     model_id = sprintf(&quot;%d&quot;, mod_struct_draw)[1:end-1] # we trim the &quot;\n&quot; at the end !!!
+||||||| .merge-left.r75
+    h += $stopwatch
+    model_id = sprintf(&quot;%d&quot;, mod_struct_draw)
+    model_id = model_id[1:end-1] # we trim the &quot;\n&quot; at the end !!!
+=======
+    h += $stopwatch
+    model_id = sprintf(&quot;%d&quot;, mod_struct_draw)[1:end-1] # we trim the &quot;\n&quot; at the end !!!
+>>>>>>> .merge-right.r82
     b += $stopwatch
     if inbundle(known_models, model_id)
       model_nr = known_models[model_id]
@@ -1020,8 +1053,19 @@ loop rep=1..M.Nrep --quiet
       #d += $stopwatch
     endif
     # Now we decide if to accept the new model
+<<<<<<< .working
     BMA_accep_model(&amp;M, &amp;model_nr_old, &amp;model_nr)
     #e += $stopwatch
+||||||| .merge-left.r75
+    accepted = BMA_accep_model(&amp;M)
+    if accepted
+      model_nr_old = model_nr
+    endif
+    e += $stopwatch
+=======
+    BMA_accep_model(&amp;M, &amp;model_nr_old, &amp;model_nr)
+    e += $stopwatch
+>>>>>>> .merge-right.r82
   endif
   # Now we count models
   if rep &gt; M.Nburn
@@ -1040,15 +1084,28 @@ BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_
 #g += $stopwatch
 /*
 suma = a+b+c+d+e+f+g+h+i
+<<<<<<< .working
 printf(&quot;a: %f\n&quot;, a*100/suma)
 printf(&quot;h: %f\n&quot;, h*100/suma)
 printf(&quot;b: %f, (%f)\n&quot;, b*100/suma, b)
 printf(&quot;c: %f\n&quot;, c*100/suma)
+||||||| .merge-left.r75
+printf(&quot;a: %f\n&quot;, a*100/suma)
+printf(&quot;h: %f\n&quot;, h*100/suma)
+printf(&quot;b: %f\n&quot;, b*100/suma)
+printf(&quot;c: %f\n&quot;, c*100/suma)
+=======
+printf(&quot;a: %f, (%f)\n&quot;, a*100/suma, a)
+printf(&quot;h: %f, (%f)\n&quot;, h*100/suma, h)
+printf(&quot;b: %f, (%f)\n&quot;, b*100/suma, b)
+printf(&quot;c: %f, (%f)\n&quot;, c*100/suma, c)
+>>>>>>> .merge-right.r82
 printf(&quot;i: %f, (%f)\n&quot;, i*100/suma, i)
-printf(&quot;d: %f\n&quot;, d*100/suma)
-printf(&quot;e: %f\n&quot;, e*100/suma)
-printf(&quot;f: %f\n&quot;, f*100/suma)
-printf(&quot;g: %f\n&quot;, g*100/suma)
+printf(&quot;d: %f, (%f)\n&quot;, d*100/suma, d)
+printf(&quot;e: %f, (%f)\n&quot;, e*100/suma, e)
+printf(&quot;f: %f, (%f)\n&quot;, f*100/suma, f)
+printf(&quot;g: %f, (%f)\n&quot;, g*100/suma, g)
+printf(&quot;Total: %f\n&quot;, suma)
 printf(&quot;Total: %f\n&quot;, suma)
 */
 </code>
