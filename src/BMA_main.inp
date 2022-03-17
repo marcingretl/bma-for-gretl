@@ -55,6 +55,7 @@ function void BMA_main (bundle *M)
     #
     model_id = sprintf("%d", M.mod_struct)[1:end-1] # we trim the "\n" at the end !!!
     model_nr = M.Nrep+1
+    model_nr_old = model_nr
     known_models[model_id] = model_nr
     models_structure[model_nr] = M.mod_struct_new
     models_lprob[model_nr] = M.lprob_new
@@ -63,8 +64,7 @@ function void BMA_main (bundle *M)
     if M.h_predict > 0 && M.k_new > 0
         BMA_forecast(&M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
-    endif
-    model_nr_old = model_nr
+    endif    
     ##################
     # Part 2: Markov Chain Monte Carlo
     printf "\nOverall progress: "
@@ -84,7 +84,7 @@ function void BMA_main (bundle *M)
     loop rep=1..M.Nrep --quiet
         #set stopwatch
         # Saving data for the old model
-        BMA_model_switch("SAVE", &M)
+        #BMA_model_switch("SAVE", &M)
         #a += $stopwatch
 
         # Now we draw the number of candidate variable
@@ -150,15 +150,15 @@ function void BMA_main (bundle *M)
     #g += $stopwatch
     /*
     suma = a+b+c+d+e+f+g+h+i
-    printf("a: %f\n", a*100/suma)
-    printf("h: %f\n", h*100/suma)
+    printf("a: %f, (%f)\n", a*100/suma, a)
+    printf("h: %f, (%f)\n", h*100/suma, h)
     printf("b: %f, (%f)\n", b*100/suma, b)
-    printf("c: %f\n", c*100/suma)
+    printf("c: %f, (%f)\n", c*100/suma, c)
     printf("i: %f, (%f)\n", i*100/suma, i)
-    printf("d: %f\n", d*100/suma)
-    printf("e: %f\n", e*100/suma)
-    printf("f: %f\n", f*100/suma)
-    printf("g: %f\n", g*100/suma)
+    printf("d: %f, (%f)\n", d*100/suma, d)
+    printf("e: %f, (%f)\n", e*100/suma, e)
+    printf("f: %f, (%f)\n", f*100/suma, f)
+    printf("g: %f, (%f)\n", g*100/suma, g)
     printf("Total: %f\n", suma)
     */
 end function
