@@ -199,7 +199,7 @@ countries and 41 potential growth determinants for the period 1960 to
 	Applied Econometrics} online data archive
 	(\url{http://qed.econ.queensu.ca/jae/2001-v16.5/fernandez-ley-steel/}).
 	The reported chain (3000000 replications with 33\% burn-in draws)
-	took about 37 minutes of CPU time on a PC with old AMD Phenom II X6
+	took about 704 seconds of CPU time on a PC with old AMD Phenom II X6
 	1100T CPU, 6.0~Gb of RAM running under Debian GNU/Linux. We used
 	\pkg{gretl}~2022b-git compiled by GCC~11.2.0. The seed for RNG was set
 	to 1000000. The dependent variable is the growth rate from 1960--1992.}.
@@ -213,13 +213,13 @@ For example, for the FLS data, the following estimates should appear
 Posterior moments (unconditional and conditional on inclusion):
 PIP         Mean     Std.Dev.    Cond.Mean   Cond.Std.Dev        
 GDPsh560    0.998378    -1.444579     0.305391    -1.446927       0.300031
-Confuncious 0.890878     0.427081     0.189631     0.479393       0.123638
 Life_Exp    0.932297     0.988063     0.404005     1.059816       0.314688
 Equip_Inv   0.904971     0.549653     0.250217     0.607370       0.184734
+Confuncious 0.890878     0.427081     0.189631     0.479393       0.123638
 SubSahara   0.654270    -0.431560     0.369153    -0.659606       0.240550
-Muslim      0.363769     0.130498     0.197138     0.358739       0.157977
-Rule_of_Law 0.416318     0.206002     0.271416     0.494818       0.184491
 Yrs_Open    0.547074     0.312026     0.318952     0.570354       0.196508
+Eco_Org     0.444288     0.152068     0.188617     0.342274       0.122364
+Rule_of_Law 0.416318     0.206002     0.271416     0.494818       0.184491
 ...         ...          ...          ...          ...            ...
 ----------------------------------
 Posterior probability of models:

@@ -34,11 +34,17 @@
 		\begin{itemize}
 			\item Mechanism for storing characteristics 
 				of already visited models in memory and
-				reuse this data instead of re-estimating.
+				reuse this data instead of re-estimating
+				-- huge speedup.
 			\item Averaging done at the end of MC$^3$ simulation
-				instead of on-the-fly strategy. This may cause
+				instead of on-the-fly strategy. 
+			\item (to do) Switch from analytical model probabilities
+				to numerical ones in models ranking. This may cause
 				slightly different posterior results.
-			\item Get rid off unnecessary functions.
+			\item (to do) Get rid off unnecessary functions.
+			\item (to do) Fix bug with variables centering when 
+				prediction is switched on. The posterior results
+				will be slightly different.
 		\end{itemize}
 	\item[2.3] New algebra strategy and code cleanups:
 		\begin{itemize}

@@ -99,7 +99,7 @@ function void BMA_main (bundle *M)
             M.mod_struct_new = mod_struct_draw
             #h += $stopwatch
             model_id = sprintf("%d", mod_struct_draw)[1:end-1] # we trim the "\n" at the end !!!
-            b += $stopwatch
+            #b += $stopwatch
             if inbundle(known_models, model_id)
                 model_nr = known_models[model_id]
                 M.lprob_new = models_lprob[model_nr]
