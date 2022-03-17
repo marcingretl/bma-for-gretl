@@ -35,9 +35,11 @@ function bundle BMA_setup (const series Y,
     */
     printf "\n#############################################################################\n"
     printf "To do:"
-    printf "\n * Work on speed."
+    printf "\n * Fix bug with variables centering when we prediction is switched on."
+    printf "\n * Swap from analitycal probs to numerical ones in models ranking."
     printf "\n * Change M.mod_struct into M.mod_struct_old to be consistent with other parts of the code."
-    printf "\n * Clean up the code."
+    printf "\n * Work on speed."
+    printf "\n * Clean up the code (including getting rid off unused functions)."
     printf "\n#############################################################################\n"
     bundle M
     list X_list = X_list_m
