@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-17</date>
+<date>2022-03-19</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C21</tags>
 <label>Bayesian Model Averaging</label>
@@ -676,36 +676,6 @@ rnameset(jointness_measure, M.all_names_sp_new)
 return jointness_measure
 </code>
 </gretl-function>
-<gretl-function name="BMA_matrix_precompute" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function computes some linear algebra stuff for further computation.
-*/
-if M.k_new &gt; 0
-  if M.h_predict &gt; 0
-    M.ZtZinv_new = invpd(M.X_new[2:,2:])
-  endif
-endif
-matrix M.XtY = M.XtY_cross_const[M.X_new_num]
-M.XtXinv = invpd(M.X_new)
-M.yMy = M.scaling_f[7] - qform(M.XtY',M.XtXinv)
-</code>
-</gretl-function>
-<gretl-function name="BMA_ols" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function computes Bayesian OLS (posterior beta vector end covariance matrix).
-*/
-matrix Vhat = M.XtXinv / (1 + M.scaling_f[1])
-M.bhat = Vhat * M.XtY
-M.dj_new = M.scaling_f[3] * M.yMy + M.scaling_f[4]
-M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
-</code>
-</gretl-function>
 <gretl-function name="BMA_jointness_pairs" type="void" private="1">
  <params count="6">
   <param name="MODE" type="string"/>
@@ -742,33 +712,6 @@ rnameset(pairs_related, pair_names)
 eval pairs_related
 </code>
 </gretl-function>
-<gretl-function name="BMA_new_X_matrix" type="void" private="1">
- <params count="2">
-  <param name="MODE" type="string"/>
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function creates matrix of explanatory variables (demeaned) for current draw.
-MODE - mode in which function operates: START (for starting model) or NORMAL
-*/
-# If we have at least one variable we create new X matrix, otherwise it includes &quot;Ones&quot; only.
-if M.k_new &gt; 0
-  if MODE == &quot;START&quot; # Note: this happens only ones: for the starting model!!!
-    BMA_model_structure(&amp;M)
-  endif
-  M.X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
-  if M.h_predict &gt; 0
-    M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)
-  endif
-else
-  M.X_new_num = { 2 }
-  if M.h_predict &gt; 0
-    M.X_new_predict = {}
-  endif
-endif
-M.X_new = M.big_cross_const[M.X_new_num, M.X_new_num]
-</code>
-</gretl-function>
 <gretl-function name="BMA_forecast" type="void" private="1">
  <params count="1">
   <param name="M" type="bundleref"/>
@@ -794,25 +737,11 @@ Function computes &quot;probability&quot; of the new model and checks if it is b
 */
 if BMA_accept_prob(&amp;M) &gt; log(randgen1(u,0,1))
   # We accept new model
-  #BMA_model_switch(&quot;ACCEPT&quot;, &amp;M)
   M.lprob_old = M.lprob_new
   M.mod_struct = M.mod_struct_new
   M.k_old = M.k_new
   model_nr_old = model_nr
-  #else
-  # We restore old model
-  #BMA_model_switch(&quot;RESTORE&quot;, &amp;M)
 endif
-</code>
-</gretl-function>
-<gretl-function name="BMA_lprob" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function computes lprob for current draw
-*/
-M.lprob_new = M.scaling_f[5]*(M.k_new + 1) - M.scaling_f[6]*log(M.scaling_f[3]*M.yMy + M.scaling_f[4])
 </code>
 </gretl-function>
 <gretl-function name="BMA_summary" type="void" private="1">
@@ -948,10 +877,6 @@ endif
 # Part 1: Starting model
 # We estimate starting model and construct starting mod_rank_struct and mod_rank
 BMA_initial_model(&amp;M)
-#BMA_new_X_matrix(&quot;START&quot;, &amp;M)
-#BMA_matrix_precompute(&amp;M)
-#BMA_lprob(&amp;M)
-#BMA_ols(&amp;M)
 BMA_estimate(&amp;M, &quot;START&quot;)
 M.lprob_old = M.lprob_new
 M.mod_struct = M.mod_struct_new
@@ -972,47 +897,22 @@ endif
 # Part 2: Markov Chain Monte Carlo
 printf &quot;\nOverall progress: &quot;
 flush
-###
-a = 0
-b = 0
-c = 0
-d = 0
-e = 0
-f = 0
-g = 0
-h = 0
-i = 0
-###
-#printf &quot;\n\n&quot;
 loop rep=1..M.Nrep --quiet
-  #set stopwatch
-  # Saving data for the old model
-  #BMA_model_switch(&quot;SAVE&quot;, &amp;M)
-  #a += $stopwatch
   # Now we draw the number of candidate variable
   scalar potential_var = randint(0, M.k)
   # Now we modify the list of variables (remove an existing variable or add a new one)
   if potential_var &gt; 0
-    #set stopwatch
     mod_struct_draw = M.mod_struct
     mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
     M.k_new = sum(mod_struct_draw)
     M.mod_struct_new = mod_struct_draw
-    #h += $stopwatch
-    model_id = sprintf(&quot;%d&quot;, mod_struct_draw)[1:end-1] # we trim the &quot;\n&quot; at the end !!!
-    #b += $stopwatch
+    model_id = sprintf(&quot;%d&quot;, mod_struct_draw)[1:end-1]
     if inbundle(known_models, model_id)
       model_nr = known_models[model_id]
       M.lprob_new = models_lprob[model_nr]
-      #c += $stopwatch
     else
-      # We create the new matrix of independent variables and run some precomputes based on it
-      #BMA_new_X_matrix(&quot;NORMAL&quot;, &amp;M)
-      #BMA_matrix_precompute(&amp;M)
-      #BMA_lprob(&amp;M)
-      #BMA_ols(&amp;M)
+      # We estimate newly drawn model
       BMA_estimate(&amp;M, &quot;NORMAL&quot;)
-      #i += $stopwatch
       model_nr = rep
       known_models[model_id] = model_nr
       models_structure[model_nr] = M.mod_struct_new
@@ -1024,40 +924,21 @@ loop rep=1..M.Nrep --quiet
         BMA_forecast(&amp;M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
       endif
-      #d += $stopwatch
     endif
     # Now we decide if to accept the new model
     BMA_accep_model(&amp;M, &amp;model_nr_old, &amp;model_nr)
-    #e += $stopwatch
   endif
   # Now we count models
   if rep &gt; M.Nburn
     models_counter[model_nr_old] += 1
   endif
-  #f += $stopwatch
   # Flushing output - showing progress
   if M.show_progress == 1
     BMA_show_progress(&amp;rep, &amp;percentage, &amp;progress, M.Nrep)
   endif
 endloop
-#printf &quot;\n&quot;
-#set stopwatch
 # Now we collect results (averaging and rankings)
 BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_lprob, &amp;models_estimates, &amp;models_structure, &amp;models_X_new_num, &amp;models_forecasts)
-#g += $stopwatch
-/*
-suma = a+b+c+d+e+f+g+h+i
-printf(&quot;a: %f, (%f)\n&quot;, a*100/suma, a)
-printf(&quot;h: %f, (%f)\n&quot;, h*100/suma, h)
-printf(&quot;b: %f, (%f)\n&quot;, b*100/suma, b)
-printf(&quot;c: %f, (%f)\n&quot;, c*100/suma, c)
-printf(&quot;i: %f, (%f)\n&quot;, i*100/suma, i)
-printf(&quot;d: %f, (%f)\n&quot;, d*100/suma, d)
-printf(&quot;e: %f, (%f)\n&quot;, e*100/suma, e)
-printf(&quot;f: %f, (%f)\n&quot;, f*100/suma, f)
-printf(&quot;g: %f, (%f)\n&quot;, g*100/suma, g)
-printf(&quot;Total: %f\n&quot;, suma)
-*/
 </code>
 </gretl-function>
 <gretl-function name="BMA_setup" type="bundle" private="1">
@@ -1084,7 +965,6 @@ This function creates BUNDLE holding all BMA information.
 printf &quot;\n#############################################################################\n&quot;
 printf &quot;To do:&quot;
 printf &quot;\n * Fix bug with variables centering when we prediction is switched on.&quot;
-printf &quot;\n * Swap from analitycal probs to numerical ones in models ranking.&quot;
 printf &quot;\n * Change M.mod_struct into M.mod_struct_old to be consistent with other parts of the code.&quot;
 printf &quot;\n * Work on speed.&quot;
 printf &quot;\n * Clean up the code (including getting rid off unused functions).&quot;
@@ -1388,7 +1268,7 @@ return err
 <code>/*
 Function collects results from MC3 experiment.
 */
-matrix idx, var_idx, bhat, mod_struct, X_new_num
+matrix idx, var_idx, bhat, mod_struct, X_new_num, models_probs
 scalar weight = 0
 matrix bhat_avg = zeros(M.k)
 matrix bvar_avg = zeros(M.k)
@@ -1405,24 +1285,6 @@ endif
 # We set the number of visited models
 M.post_n_models = nelem(known_models)
 known_models = null
-# We build rankings (analytical and numerical)
-idx = selifr(seq(1, M.Nrep+1)', models_lprob .!= 0)
-models_lprob = mreverse(msortby(models_lprob[idx] ~ idx, 1))
-if M.l_rank &lt; rows(models_lprob)
-  models_lprob = models_lprob[1:M.l_rank,]
-else
-  M.l_rank = rows(models_lprob)
-endif
-idx = models_lprob[,2]
-M.mod_rank_prob = models_lprob[,1]
-M.mod_nume_prob = models_counter[idx]
-models_structure_rank = models_structure[idx]
-models_estimates_rank = models_estimates[idx]
-# We restore estimates for models in ranking
-loop i=1..nelem(idx) --quiet
-  M.mod_rank[i] = models_structure_rank[i]
-  M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
-endloop
 # We select objects only for accepted models
 idx = selifr(seq(1, M.Nrep+1)', models_counter .&gt; 0)
 M.post_n_models_accepted = nelem(idx)
@@ -1433,7 +1295,20 @@ models_structure = models_structure[idx]
 if M.h_predict
   models_forecasts = models_forecasts[idx]
 endif
-# We averaging over all accepted models
+# We build analytical and numerical rankings
+models_probs = mreverse(msortby(models_counter ~ idx ~ seq(1, M.post_n_models_accepted)', 1))
+M.l_rank = xmin(M.l_rank, M.post_n_models_accepted)
+models_probs = models_probs[1:M.l_rank,]
+M.mod_nume_prob = models_probs[,1]
+M.mod_rank_prob = models_lprob[models_probs[,2]]
+models_structure_rank = models_structure[models_probs[,3]]
+models_estimates_rank = models_estimates[models_probs[,3]]
+# We restore estimates for models in ranking
+loop i=1..M.l_rank --quiet
+  M.mod_rank[i] = models_structure_rank[i]
+  M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
+endloop
+# We average over all accepted models
 loop i=1..nelem(models_counter) --quiet
   weight = models_counter[i]
   mod_struct = models_structure[i]
@@ -1481,7 +1356,10 @@ endif
   <param name="M" type="bundleref"/>
   <param name="MODE" type="string"/>
  </params>
-<code>#string type = NORMAL == 1 ? &quot;NORMAL&quot; : &quot;START&quot;
+<code>/*
+Function performs all computations needed for parameters estimation
+(including prediction) and marginal data density calculation.
+*/
 # This code was in former BMA_new_X_matrix
 # If we have at least one variable we create new X matrix, otherwise it includes &quot;Ones&quot; only.
 if M.k_new &gt; 0

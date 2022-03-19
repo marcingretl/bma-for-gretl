@@ -16,7 +16,10 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_estimate (bundle *M, string MODE)
-    #string type = NORMAL == 1 ? "NORMAL" : "START"
+    /*
+    Function performs all computations needed for parameters estimation
+    (including prediction) and marginal data density calculation.
+    */    
 
     # This code was in former BMA_new_X_matrix
     # If we have at least one variable we create new X matrix, otherwise it includes "Ones" only.
