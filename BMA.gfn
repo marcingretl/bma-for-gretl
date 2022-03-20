@@ -3,9 +3,9 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-19</date>
+<date>2022-03-20</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
-<tags>C11 C21</tags>
+<tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
 <menu-attachment>MAINWIN/Model/LinearModels</menu-attachment>
 <help>
@@ -343,41 +343,6 @@ endif
 return OldStyle
 </code>
 </gretl-function>
-<gretl-function name="BMA_model_switch" type="void" private="1">
- <params count="2">
-  <param name="MODE" type="string"/>
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-This is general purpose model switching function which
-save and restore old model or save new model.
-*/
-if MODE == &quot;SAVE&quot;
-  #M.X_old_num = M.X_new_num
-  /*
-  if M.h_predict &gt; 0
-    M.X_old_predict = M.X_new_predict
-    M.ZtZinv_old = M.ZtZinv_new
-    M.dj_old = M.dj_new
-  endif
-  */
-elif MODE == &quot;RESTORE&quot;
-  #M.k_new = M.k_old
-  #M.X_new_num = M.X_old_num
-  /*
-  if M.h_predict &gt; 0
-    M.X_new_predict = M.X_old_predict
-    M.ZtZinv_new = M.ZtZinv_old
-    M.dj_new = M.dj_old
-  endif
-  */
-elif MODE == &quot;ACCEPT&quot;
-  M.lprob_old = M.lprob_new
-  M.k_old = M.k_new
-  M.mod_struct = M.mod_struct_new
-endif
-</code>
-</gretl-function>
 <gretl-function name="BMA_parse" type="string" private="1">
  <params count="6">
   <param name="M" type="bundleref"/>
@@ -499,6 +464,10 @@ else
 endif
 M.k_old = nelem(last)
 matrix M.StartModel = last
+# If we have at least 1 variables, we construct starting model
+if M.k_new &gt; 0
+  BMA_model_structure(&amp;M)
+endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_model_structure" type="void" private="1">
@@ -738,7 +707,7 @@ Function computes &quot;probability&quot; of the new model and checks if it is b
 if BMA_accept_prob(&amp;M) &gt; log(randgen1(u,0,1))
   # We accept new model
   M.lprob_old = M.lprob_new
-  M.mod_struct = M.mod_struct_new
+  M.mod_struct_old = M.mod_struct_new
   M.k_old = M.k_new
   model_nr_old = model_nr
 endif
@@ -804,7 +773,6 @@ delete M.X_old_predict
 delete M.y_dem_sq
 delete M.y_mean
 delete M.yMy
-delete M.mod_struct
 delete M.mod_struct_new
 delete M.var_prob
 delete M.a
@@ -879,9 +847,9 @@ endif
 BMA_initial_model(&amp;M)
 BMA_estimate(&amp;M, &quot;START&quot;)
 M.lprob_old = M.lprob_new
-M.mod_struct = M.mod_struct_new
+M.mod_struct_old = M.mod_struct_new
 #
-model_id = sprintf(&quot;%d&quot;, M.mod_struct)[1:end-1] # we trim the &quot;\n&quot; at the end !!!
+model_id = sprintf(&quot;%d&quot;, M.mod_struct_old)[1:end-1] # we trim the &quot;\n&quot; at the end !!!
 model_nr = M.Nrep+1
 model_nr_old = model_nr
 known_models[model_id] = model_nr
@@ -902,7 +870,7 @@ loop rep=1..M.Nrep --quiet
   scalar potential_var = randint(0, M.k)
   # Now we modify the list of variables (remove an existing variable or add a new one)
   if potential_var &gt; 0
-    mod_struct_draw = M.mod_struct
+    mod_struct_draw = M.mod_struct_old
     mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
     M.k_new = sum(mod_struct_draw)
     M.mod_struct_new = mod_struct_draw
@@ -965,9 +933,8 @@ This function creates BUNDLE holding all BMA information.
 printf &quot;\n#############################################################################\n&quot;
 printf &quot;To do:&quot;
 printf &quot;\n * Fix bug with variables centering when we prediction is switched on.&quot;
-printf &quot;\n * Change M.mod_struct into M.mod_struct_old to be consistent with other parts of the code.&quot;
-printf &quot;\n * Work on speed.&quot;
-printf &quot;\n * Clean up the code (including getting rid off unused functions).&quot;
+printf &quot;\n * Work on speed (including collecting results without model stuctures).&quot;
+printf &quot;\n * Clean up the code.&quot;
 printf &quot;\n#############################################################################\n&quot;
 bundle M
 list X_list = X_list_m
@@ -1056,7 +1023,7 @@ scalar M.y_mean = meanc(M.Y_mat) # mean of the Y
 scalar M.mod_size = 0 # size of models in MCMC (sum)
 scalar M.yMy = 0 # scalar M.for P_y computation
 matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
-matrix M.mod_struct = zeros(1,M.k) # 0-1 vector containing the structure of the current model
+matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
 matrix M.mod_struct_new = zeros(1,M.k) # 0-1 vector containing the structure of the current model
 matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
 matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
@@ -1064,7 +1031,6 @@ matrices M.mod_rank_estimates = array(l_rank) # estimates of models in ranking
 matrices M.mod_rank = array(l_rank) # estimates of models in ranking
 matrix M.mod_rank_dec = zeros(l_rank) # Decimal representation of models in ranking
 strings M.all_names_sp_new = varnames(X_list)
-matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
 matrix M.bhat_old = {} # column vector containing the estimated coefficients for the old model
 matrix M.bvar_old = {} # column vector containing the variances of the coefficients for the old model
 matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
@@ -1363,9 +1329,11 @@ Function performs all computations needed for parameters estimation
 # This code was in former BMA_new_X_matrix
 # If we have at least one variable we create new X matrix, otherwise it includes &quot;Ones&quot; only.
 if M.k_new &gt; 0
+  /*
   if MODE == &quot;START&quot; # Note: this happens only ones: for the starting model!!!
     BMA_model_structure(&amp;M)
   endif
+  */
   M.X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
   if M.h_predict &gt; 0
     M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)

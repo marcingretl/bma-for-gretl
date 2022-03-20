@@ -47,9 +47,9 @@ function void BMA_main (bundle *M)
     BMA_initial_model(&M)
     BMA_estimate(&M, "START")
     M.lprob_old = M.lprob_new
-    M.mod_struct = M.mod_struct_new
+    M.mod_struct_old = M.mod_struct_new
     #
-    model_id = sprintf("%d", M.mod_struct)[1:end-1] # we trim the "\n" at the end !!!
+    model_id = sprintf("%d", M.mod_struct_old)[1:end-1] # we trim the "\n" at the end !!!
     model_nr = M.Nrep+1
     model_nr_old = model_nr
     known_models[model_id] = model_nr
@@ -71,7 +71,7 @@ function void BMA_main (bundle *M)
 
         # Now we modify the list of variables (remove an existing variable or add a new one)
         if potential_var > 0
-            mod_struct_draw = M.mod_struct
+            mod_struct_draw = M.mod_struct_old
             mod_struct_draw[potential_var] = !mod_struct_draw[potential_var]
             M.k_new = sum(mod_struct_draw)
             M.mod_struct_new = mod_struct_draw

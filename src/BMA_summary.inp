@@ -72,7 +72,6 @@ function void BMA_summary (bundle *M)
     delete M.y_dem_sq
     delete M.y_mean
     delete M.yMy
-    delete M.mod_struct
     delete M.mod_struct_new
     delete M.var_prob
     delete M.a

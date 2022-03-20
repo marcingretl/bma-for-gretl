@@ -1,6 +1,5 @@
 set verbose off
 
-include src/BMA_model_switch.inp
 include src/BMA_parse.inp
 include src/BMA_initial_model.inp
 include src/BMA_model_structure.inp

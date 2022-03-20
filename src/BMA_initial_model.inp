@@ -73,4 +73,9 @@ function void BMA_initial_model (bundle *M)
     endif
     M.k_old = nelem(last)
     matrix M.StartModel = last
+    
+    # If we have at least 1 variables, we construct starting model
+    if M.k_new > 0
+        BMA_model_structure(&M)
+    endif    
 end function
