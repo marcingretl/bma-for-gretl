@@ -16,12 +16,12 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_initial_model (bundle *M)
-    /*
-    Function creates list of variables for the initial model.
-    Local variables:
-    Y		- dependent variable
-    max_k	- number of given indenpendent variables
-    X_list2	- M.X_list in a form of list (not matrix)
+/*
+   Function creates list of variables for the initial model.
+   Local variables:
+   Y		- dependent variable
+   max_k	- number of given indenpendent variables
+   X_list2	- M.X_list in a form of list (not matrix)
     */
     # Starting values of the local variables
     series Y = M.Y
@@ -73,9 +73,17 @@ function void BMA_initial_model (bundle *M)
     endif
     M.k_old = nelem(last)
     matrix M.StartModel = last
-    
+
     # If we have at least 1 variables, we construct starting model
-    if M.k_new > 0
-        BMA_model_structure(&M)
-    endif    
+    if M.k_new
+        # Setting 1 for variables in current draw
+        loop i=1..cols(M.StartModel) --quiet
+            loop j=1..M.k --quiet
+                if M.var_numbers2[1,j] == M.StartModel[i]
+                    M.mod_struct_new[M.var_numbers2[2,j]-1] = 1
+                    break
+                endif
+            endloop
+        endloop
+    endif
 end function

@@ -465,29 +465,17 @@ endif
 M.k_old = nelem(last)
 matrix M.StartModel = last
 # If we have at least 1 variables, we construct starting model
-if M.k_new &gt; 0
-  BMA_model_structure(&amp;M)
-endif
-</code>
-</gretl-function>
-<gretl-function name="BMA_model_structure" type="void" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function constructs structure vector of starting model
-*/
-# Starting values
-matrix M.mod_struct_new = zeros(1,M.k)
-# Setting 1 for variables in current draw
-loop i=1..cols(M.StartModel) --quiet
-  loop j=1..M.k --quiet
-    if M.var_numbers2[1,j] == M.StartModel[i]
-      M.mod_struct_new[M.var_numbers2[2,j]-1] = 1
-      break
-    endif
+if M.k_new
+  # Setting 1 for variables in current draw
+  loop i=1..cols(M.StartModel) --quiet
+    loop j=1..M.k --quiet
+      if M.var_numbers2[1,j] == M.StartModel[i]
+        M.mod_struct_new[M.var_numbers2[2,j]-1] = 1
+        break
+      endif
+    endloop
   endloop
-endloop
+endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_correlation_coeff" type="scalar" private="1">
@@ -845,7 +833,7 @@ endif
 # Part 1: Starting model
 # We estimate starting model and construct starting mod_rank_struct and mod_rank
 BMA_initial_model(&amp;M)
-BMA_estimate(&amp;M, &quot;START&quot;)
+BMA_estimate(&amp;M)
 M.lprob_old = M.lprob_new
 M.mod_struct_old = M.mod_struct_new
 #
@@ -880,7 +868,7 @@ loop rep=1..M.Nrep --quiet
       M.lprob_new = models_lprob[model_nr]
     else
       # We estimate newly drawn model
-      BMA_estimate(&amp;M, &quot;NORMAL&quot;)
+      BMA_estimate(&amp;M)
       model_nr = rep
       known_models[model_id] = model_nr
       models_structure[model_nr] = M.mod_struct_new
@@ -1318,9 +1306,8 @@ endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_estimate" type="void" private="1">
- <params count="2">
+ <params count="1">
   <param name="M" type="bundleref"/>
-  <param name="MODE" type="string"/>
  </params>
 <code>/*
 Function performs all computations needed for parameters estimation
@@ -1328,12 +1315,7 @@ Function performs all computations needed for parameters estimation
 */
 # This code was in former BMA_new_X_matrix
 # If we have at least one variable we create new X matrix, otherwise it includes &quot;Ones&quot; only.
-if M.k_new &gt; 0
-  /*
-  if MODE == &quot;START&quot; # Note: this happens only ones: for the starting model!!!
-    BMA_model_structure(&amp;M)
-  endif
-  */
+if M.k_new
   M.X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
   if M.h_predict &gt; 0
     M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)

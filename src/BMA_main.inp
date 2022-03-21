@@ -45,7 +45,7 @@ function void BMA_main (bundle *M)
     # Part 1: Starting model
     # We estimate starting model and construct starting mod_rank_struct and mod_rank
     BMA_initial_model(&M)
-    BMA_estimate(&M, "START")
+    BMA_estimate(&M)
     M.lprob_old = M.lprob_new
     M.mod_struct_old = M.mod_struct_new
     #
@@ -81,7 +81,7 @@ function void BMA_main (bundle *M)
                 M.lprob_new = models_lprob[model_nr]
             else
                 # We estimate newly drawn model
-                BMA_estimate(&M, "NORMAL")
+                BMA_estimate(&M)
                 model_nr = rep
                 known_models[model_id] = model_nr
                 models_structure[model_nr] = M.mod_struct_new
