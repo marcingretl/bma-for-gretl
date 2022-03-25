@@ -35,8 +35,7 @@ function bundle BMA_setup (const series Y,
     */
     printf "\n#############################################################################\n"
     printf "To do:"
-    printf "\n * Fix bug with variables centering when we prediction is switched on."
-    printf "\n * Work on speed (including collecting results without model stuctures)."
+    printf "\n * Work on speed."
     printf "\n * Clean up the code."
     printf "\n#############################################################################\n"
     bundle M
@@ -75,7 +74,7 @@ function bundle BMA_setup (const series Y,
     matrix M.var_numbers2_const = transp(msortby(transp(M.var_numbers_const[2:2+M.k] | seq(2,2+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
     matrix M.big_mat_const = { big_list_const } # matrix of all variables (including Y)
     matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) # matrix of all demeaned variables (including Y)
-    M.big_mat_dem_const[,2] = 1 # We need substitude bach zeros to ones (the former because of stdize() function)
+    M.big_mat_dem_const[,2] = 1 # We need substitude zeros with ones (the former because of stdize() function)
     scalar M.post_n_models = 0
     scalar M.post_n_models_accepted = 0
     # In case of "out-of-sample" prediction
@@ -92,9 +91,10 @@ function bundle BMA_setup (const series Y,
         strings M.predict_obs_names = obslabel(seq(M.last_obs + 1, $nobs)) # obs labels for forecasts
         smpl 1 M.last_obs # setting sample
         matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
-        matrix M.big_mat_dem = M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
+        matrix M.big_mat_dem = stdize(M.big_mat, -1) #M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
         matrix M.big_mat_const = M.big_mat_const[1:M.last_obs,] # big_mat for limited sample
-        matrix M.big_mat_dem_const = M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
+        matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) #M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
+        M.big_mat_dem_const[,2] = 1
     else
         matrix M.big_mat_dem_predict = {}
         matrix M.Yhat_avg = {}
@@ -124,6 +124,8 @@ function bundle BMA_setup (const series Y,
     matrix M.XtY_cross_const = M.big_mat_dem_const'M.Y_mat
     scalar M.y_mean = meanc(M.Y_mat) # mean of the Y
     scalar M.mod_size = 0 # size of models in MCMC (sum)
+    scalar M.mod_size_av = 0 # Average size of models in MCMC
+    scalar M.mod_size_sd = 0 # Standard deviaton of models size in MCMC
     scalar M.yMy = 0 # scalar M.for P_y computation
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
@@ -167,6 +169,7 @@ function bundle BMA_setup (const series Y,
     matrix M.bvar_avg = zeros(1,M.k) # column vector containing average values of variances of the coefficients (over MCMC)
     matrix M.Numerical_Likelihood = {} # column vector containing numerical probabilities for models
     matrix M.Post_Results = {} # matrix with all posterior results
+    matrix M.mod_sizes = {} # Vector with models size distribution
     # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     # g0 (g-prior)

@@ -19,11 +19,19 @@ function void BMA_summary (bundle *M)
 /*
    We summarise some BMA results and deleting redundand items from the returned bundle
     */
+    
     # Normalisation of numerical probabilities of models in ranking
     M.Numerical_Likelihood = M.mod_nume_prob ./ (M.Nrep - M.Nburn)
     M.Post_Results = transp(M.var_prob ./ (M.Nrep - M.Nburn))
     M.bhat_avg = M.bhat_avg ./ (M.Nrep - M.Nburn)
-    M.bvar_avg = M.bvar_avg ./ (M.Nrep - M.Nburn)
+    M.bvar_avg = M.bvar_avg ./ (M.Nrep - M.Nburn)    
+    
+    # Average model size
+    M.mod_size = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
+    M.mod_sizes[,2] = M.mod_sizes[,2] ./ (M.Nrep - M.Nburn)
+    M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
+    M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
+
     # We construct Post_Results matrix
     matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
     matrix tmp = M.bhat_avg' ~ bvar'
@@ -35,6 +43,7 @@ function void BMA_summary (bundle *M)
     string title = "PIP Mean Std.Dev. Cond.Mean Cond.Std.Dev"
     cnameset(M.Post_Results, title)
     rnameset(M.Post_Results, M.all_names_sp)
+
     # Forecasts
     if M.h_predict > 0
         M.Yhat_avg = M.Yhat_avg ./ (M.Nrep - M.Nburn)
@@ -44,6 +53,7 @@ function void BMA_summary (bundle *M)
         cnameset(M.prediction, M.Y_name ~ " Mean Std.Dev.")
         rnameset(M.prediction, M.predict_obs_names)
     endif
+    
     # Jointess analysis
     if M.do_joint != 0
         # We must clean up principal diagonal
@@ -52,6 +62,7 @@ function void BMA_summary (bundle *M)
         cnameset(M.jointness_m, M.all_names_sp)
         rnameset(M.jointness_m, M.all_names_sp)
     endif
+    
     # Cleaning up the bundle
     delete M.show_progress
     delete M.var_numbers2

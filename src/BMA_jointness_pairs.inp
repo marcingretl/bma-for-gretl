@@ -39,7 +39,7 @@ function void BMA_jointness_pairs (string MODE,
     endloop
     matrix pairs_related = pairs_related[,1]
     loop i=1..nelem(pairs_related) --quiet
-        if abs(pairs_related[i]) == 999
+        if ok(pairs_related[i]) && abs(pairs_related[i]) == 999
             pairs_related[i] = sgn(pairs_related[1]) * 1/0
         endif        
     endloop    

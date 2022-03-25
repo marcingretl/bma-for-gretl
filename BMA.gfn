@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-20</date>
+<date>2022-03-25</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -58,6 +58,7 @@ else
   BMA_main(&amp;MODEL)
   BMA_summary(&amp;MODEL)
   BMA_Print(&amp;MODEL)
+  BMA_Plot(&amp;MODEL)
 endif
 set warnings on
 return MODEL
@@ -107,7 +108,7 @@ endif
 # Standard information (PIPs, Means and so on)
 print &quot;----------------------------------&quot;
 printf &quot;\n&quot;
-printf &quot;Posterior average model size: %f\n&quot;, M.mod_size/(M.Nrep - M.Nburn)
+printf &quot;Posterior average model size: %f and standard deviation: %f\n&quot;, M.mod_size_av, M.mod_size_sd
 printf &quot;\n&quot;
 print &quot;Posterior moments (unconditional and conditional on inclusion):&quot;
 if $version &lt; 20170
@@ -341,6 +342,29 @@ else
   funcerr &quot;BMA needs at least one intenpendent variable.&quot;
 endif
 return OldStyle
+</code>
+</gretl-function>
+<gretl-function name="BMA_Plot" type="void" pkg-role="bundle-plot">
+ <params count="1">
+  <param name="M" type="bundleref"/>
+ </params>
+<code>/*
+BMA result bundle plot function.
+*/
+# Heatmap for variable inclusion
+BMA_heatmap(M, &quot;inclusions&quot;)
+# Heatmap for jointness
+if M.do_joint
+  BMA_heatmap(M, &quot;jointness&quot;)
+endif
+# Models size distribution
+plotmat = mreverse(M.mod_sizes, 1)
+plot plotmat
+  options with-lp fit=none
+  printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Posterior Model Size Distribution&quot;
+  printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
+  printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Fraction&quot;
+end plot --output=display
 </code>
 </gretl-function>
 <gretl-function name="BMA_parse" type="string" private="1">
@@ -618,7 +642,15 @@ loop i=1..M.k --quiet
     elif M.do_joint == 3 # Ley-Steel Measure (LS1)
       jointness_measure[i,j] = log(a/(a + b + c))
     elif M.do_joint == 1 # Doppelhofer-Weeks Measure (DW1)
-      jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
+      if a == 0 &amp;&amp; (a + b)*(a + c) != 0
+        jointness_measure[i,j] = 0
+      elif a == 0 &amp;&amp; (a + b)*(a + c) &gt;= 0
+        jointness_measure[i,j] = loghuge
+      elif a == 0 &amp;&amp; (a + b)*(a + c) &lt; 0
+        jointness_measure[i,j] = -loghuge
+      else
+        jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
+      endif
     elif M.do_joint == 5 # Strachan Measure
       jointness_measure[i,j] = (a+b)/N * (a+c)/N * log(a*N/(b*c))
     elif M.do_joint == 6 # Yule's Q (YQ)
@@ -660,7 +692,7 @@ loop i=1..n_pairs --quiet
 endloop
 matrix pairs_related = pairs_related[,1]
 loop i=1..nelem(pairs_related) --quiet
-  if abs(pairs_related[i]) == 999
+  if ok(pairs_related[i]) &amp;&amp; abs(pairs_related[i]) == 999
     pairs_related[i] = sgn(pairs_related[1]) * 1/0
   endif
 endloop
@@ -713,6 +745,11 @@ M.Numerical_Likelihood = M.mod_nume_prob ./ (M.Nrep - M.Nburn)
 M.Post_Results = transp(M.var_prob ./ (M.Nrep - M.Nburn))
 M.bhat_avg = M.bhat_avg ./ (M.Nrep - M.Nburn)
 M.bvar_avg = M.bvar_avg ./ (M.Nrep - M.Nburn)
+# Average model size
+M.mod_size = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
+M.mod_sizes[,2] = M.mod_sizes[,2] ./ (M.Nrep - M.Nburn)
+M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
+M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
 # We construct Post_Results matrix
 matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
 matrix tmp = M.bhat_avg' ~ bvar'
@@ -818,7 +855,7 @@ matrix models_counter = zeros(M.Nrep+1) # this is because starting model has lab
 matrix models_lprob = zeros(M.Nrep+1)
 matrices models_estimates = array(M.Nrep+1)
 matrices models_structure = array(M.Nrep+1)
-matrices models_X_new_num = null #array(M.Nrep+1)
+matrices models_X_new_num = array(M.Nrep+1) # null
 matrix mod_struct_draw
 if M.h_predict &gt; 0
   matrices models_forecasts = array(M.Nrep+1)
@@ -844,7 +881,7 @@ known_models[model_id] = model_nr
 models_structure[model_nr] = M.mod_struct_new
 models_lprob[model_nr] = M.lprob_new
 models_estimates[model_nr] = M.bhat ~ M.bvar
-#models_X_new_num[model_nr] = M.X_new_num
+models_X_new_num[model_nr] = M.X_new_num
 if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
   BMA_forecast(&amp;M)
   models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
@@ -874,7 +911,7 @@ loop rep=1..M.Nrep --quiet
       models_structure[model_nr] = M.mod_struct_new
       models_lprob[model_nr] = M.lprob_new
       models_estimates[model_nr] = M.bhat ~ M.bvar
-      #models_X_new_num[model_nr] = M.X_new_num
+      models_X_new_num[model_nr] = M.X_new_num
       # Out-of-sample forecasts
       if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
         BMA_forecast(&amp;M)
@@ -920,8 +957,7 @@ This function creates BUNDLE holding all BMA information.
 */
 printf &quot;\n#############################################################################\n&quot;
 printf &quot;To do:&quot;
-printf &quot;\n * Fix bug with variables centering when we prediction is switched on.&quot;
-printf &quot;\n * Work on speed (including collecting results without model stuctures).&quot;
+printf &quot;\n * Work on speed.&quot;
 printf &quot;\n * Clean up the code.&quot;
 printf &quot;\n#############################################################################\n&quot;
 bundle M
@@ -960,7 +996,7 @@ matrix M.var_numbers_const = big_list_const # vector containing numbers of all v
 matrix M.var_numbers2_const = transp(msortby(transp(M.var_numbers_const[2:2+M.k] | seq(2,2+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
 matrix M.big_mat_const = { big_list_const } # matrix of all variables (including Y)
 matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) # matrix of all demeaned variables (including Y)
-M.big_mat_dem_const[,2] = 1 # We need substitude bach zeros to ones (the former because of stdize() function)
+M.big_mat_dem_const[,2] = 1 # We need substitude zeros with ones (the former because of stdize() function)
 scalar M.post_n_models = 0
 scalar M.post_n_models_accepted = 0
 # In case of &quot;out-of-sample&quot; prediction
@@ -977,9 +1013,10 @@ if h_predict &gt; 0
   strings M.predict_obs_names = obslabel(seq(M.last_obs + 1, $nobs)) # obs labels for forecasts
   smpl 1 M.last_obs # setting sample
   matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
-  matrix M.big_mat_dem = M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
+  matrix M.big_mat_dem = stdize(M.big_mat, -1) #M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
   matrix M.big_mat_const = M.big_mat_const[1:M.last_obs,] # big_mat for limited sample
-  matrix M.big_mat_dem_const = M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
+  matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) #M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
+  M.big_mat_dem_const[,2] = 1
 else
   matrix M.big_mat_dem_predict = {}
   matrix M.Yhat_avg = {}
@@ -1009,6 +1046,8 @@ scalar M.y_dem_sq = M.big_cross_const[1,1] # sum of squares of the demeaned Y
 matrix M.XtY_cross_const = M.big_mat_dem_const'M.Y_mat
 scalar M.y_mean = meanc(M.Y_mat) # mean of the Y
 scalar M.mod_size = 0 # size of models in MCMC (sum)
+scalar M.mod_size_av = 0 # Average size of models in MCMC
+scalar M.mod_size_sd = 0 # Standard deviaton of models size in MCMC
 scalar M.yMy = 0 # scalar M.for P_y computation
 matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
 matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
@@ -1049,6 +1088,7 @@ matrix M.bhat_avg = zeros(1,M.k) # column vector containing average values of co
 matrix M.bvar_avg = zeros(1,M.k) # column vector containing average values of variances of the coefficients (over MCMC)
 matrix M.Numerical_Likelihood = {} # column vector containing numerical probabilities for models
 matrix M.Post_Results = {} # matrix with all posterior results
+matrix M.mod_sizes = {} # Vector with models size distribution
 # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
 matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
 # g0 (g-prior)
@@ -1222,11 +1262,13 @@ return err
 <code>/*
 Function collects results from MC3 experiment.
 */
-matrix idx, var_idx, bhat, mod_struct, X_new_num, models_probs
+matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num
+matrices models_structure_rank, models_estimates_rank
 scalar weight = 0
 matrix bhat_avg = zeros(M.k)
 matrix bvar_avg = zeros(M.k)
-scalar mod_size = 0
+matrix mod_sizes = zeros(M.k)
+#scalar mod_size = 0
 matrix var_prob = zeros(1,M.k)
 matrix Post_Results, tmp
 if M.do_joint
@@ -1243,7 +1285,7 @@ known_models = null
 idx = selifr(seq(1, M.Nrep+1)', models_counter .&gt; 0)
 M.post_n_models_accepted = nelem(idx)
 models_counter = models_counter[idx]
-#models_X_new_num = models_X_new_num[idx]
+models_X_new_num = models_X_new_num[idx]
 models_estimates = models_estimates[idx]
 models_structure = models_structure[idx]
 if M.h_predict
@@ -1266,17 +1308,20 @@ endloop
 loop i=1..nelem(models_counter) --quiet
   weight = models_counter[i]
   mod_struct = models_structure[i]
-  #var_idx = (models_X_new_num[i][2:]) - 2
+  var_idx = (models_X_new_num[i][2:]) - 2
+  /*
   if nelem(mod_struct) &gt; 0 &amp;&amp; sum(mod_struct) &gt; 0
     X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
   else
     X_new_num = { 2 }
   endif
   var_idx = X_new_num[2:] - 2
+  */
   bhat = models_estimates[i][2:,1]
   bhat_avg[var_idx] += weight * bhat
   bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
-  mod_size += weight * sumr(mod_struct)
+  #mod_size += weight * sumr(mod_struct)
+  mod_sizes[sumr(mod_struct)] += weight
   var_prob += weight * mod_struct
   if M.do_joint
     jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .&gt; 0))
@@ -1293,7 +1338,7 @@ M.bvar_avg = bvar_avg'
 # Probability of variables
 M.var_prob = var_prob
 # Average model size
-M.mod_size = mod_size
+#M.mod_size = mod_size
 # Jointness analysis
 if M.do_joint
   M.jointness_m = jointness_m
@@ -1303,6 +1348,8 @@ if M.h_predict
   M.Yhat_avg = Yhat_avg
   M.Yhat_var_avg = Yhat_var_avg
 endif
+# Models size distribution
+M.mod_sizes = seq(1, M.k)' ~ mod_sizes
 </code>
 </gretl-function>
 <gretl-function name="BMA_estimate" type="void" private="1">
@@ -1343,6 +1390,121 @@ matrix Vhat = M.XtXinv / (1 + M.scaling_f[1])
 M.bhat = Vhat * M.XtY
 M.dj_new = M.scaling_f[3] * M.yMy + M.scaling_f[4]
 M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
+</code>
+</gretl-function>
+<gretl-function name="BMA_heatmap" type="void" private="1">
+ <params count="2">
+  <param name="M" type="bundle" const="true"/>
+  <param name="MODE" type="string"/>
+ </params>
+<code>/*
+M - BMA result bundle, MODE - string indicating image mode {&quot;inclusions&quot;, &quot;jointness&quot;}
+*/
+scalar nrows, ncols, tmp, height, width, minval, maxval
+string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate
+matrix m
+# We set general image options
+if MODE == &quot;inclusions&quot;
+  title = sprintf(&quot;Variables Inclusions Based on Best %d Models&quot;, M.l_rank)
+  xlabel = &quot;Cumulative Model Probabilities&quot;
+  ylabel = &quot;Variable&quot;
+  colorbox = &quot;unset colorbox&quot;
+  height = xmax(int(M.k/41*768), 480)
+  width = xmin(xmax(int(M.l_rank/20*1024), 640), 1024)
+  m = zeros(M.l_rank, M.k)
+  loop i=1..M.l_rank --quiet
+    m[i,] = M.mod_rank[i]
+  endloop
+  m = mreverse(m')
+  palette = &quot;0 'white', 1 'red'&quot;
+else
+  title = sprintf(&quot;Jointness Based on %s&quot;, M.jointess_measure_names[M.do_joint])
+  xlabel = &quot;Variable&quot;
+  ylabel = xlabel
+  height = xmin(xmax(int(M.k/41*1024), 640), 900)
+  width = xmin(xmax(int(M.k/41*1024), 900), 1024)
+  m = BMA_jointness_measure(&amp;M)
+  minval = minc(minr(m))
+  maxval = maxc(maxr(m))
+  if minval == 0
+    palette = sprintf(&quot;0 'white', %f 'red'&quot;, maxval)
+  else
+    palette = sprintf(&quot;%f 'blue', 0 'white', %f 'red'&quot;, minval, maxval)
+  endif
+  rotate = &quot;set xtics rotate by 45 right&quot;
+endif
+nrows = rows(m)
+ncols = cols(m)
+# We set tics
+ytics = &quot;(&quot;
+loop i=1..M.k --quiet
+  ytics += sprintf(&quot;\&quot;%s\&quot; %d&quot;, M.all_names_sp_new[i], M.k-i)
+  if i == M.k
+    ytics += sprintf(&quot;)&quot;)
+  else
+    ytics += sprintf(&quot;, &quot;)
+  endif
+endloop
+if MODE == &quot;inclusions&quot;
+  xtics = &quot;(&quot;
+  tmp = 0
+  loop i=1..M.l_rank --quiet
+    tmp += M.Numerical_Likelihood[i]
+    xtics += sprintf(&quot;\&quot;%.2f\&quot; %d&quot;, tmp, i-1)
+    if i == M.l_rank
+      xtics += sprintf(&quot;)&quot;)
+    else
+      xtics += sprintf(&quot;, &quot;)
+    endif
+  endloop
+else
+  xtics = ytics
+endif
+# We need to cast given matrix to its string representation
+loop i=1..nrows --quiet
+  loop j=1..ncols --quiet
+    if MODE == &quot;inclusions&quot;
+      grid += sprintf(&quot;%d&quot;, m[i,j])
+    else
+      grid += sprintf(&quot;%.4f&quot;, m[i,j])
+    endif
+    if j == ncols
+      if i != nrows
+        grid += sprintf(&quot;\n&quot;)
+      endif
+    else
+      grid += sprintf(&quot;\t&quot;)
+    endif
+  endloop
+endloop
+# We plot heatmap
+plot
+  printf &quot;set term pngcairo font \&quot;Vera,9\&quot; size %d,%d noenhanced&quot;, width, height
+  literal set encoding utf8
+  literal set nokey
+  literal set datafile missing &quot;&quot;
+  #literal set datafile separator &quot;\t&quot;
+  literal set x2tics 1 format '' scale 0,0.001
+  literal set y2tics 1 format '' scale 0,0.001
+  literal set mx2tics 2
+  literal set my2tics 2
+  printf &quot;set palette defined (%s)&quot;, palette
+  printf &quot;set title \&quot;%s\&quot;&quot;, title
+  printf &quot;set xlabel \&quot;%s\&quot;&quot;, xlabel
+  printf &quot;set ylabel \&quot;%s\&quot;&quot;, ylabel
+  printf &quot;set xtics %s&quot;, xtics
+  printf &quot;set ytics %s&quot;, ytics
+  printf &quot;%s&quot;, colorbox
+  printf &quot;%s&quot;, rotate
+  literal set autoscale fix
+  literal set link x
+  literal set link y
+  literal set grid front mx2tics my2tics lw 2 lt -1 lc rgb 'white'
+  printf &quot;$map &lt;&lt; EOD&quot;
+  printf &quot;%s&quot;, grid
+  printf &quot;EOD&quot;
+  literal plot $map matrix with image
+end plot --output=display
 </code>
 </gretl-function>
 <sample-script filename="examples/BMA_sample.inp">

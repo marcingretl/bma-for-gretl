@@ -60,6 +60,7 @@ function bundle BMA (series Y "Dependent variable",
         BMA_main(&MODEL)
         BMA_summary(&MODEL)
         BMA_Print(&MODEL)
+        BMA_Plot(&MODEL)
     endif
 
     set warnings on

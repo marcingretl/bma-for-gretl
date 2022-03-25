@@ -56,7 +56,7 @@ function void BMA_Print (bundle *M)
     # Standard information (PIPs, Means and so on)
     print "----------------------------------"
     printf "\n"
-    printf "Posterior average model size: %f\n", M.mod_size/(M.Nrep - M.Nburn)
+    printf "Posterior average model size: %f and standard deviation: %f\n", M.mod_size_av, M.mod_size_sd
     printf "\n"
     print "Posterior moments (unconditional and conditional on inclusion):"
     if $version < 20170

@@ -1,7 +1,7 @@
 author = Marcin Błażejowski, Jacek Kwiatkowski
 email = marcin@gretlconference.org
 version = 3.0-svn
-date = 2022-03-20
+date = 2022-03-25
 description = Bayesian Model Averaging for the linear regression models with jointness measures
 tags = C11 C52
 min-version = 2021c
@@ -9,6 +9,7 @@ gui-main = BMA_GUI
 label = Bayesian Model Averaging
 menu-attachment = MAINWIN/Model/LinearModels
 bundle-print = BMA_Print
-public = BMA BMA_Print BMA_GUI BMA_OldStyle
+bundle-plot = BMA_Plot
+public = BMA BMA_Print BMA_GUI BMA_OldStyle BMA_Plot
 help = BMA.pdf
 sample-script = examples/BMA_sample.inp

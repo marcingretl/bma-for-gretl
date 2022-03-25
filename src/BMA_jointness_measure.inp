@@ -33,6 +33,7 @@ function matrix BMA_jointness_measure (bundle *M)
     scalar loghuge = 999 # proxy for infty
     matrix var_prob = M.Post_Results[,1]
     matrix jointness_measure = zeros(rows(M.jointness_m), cols(M.jointness_m))
+
     loop i=1..M.k --quiet
         loop j=i+1..M.k --quiet
             # We compute a,b,c,d
@@ -66,7 +67,15 @@ function matrix BMA_jointness_measure (bundle *M)
             elif M.do_joint == 3 # Ley-Steel Measure (LS1)
                 jointness_measure[i,j] = log(a/(a + b + c))
             elif M.do_joint == 1 # Doppelhofer-Weeks Measure (DW1)
-                jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
+                if a == 0 && (a + b)*(a + c) != 0
+                    jointness_measure[i,j] = 0
+                elif a == 0 && (a + b)*(a + c) >= 0
+                    jointness_measure[i,j] = loghuge
+                elif a == 0 && (a + b)*(a + c) < 0
+                    jointness_measure[i,j] = -loghuge
+                else
+                    jointness_measure[i,j] = log(a*N/((a + b)*(a + c)))
+                endif
             elif M.do_joint == 5 # Strachan Measure
                 jointness_measure[i,j] = (a+b)/N * (a+c)/N * log(a*N/(b*c))
             elif M.do_joint == 6 # Yule's Q (YQ)
@@ -76,8 +85,9 @@ function matrix BMA_jointness_measure (bundle *M)
             endif
         endloop
     endloop
+
     cnameset(jointness_measure, M.all_names_sp_new)
     rnameset(jointness_measure, M.all_names_sp_new)
-    
+
     return jointness_measure
 end function
