@@ -18,7 +18,7 @@
 function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, scalar *av_model_size,
                             scalar *alpha, scalar *l_rank, scalar *g_type, scalar *do_joint,
                             scalar *h_predict, scalar *Nrep, scalar *burn, scalar *verbosity,
-                            scalar *show_progress)
+                            scalar *show_progress, scalar *do_plot)
     /*
        This function checks options bundle and returns error message in
        any problem found.
@@ -33,7 +33,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     scalar arg_val
     string arg_name
     strings Integers = defarray("acc_type", "l_rank", "g_type", "do_joint", "h_predict", "Nrep", "burn", "verbosity")
-    strings Booleans = defarray("show_progress")
+    strings Booleans = defarray("show_progress", "do_plot")
     strings Scalars = defarray("av_model_size", "alpha")
 
     # We set the default Nrep conditional on k
@@ -59,6 +59,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     scalar Options["burn"] = 10
     scalar Options["verbosity"] = 2
     scalar Options["show_progress"] = 1
+    scalar Options["do_plot"] = 0
 
     # General checking, but still needs some manual work
     err2 = bcheck(&Options, UserOpts)
@@ -96,6 +97,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     burn = Options["burn"]
     verbosity = Options["verbosity"]
     show_progress = Options["show_progress"]
+    do_plot = Options["do_plot"]
 
     # We check arguments for valid values
     if acc_type < 1 || acc_type > 2

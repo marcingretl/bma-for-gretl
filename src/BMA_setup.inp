@@ -29,7 +29,8 @@ function bundle BMA_setup (const series Y,
                            int verbosity[1:2:],
                            string Y_name,
                            bool show_progress,
-                           int Norig)
+                           int Norig,
+                           bool do_plot)
     /*
        This function creates BUNDLE holding all BMA information.
     */
@@ -61,6 +62,7 @@ function bundle BMA_setup (const series Y,
     if ok(Norig)
         scalar M.Norig = Norig
     endif
+    scalar M.do_plot = do_plot
     # Local variables
     matrix M.StartModel = {} # list with variables selected in starting model
     matrix M.X_list = X_list # X_list
@@ -77,6 +79,7 @@ function bundle BMA_setup (const series Y,
     M.big_mat_dem_const[,2] = 1 # We need substitude zeros with ones (the former because of stdize() function)
     scalar M.post_n_models = 0
     scalar M.post_n_models_accepted = 0
+    scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts

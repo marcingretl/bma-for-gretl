@@ -35,7 +35,7 @@
 			\item Mechanism for storing characteristics 
 				of already visited models in memory and
 				reuse this data instead of re-estimating
-				-- huge speedup.
+				-- huge speedup up to 66\%.
 			\item Averaging done at the end of MC$^3$ simulation
 				instead of on-the-fly strategy. 
 			\item Switch from analytical model probabilities
@@ -44,13 +44,15 @@
 			\item Get rid off unnecessary functions.
 			\item Fix bug with variables centering when 
 				prediction is switched on. The posterior results
-				will be slightly different.
-			\item (do doc) New BMA\_Plot function for generating graphs.
+				will be slightly different (only standard deviations).
+			\item Add printing prior and posterior model size
+				average and standard deviation.
+			\item (to doc) New BMA\_Plot function for generating graphs.
 		\end{itemize}
 	\item[2.3] New algebra strategy and code cleanups:
 		\begin{itemize}
 			\item New mechanism for algebra stuff -- increase in
-				speedup up to 60\%. What's more, now computational
+				speedup up to 30\%. What's more, now computational
 				time is more or less linear in relation to number of
 				MC replications, is not related with number
 				of observations, and depends only o the number

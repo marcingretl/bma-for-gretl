@@ -48,9 +48,9 @@ function void BMA_heatmap (const bundle M, string MODE)
         minval = minc(minr(m))
         maxval = maxc(maxr(m))
         if minval == 0
-            palette = sprintf("0 'white', %f 'red'", maxval)
+            palette = sprintf("0 'white', %s 'red'", strsub(sprintf("%f", maxval), ",", "."))
         else
-            palette = sprintf("%f 'blue', 0 'white', %f 'red'", minval, maxval)
+            palette = sprintf("%s 'blue', 0 'white', %s 'red'", strsub(sprintf("%f", minval), ",", "."), strsub(sprintf("%f", maxval), ",", "."))
         endif
         rotate = "set xtics rotate by 45 right"
     endif
@@ -89,7 +89,7 @@ function void BMA_heatmap (const bundle M, string MODE)
             if MODE == "inclusions"
                 grid += sprintf("%d", m[i,j])
             else
-                grid += sprintf("%.4f", m[i,j])
+                grid += strsub(sprintf("%.4f", m[i,j]), ",", ".")
             endif
             if j == ncols
                 if i != nrows
@@ -105,6 +105,7 @@ function void BMA_heatmap (const bundle M, string MODE)
     plot
         printf "set term pngcairo font \"Vera,9\" size %d,%d noenhanced", width, height
         literal set encoding utf8
+        literal set decimalsign '.'
         literal set nokey
         literal set datafile missing ""
         #literal set datafile separator "\t"

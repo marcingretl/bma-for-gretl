@@ -32,7 +32,7 @@ function void BMA_Plot (bundle *M)
     plotmat = mreverse(M.mod_sizes, 1)
     plot plotmat
         options with-lp fit=none
-        printf "set title \"%s\"", "Posterior Model Size Distribution"
+        printf "set title \"%s\"", "Model Size Distribution"
         printf "set xlabel \"%s\"", "Model Size"
         printf "set ylabel \"%s\"", "Fraction"
     end plot --output=display

@@ -16,21 +16,37 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_summary (bundle *M)
-/*
+    /*
    We summarise some BMA results and deleting redundand items from the returned bundle
     */
+    scalar tmps, factor
+    string title
+    scalar NORM = M.Nrep - M.Nburn
     
     # Normalisation of numerical probabilities of models in ranking
-    M.Numerical_Likelihood = M.mod_nume_prob ./ (M.Nrep - M.Nburn)
-    M.Post_Results = transp(M.var_prob ./ (M.Nrep - M.Nburn))
-    M.bhat_avg = M.bhat_avg ./ (M.Nrep - M.Nburn)
-    M.bvar_avg = M.bvar_avg ./ (M.Nrep - M.Nburn)    
-    
-    # Average model size
+    M.Numerical_Likelihood = M.mod_nume_prob ./ NORM
+    M.Post_Results = transp(M.var_prob ./ NORM)
+    M.bhat_avg = M.bhat_avg ./ NORM
+    M.bvar_avg = M.bvar_avg ./ NORM
+        
+    # Average model size (including matrix for plot)
     M.mod_size = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
-    M.mod_sizes[,2] = M.mod_sizes[,2] ./ (M.Nrep - M.Nburn)
+    M.mod_sizes[,2] = M.mod_sizes[,2] ./ NORM
     M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
     M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
+    M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
+    tmps = M.av_model_size/M.k
+    loop i=1..rows(M.mod_sizes) --quiet
+        if i == M.k
+            factor = 1
+        else
+            factor = prodr(seq(1,M.k)) / (prodr(seq(1,i)) * prodr(seq(1,M.k-i)))
+        endif        
+        M.mod_sizes[i,3] = (tmps^i * (1-tmps)^(M.k-i)) * factor        
+    endloop
+    M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
+    title = "Size Posterior Prior"
+    cnameset(M.mod_sizes, title)
 
     # We construct Post_Results matrix
     matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
@@ -40,14 +56,14 @@ function void BMA_summary (bundle *M)
     M.Post_Results = M.Post_Results ~ tmp
     tmp = sqrt((M.Post_Results[,3] .* M.Post_Results[,3] .+ M.Post_Results[,2] .* M.Post_Results[,2]) ./ M.Post_Results[,1] .- M.Post_Results[,4] .* M.Post_Results[,4])
     M.Post_Results = M.Post_Results ~ tmp
-    string title = "PIP Mean Std.Dev. Cond.Mean Cond.Std.Dev"
+    title = "PIP Mean Std.Dev. Cond.Mean Cond.Std.Dev"
     cnameset(M.Post_Results, title)
     rnameset(M.Post_Results, M.all_names_sp)
 
     # Forecasts
     if M.h_predict > 0
-        M.Yhat_avg = M.Yhat_avg ./ (M.Nrep - M.Nburn)
-        M.Yhat_var_avg = M.Yhat_var_avg ./ (M.Nrep - M.Nburn)
+        M.Yhat_avg = M.Yhat_avg ./ NORM
+        M.Yhat_var_avg = M.Yhat_var_avg ./ NORM
         M.Yhat_var_avg = sqrt(M.Yhat_var_avg - M.Yhat_avg .^ 2)
         M.prediction = M.Y_mat_predict ~ M.Yhat_avg ~ M.Yhat_var_avg
         cnameset(M.prediction, M.Y_name ~ " Mean Std.Dev.")
@@ -58,7 +74,7 @@ function void BMA_summary (bundle *M)
     if M.do_joint != 0
         # We must clean up principal diagonal
         M.jointness_m[diag] = 0
-        M.jointness_m = M.jointness_m ./ (M.Nrep - M.Nburn)
+        M.jointness_m = M.jointness_m ./ NORM
         cnameset(M.jointness_m, M.all_names_sp)
         rnameset(M.jointness_m, M.all_names_sp)
     endif
