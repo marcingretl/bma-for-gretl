@@ -16,10 +16,10 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_Plot (bundle *M)
-    /*
-    BMA result bundle plot function.
+/*
+   BMA result bundle plot function.
     */
-    
+
     # Heatmap for variable inclusion
     BMA_heatmap(M, "inclusions")
 
@@ -35,5 +35,15 @@ function void BMA_Plot (bundle *M)
         printf "set title \"%s\"", "Model Size Distribution"
         printf "set xlabel \"%s\"", "Model Size"
         printf "set ylabel \"%s\"", "Fraction"
+    end plot --output=display
+
+    # Models size CDF
+    plotmat = M.models_probs_cdf
+    plot plotmat
+        options with-line fit=none
+        literal set grid
+        printf "set title \"%s\"", "Model Size CDF"
+        printf "set xlabel \"%s\"", "Number of Models"
+        printf "set ylabel \"%s\"", "Posterior Probability Mass"        
     end plot --output=display
 end function

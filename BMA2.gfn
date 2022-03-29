@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA2" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-27</date>
+<date>2022-03-29</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -129,7 +129,17 @@ printf &quot;\n&quot;
 print &quot;----------------------------------&quot;
 printf &quot;\n&quot;
 print &quot;Posterior probability of models:&quot;
-loop for i=1..M.l_rank --quiet
+loop i=1..rows(M.models_probs_percents) --quiet
+  if i &lt;= 4
+    printf &quot;Best %d\t models account for %.4f of mass\n&quot;, M.models_probs_percents[i,1], M.models_probs_percents[i,2]
+  elif i == rows(M.models_probs_percents)
+    printf &quot;Best %d models account for %.4f of mass\n&quot;, M.models_probs_percents[i,1], M.models_probs_percents[i,2]
+  else
+    printf &quot;Best %d models account for %.4f of mass\n&quot;, M.models_probs_percents[i,1], M.models_probs_percents[i,2]
+  endif
+endloop
+printf &quot;\nBest models ranking:\n&quot;
+loop i=1..M.l_rank --quiet
   printf &quot;Model %d:\t%f\n&quot;, i, M.Numerical_Likelihood[i]
 endloop
 printf &quot;Total probability of the models in ranking (numerical): %f\n&quot;, sumc(M.Numerical_Likelihood)
@@ -377,6 +387,15 @@ plot plotmat
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size Distribution&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Fraction&quot;
+end plot --output=display
+# Models size CDF
+plotmat = M.models_probs_cdf
+plot plotmat
+  options with-line fit=none
+  literal set grid
+  printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size CDF&quot;
+  printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Number of Models&quot;
+  printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Posterior Probability Mass&quot;
 end plot --output=display
 </code>
 </gretl-function>
@@ -755,6 +774,7 @@ We summarise some BMA results and deleting redundand items from the returned bun
 */
 scalar tmps, factor
 string title
+matrix percents1, percents2
 scalar NORM = M.Nrep - M.Nburn
 # Normalisation of numerical probabilities of models in ranking
 M.Numerical_Likelihood = M.mod_nume_prob ./ NORM
@@ -777,8 +797,53 @@ loop i=1..rows(M.mod_sizes) --quiet
   M.mod_sizes[i,3] = (tmps^i * (1-tmps)^(M.k-i)) * factor
 endloop
 M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
+# Models size distribution
 title = &quot;Size Posterior Prior&quot;
 cnameset(M.mod_sizes, title)
+# Models size CDF
+M.models_probs_cum = M.models_probs_cum / NORM
+if M.post_n_models_accepted &lt; 100
+  factor = 1
+else
+  factor = int(M.post_n_models_accepted/100)
+endif
+M.models_probs_cdf = seq(1, M.post_n_models_accepted, factor)'
+M.models_probs_cdf = M.models_probs_cum[M.models_probs_cdf] ~ M.models_probs_cdf
+# Best 100 models
+percents1 = { 5; 25; 50; 75; 100 }
+#percents1 = selifr(percents1, percents1 .&gt; M.l_rank)
+percents1 = selifr(percents1, percents1 .&lt; M.post_n_models_accepted)
+percents1 = percents1 ~ zeros(nelem(percents1))
+if rows(percents1) &gt; 0
+  loop i=1..rows(percents1) --quiet
+    percents1[i,2] = M.models_probs_cum[percents1[i,1]]
+  endloop
+  percents1 = selifr(percents1, percents1[,2] .&gt; 0)
+endif
+# We look for certain percentiles
+percents2 = { 50; 75; 90; 95; 99 }
+if nelem(percents1) &gt; 0
+  percents2 = selifr(percents2, percents2 .&gt; percents1[rows(percents1),2])
+  tmps = percents1[rows(percents1),1]
+else
+  tmps = 1
+endif
+percents2 = zeros(nelem(percents2)) ~ percents2
+nr = 1
+loop i=tmps..M.post_n_models_accepted-1 --quiet
+  if 100*M.models_probs_cum[i] &gt;= percents2[nr,2]
+    percents2[nr,1] = i
+    percents2[nr++,2] = M.models_probs_cum[i]
+  endif
+  if nr == rows(percents2)+1 || nr &gt; M.post_n_models_accepted
+    break
+  endif
+endloop
+percents2 = selifr(percents2, percents2[,1] .&gt; 0)
+M.models_probs_percents = percents2 | { M.post_n_models_accepted , 1 }
+if nelem(percents1) &gt; 0
+  M.models_probs_percents = percents1 | M.models_probs_percents
+endif
 # We construct Post_Results matrix
 matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
 matrix tmp = M.bhat_avg' ~ bvar'
@@ -864,6 +929,7 @@ delete M.X_list
 delete M.XtY_cross_const
 delete M.Y_mat
 delete M.all_names_sp
+delete M.models_probs_cum
 </code>
 </gretl-function>
 <gretl-function name="BMA_main" type="void" private="1">
@@ -1121,6 +1187,9 @@ matrix M.bvar_avg = zeros(1,M.k) # column vector containing average values of va
 matrix M.Numerical_Likelihood = {} # column vector containing numerical probabilities for models
 matrix M.Post_Results = {} # matrix with all posterior results
 matrix M.mod_sizes = {} # Vector with models size distribution
+matrix M.models_probs_percents = {} # CDF-like matrix for accepted models
+matrix M.models_probs_cdf = {} # accepted models CDF
+matrix M.models_probs_cum = {} # accepted models cumulation
 # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
 matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
 # g0 (g-prior)
@@ -1297,8 +1366,9 @@ return err
 <code>/*
 Function collects results from MC3 experiment.
 */
-matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num
+matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num #, models_probs_cum, percents1, percents2
 matrices models_structure_rank, models_estimates_rank
+scalar nr
 scalar weight = 0
 matrix bhat_avg = zeros(M.k)
 matrix bvar_avg = zeros(M.k)
@@ -1326,8 +1396,10 @@ models_structure = models_structure[idx]
 if M.h_predict
   models_forecasts = models_forecasts[idx]
 endif
-# We build analytical and numerical rankings
+# Models size cumulative distribution
 models_probs = mreverse(msortby(models_counter ~ idx ~ seq(1, M.post_n_models_accepted)', 1))
+M.models_probs_cum = cum(dsort(models_probs[,1]))
+# We build analytical and numerical rankings
 M.l_rank = xmin(M.l_rank, M.post_n_models_accepted)
 models_probs = models_probs[1:M.l_rank,]
 M.mod_nume_prob = models_probs[,1]
@@ -1458,7 +1530,7 @@ else
   ylabel = xlabel
   height = xmin(xmax(int(M.k/41*1024), 640), 900)
   width = xmin(xmax(int(M.k/41*1024), 900), 1024)
-  m = BMA_jointness_measure(&amp;M)
+  m = mreverse(BMA_jointness_measure(&amp;M))
   minval = minc(minr(m))
   maxval = maxc(maxr(m))
   if minval == 0
@@ -1480,8 +1552,8 @@ loop i=1..M.k --quiet
     ytics += sprintf(&quot;, &quot;)
   endif
 endloop
+xtics = &quot;(&quot;
 if MODE == &quot;inclusions&quot;
-  xtics = &quot;(&quot;
   tmp = 0
   loop i=1..M.l_rank --quiet
     tmp += M.Numerical_Likelihood[i]
@@ -1493,7 +1565,14 @@ if MODE == &quot;inclusions&quot;
     endif
   endloop
 else
-  xtics = ytics
+  loop i=1..M.k --quiet
+    xtics += sprintf(&quot;\&quot;%s\&quot; %d&quot;, M.all_names_sp_new[i], i-1)
+    if i == M.k
+      xtics += sprintf(&quot;)&quot;)
+    else
+      xtics += sprintf(&quot;, &quot;)
+    endif
+  endloop
 endif
 # We need to cast given matrix to its string representation
 loop i=1..nrows --quiet

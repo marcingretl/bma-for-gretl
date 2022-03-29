@@ -17,18 +17,19 @@
 */
 function void BMA_summary (bundle *M)
     /*
-   We summarise some BMA results and deleting redundand items from the returned bundle
+    We summarise some BMA results and deleting redundand items from the returned bundle
     */
     scalar tmps, factor
     string title
+    matrix percents1, percents2
     scalar NORM = M.Nrep - M.Nburn
-    
+
     # Normalisation of numerical probabilities of models in ranking
     M.Numerical_Likelihood = M.mod_nume_prob ./ NORM
     M.Post_Results = transp(M.var_prob ./ NORM)
     M.bhat_avg = M.bhat_avg ./ NORM
     M.bvar_avg = M.bvar_avg ./ NORM
-        
+
     # Average model size (including matrix for plot)
     M.mod_size = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
     M.mod_sizes[,2] = M.mod_sizes[,2] ./ NORM
@@ -41,12 +42,61 @@ function void BMA_summary (bundle *M)
             factor = 1
         else
             factor = prodr(seq(1,M.k)) / (prodr(seq(1,i)) * prodr(seq(1,M.k-i)))
-        endif        
-        M.mod_sizes[i,3] = (tmps^i * (1-tmps)^(M.k-i)) * factor        
+        endif
+        M.mod_sizes[i,3] = (tmps^i * (1-tmps)^(M.k-i)) * factor
     endloop
     M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
+
+    # Models size distribution
     title = "Size Posterior Prior"
     cnameset(M.mod_sizes, title)
+
+    # Models size CDF
+    M.models_probs_cum = M.models_probs_cum / NORM
+    if M.post_n_models_accepted < 100
+        factor = 1
+    else
+        factor = int(M.post_n_models_accepted/100)
+    endif
+    M.models_probs_cdf = seq(1, M.post_n_models_accepted, factor)'
+    M.models_probs_cdf = M.models_probs_cum[M.models_probs_cdf] ~ M.models_probs_cdf
+
+    # Best 100 models
+    percents1 = { 5; 25; 50; 75; 100 }
+    #percents1 = selifr(percents1, percents1 .> M.l_rank)
+    percents1 = selifr(percents1, percents1 .< M.post_n_models_accepted)
+    percents1 = percents1 ~ zeros(nelem(percents1))
+    if rows(percents1) > 0
+        loop i=1..rows(percents1) --quiet
+            percents1[i,2] = M.models_probs_cum[percents1[i,1]]
+        endloop
+    percents1 = selifr(percents1, percents1[,2] .> 0)
+    endif    
+
+    # We look for certain percentiles
+    percents2 = { 50; 75; 90; 95; 99 }
+    if nelem(percents1) > 0
+        percents2 = selifr(percents2, percents2 .> percents1[rows(percents1),2])
+        tmps = percents1[rows(percents1),1]
+    else
+        tmps = 1
+    endif    
+    percents2 = zeros(nelem(percents2)) ~ percents2
+    nr = 1
+    loop i=tmps..M.post_n_models_accepted-1 --quiet
+        if 100*M.models_probs_cum[i] >= percents2[nr,2]
+            percents2[nr,1] = i
+            percents2[nr++,2] = M.models_probs_cum[i]
+        endif
+        if nr == rows(percents2)+1 || nr > M.post_n_models_accepted
+            break
+        endif
+    endloop
+    percents2 = selifr(percents2, percents2[,1] .> 0)
+    M.models_probs_percents = percents2 | { M.post_n_models_accepted , 1 }
+    if nelem(percents1) > 0
+        M.models_probs_percents = percents1 | M.models_probs_percents
+    endif    
 
     # We construct Post_Results matrix
     matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
@@ -69,7 +119,7 @@ function void BMA_summary (bundle *M)
         cnameset(M.prediction, M.Y_name ~ " Mean Std.Dev.")
         rnameset(M.prediction, M.predict_obs_names)
     endif
-    
+
     # Jointess analysis
     if M.do_joint != 0
         # We must clean up principal diagonal
@@ -78,7 +128,7 @@ function void BMA_summary (bundle *M)
         cnameset(M.jointness_m, M.all_names_sp)
         rnameset(M.jointness_m, M.all_names_sp)
     endif
-    
+
     # Cleaning up the bundle
     delete M.show_progress
     delete M.var_numbers2
@@ -136,4 +186,5 @@ function void BMA_summary (bundle *M)
     delete M.XtY_cross_const
     delete M.Y_mat
     delete M.all_names_sp
+    delete M.models_probs_cum
 end function

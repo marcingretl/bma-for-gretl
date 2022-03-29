@@ -16,9 +16,9 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_heatmap (const bundle M, string MODE)
-    /*
-    M - BMA result bundle,
-    MODE - string indicating image mode {"inclusions", "jointness"}
+/*
+   M - BMA result bundle,
+   MODE - string indicating image mode {"inclusions", "jointness"}
     */
     scalar nrows, ncols, tmp, height, width, minval, maxval
     string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate
@@ -44,7 +44,7 @@ function void BMA_heatmap (const bundle M, string MODE)
         ylabel = xlabel
         height = xmin(xmax(int(M.k/41*1024), 640), 900)
         width = xmin(xmax(int(M.k/41*1024), 900), 1024)
-        m = BMA_jointness_measure(&M)
+        m = mreverse(BMA_jointness_measure(&M))
         minval = minc(minr(m))
         maxval = maxc(maxr(m))
         if minval == 0
@@ -67,8 +67,8 @@ function void BMA_heatmap (const bundle M, string MODE)
             ytics += sprintf(", ")
         endif
     endloop
+    xtics = "("
     if MODE == "inclusions"
-        xtics = "("
         tmp = 0
         loop i=1..M.l_rank --quiet
             tmp += M.Numerical_Likelihood[i]
@@ -80,7 +80,14 @@ function void BMA_heatmap (const bundle M, string MODE)
             endif
         endloop
     else
-        xtics = ytics
+        loop i=1..M.k --quiet
+            xtics += sprintf("\"%s\" %d", M.all_names_sp_new[i], i-1)
+            if i == M.k
+                xtics += sprintf(")")
+            else
+                xtics += sprintf(", ")
+            endif
+        endloop
     endif
 
     # We need to cast given matrix to its string representation

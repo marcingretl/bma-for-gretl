@@ -144,6 +144,7 @@ function bundle BMA_setup (const series Y,
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
     string M.Y_name = Y_name # string with name of denpendent variable
+    
     if do_joint != 0
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
         strings M.jointess_measure_names = defarray("Doppelhofer-Weeks Measure (DW1)", \
@@ -153,6 +154,7 @@ function bundle BMA_setup (const series Y,
     else
         matrix M.jointness_m = {}
     endif
+    
     if acc_type == 1 # options for the prior
         string M.prior_name = "Binomial"
         scalar M.a = log(av_model_size/M.k)
@@ -164,6 +166,7 @@ function bundle BMA_setup (const series Y,
         scalar M.b = (M.k - av_model_size)/av_model_size
         scalar M.c = lngamma(M.a + M.b) - lngamma(M.a) - lngamma(M.b)
     endif
+
     matrix M.bhat = {} # column vector containing the estimated coefficients for the current model
     matrix M.bvar = {} # column vector containing the variances of the coefficients for the current model
     matrix M.XtY = {} # X'Y (part of OLS)
@@ -173,6 +176,10 @@ function bundle BMA_setup (const series Y,
     matrix M.Numerical_Likelihood = {} # column vector containing numerical probabilities for models
     matrix M.Post_Results = {} # matrix with all posterior results
     matrix M.mod_sizes = {} # Vector with models size distribution
+    matrix M.models_probs_percents = {} # CDF-like matrix for accepted models
+    matrix M.models_probs_cdf = {} # accepted models CDF
+    matrix M.models_probs_cum = {} # accepted models cumulation
+
     # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     # g0 (g-prior)
