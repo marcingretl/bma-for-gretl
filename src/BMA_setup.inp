@@ -36,7 +36,7 @@ function bundle BMA_setup (const series Y,
     */
     printf "\n#############################################################################\n"
     printf "To do:"
-    printf "\n * Work on speed."
+    printf "\n * Work on speed."    
     printf "\n * Clean up the code."
     printf "\n#############################################################################\n"
     bundle M

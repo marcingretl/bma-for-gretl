@@ -32,15 +32,20 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     bundle Options
     scalar arg_val
     string arg_name
-    strings Integers = defarray("acc_type", "l_rank", "g_type", "do_joint", "h_predict", "Nrep", "burn", "verbosity")
+    strings Integers = defarray("model_prior", "Nrank", "g_type", "do_joint", "Npredict", "Nrep", "burn", "verbosity")
     strings Booleans = defarray("show_progress", "do_plot")
-    strings Scalars = defarray("av_model_size", "alpha")
+    strings Scalars = defarray("avg_model_size", "alpha")
+    if $version >= 20221 && $sysinfo.gui_mode == 1
+        do_plot_tmp = 1
+    else
+        do_plot_tmp = 0
+    endif
 
     # We set the default Nrep conditional on k
     if k <= 10
-        Nrep = 1000
-    elif k <= 15
         Nrep = 10000
+    elif k <= 15
+        Nrep = 20000
     elif k <= 19
         Nrep = 100000
     else
@@ -48,18 +53,18 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     endif
 
     # Template bundle with default values
-    scalar Options["acc_type"] = 1
-    scalar Options["av_model_size"] = k/2
+    scalar Options["model_prior"] = 1
+    scalar Options["avg_model_size"] = k/2
     scalar Options["alpha"] = 0.6
-    scalar Options["l_rank"] = xmin(2^(k-1), 40)
+    scalar Options["Nrank"] = xmin(2^(k-1), 40)
     scalar Options["g_type"] = 1
     scalar Options["do_joint"] = 0
-    scalar Options["h_predict"] = 0
+    scalar Options["Npredict"] = 0
     scalar Options["Nrep"] = Nrep
     scalar Options["burn"] = 10
     scalar Options["verbosity"] = 2
     scalar Options["show_progress"] = 1
-    scalar Options["do_plot"] = 0
+    scalar Options["do_plot"] = do_plot_tmp
 
     # General checking, but still needs some manual work
     err2 = bcheck(&Options, UserOpts)
@@ -86,13 +91,13 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     endloop
 
     # We set arguments
-    acc_type = Options["acc_type"]
-    av_model_size = Options["av_model_size"]
+    acc_type = Options["model_prior"]
+    av_model_size = Options["avg_model_size"]
     alpha = Options["alpha"]
-    l_rank = Options["l_rank"]
+    l_rank = Options["Nrank"]
     g_type = Options["g_type"]
     do_joint = Options["do_joint"]
-    h_predict = Options["h_predict"]
+    h_predict = Options["Npredict"]
     Nrep = Options["Nrep"]
     burn = Options["burn"]
     verbosity = Options["verbosity"]

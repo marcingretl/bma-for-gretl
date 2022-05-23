@@ -34,7 +34,7 @@ function void BMA_Plot (bundle *M)
         options with-lp fit=none
         printf "set title \"%s\"", "Model Size Distribution"
         printf "set xlabel \"%s\"", "Model Size"
-        printf "set ylabel \"%s\"", "Fraction"
+        printf "set ylabel \"%s\"", "Density"
     end plot --output=display
 
     # Models size CDF
@@ -42,7 +42,7 @@ function void BMA_Plot (bundle *M)
     plot plotmat
         options with-line fit=none
         literal set grid
-        printf "set title \"%s\"", "Model Size CDF"
+        printf "set title \"%s\"", "CDF of Model Size"
         printf "set xlabel \"%s\"", "Number of Models"
         printf "set ylabel \"%s\"", "Posterior Probability Mass"        
     end plot --output=display

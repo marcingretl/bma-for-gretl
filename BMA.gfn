@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.0-svn</version>
-<date>2022-03-29</date>
+<date>2022-05-23</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -22,7 +22,7 @@ pdfdoc:BMA.pdf
   <param name="Options" type="bundle" optional="true"/>
  </params>
 <code>/*
-Bundle-based to carry out BMA analysis.
+Bundle-based interface to carry out BMA analysis.
 Function returns bundle MODEL with (formatted) results.
 */
 bundle MODEL
@@ -245,18 +245,18 @@ printf &quot;\n\n&quot;
   <param name="X_list" type="list">
 <description>List of indenpendent variables (X)</description>
   </param>
-  <param name="acc_type" type="int" min="1" max="2" default="1">
+  <param name="model_prior" type="int" min="1" max="2" default="1">
 <description>Model prior</description>
 <labels count="2">
 "Binomial" "Binomial-Beta" </labels>
   </param>
-  <param name="av_model_size" type="scalar" min="0" default="1">
+  <param name="avg_model_size" type="scalar" min="0" default="1">
 <description>Prior average model size</description>
   </param>
   <param name="alpha" type="scalar" min="0" max="1" default="0.6">
 <description>Significance level for the initial model</description>
   </param>
-  <param name="l_rank" type="int" min="2" default="4">
+  <param name="Nrank" type="int" min="2" default="4">
 <description>Number of the top ranked models</description>
   </param>
   <param name="g_type" type="int" min="1" max="5" default="1">
@@ -269,7 +269,7 @@ printf &quot;\n\n&quot;
 <labels count="8">
 "None" "Doppelhofer-Weeks Measure (DW1)" "Doppelhofer-Weeks Measure (DW2)" "Ley-Steel Measure (LS1)" "Ley-Steel Measure (LS2)" "Strachan Measure" "Yule's Q Measure (YQ)" "Modified Yule's Q Measure (YQM)" </labels>
   </param>
-  <param name="h_predict" type="int" min="0" default="0">
+  <param name="Npredict" type="int" min="0" default="0">
 <description>Number of out-of-sample forecasts</description>
   </param>
   <param name="Nrep" type="int" default="1e+06">
@@ -295,13 +295,13 @@ Function is a wrapper to bundle-based BMA() interface.
 bundle Options
 string Y_name = argname(Y)
 series @Y_name = Y
-scalar Options[&quot;acc_type&quot;] = acc_type
-scalar Options[&quot;av_model_size&quot;] = av_model_size
+scalar Options[&quot;model_prior&quot;] = model_prior
+scalar Options[&quot;avg_model_size&quot;] = avg_model_size
 scalar Options[&quot;alpha&quot;] = alpha
-scalar Options[&quot;l_rank&quot;] = l_rank
+scalar Options[&quot;Nrank&quot;] = Nrank
 scalar Options[&quot;g_type&quot;] = g_type
 scalar Options[&quot;do_joint&quot;] = do_joint
-scalar Options[&quot;h_predict&quot;] = h_predict
+scalar Options[&quot;Npredict&quot;] = Npredict
 scalar Options[&quot;Nrep&quot;] = Nrep
 scalar Options[&quot;burn&quot;] = burn
 scalar Options[&quot;verbosity&quot;] = verbosity
@@ -386,14 +386,14 @@ plot plotmat
   options with-lp fit=none
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size Distribution&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
-  printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Fraction&quot;
+  printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Density&quot;
 end plot --output=display
 # Models size CDF
 plotmat = M.models_probs_cdf
 plot plotmat
   options with-line fit=none
   literal set grid
-  printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size CDF&quot;
+  printf &quot;set title \&quot;%s\&quot;&quot;, &quot;CDF of Model Size&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Number of Models&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Posterior Probability Mass&quot;
 end plot --output=display
@@ -692,6 +692,8 @@ loop i=1..M.k --quiet
     endif
   endloop
 endloop
+jointness_measure = jointness_measure + upper(jointness_measure)'
+jointness_measure[diag] = NA
 cnameset(jointness_measure, M.all_names_sp_new)
 rnameset(jointness_measure, M.all_names_sp_new)
 return jointness_measure
@@ -823,7 +825,7 @@ endif
 # We look for certain percentiles
 percents2 = { 50; 75; 90; 95; 99 }
 if nelem(percents1) &gt; 0
-  percents2 = selifr(percents2, percents2 .&gt; percents1[rows(percents1),2])
+  percents2 = selifr(percents2, percents2 .&gt; percents1[rows(percents1),2]) # In future: use [end,end] syntax
   tmps = percents1[rows(percents1),1]
 else
   tmps = 1
@@ -867,8 +869,9 @@ endif
 # Jointess analysis
 if M.do_joint != 0
   # We must clean up principal diagonal
-  M.jointness_m[diag] = 0
-  M.jointness_m = M.jointness_m ./ NORM
+  M.jointness_m[diag] = NA
+  M.jointness_m = M.jointness_m / NORM
+  M.jointness_m = M.jointness_m + upper(M.jointness_m)'
   cnameset(M.jointness_m, M.all_names_sp)
   rnameset(M.jointness_m, M.all_names_sp)
 endif
@@ -1234,10 +1237,18 @@ return M
 Function prints overall progress
 */
 if rep == percentage
-  printf &quot;%d%s..&quot;, floor(100 * rep/Nrep), &quot;%&quot;
+  val = floor(100 * rep/Nrep)
+  if $version &gt;= 20221
+    printf &quot;%d%%\r&quot;, val
+  else
+    printf &quot;%d%%&quot;, val
+    if val &lt; 100
+      printf &quot;..&quot;
+    endif
+  endif
   percentage += progress
+  flush
 endif
-flush
 </code>
 </gretl-function>
 <gretl-function name="BMA_bcheck" type="string" private="1">
@@ -1269,32 +1280,37 @@ scalar err2
 bundle Options
 scalar arg_val
 string arg_name
-strings Integers = defarray(&quot;acc_type&quot;, &quot;l_rank&quot;, &quot;g_type&quot;, &quot;do_joint&quot;, &quot;h_predict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
+strings Integers = defarray(&quot;model_prior&quot;, &quot;Nrank&quot;, &quot;g_type&quot;, &quot;do_joint&quot;, &quot;Npredict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
 strings Booleans = defarray(&quot;show_progress&quot;, &quot;do_plot&quot;)
-strings Scalars = defarray(&quot;av_model_size&quot;, &quot;alpha&quot;)
+strings Scalars = defarray(&quot;avg_model_size&quot;, &quot;alpha&quot;)
+if $version &gt;= 20221 &amp;&amp; $sysinfo.gui_mode == 1
+  do_plot_tmp = 1
+else
+  do_plot_tmp = 0
+endif
 # We set the default Nrep conditional on k
 if k &lt;= 10
-  Nrep = 1000
-elif k &lt;= 15
   Nrep = 10000
+elif k &lt;= 15
+  Nrep = 20000
 elif k &lt;= 19
   Nrep = 100000
 else
   Nrep = 1e+06
 endif
 # Template bundle with default values
-scalar Options[&quot;acc_type&quot;] = 1
-scalar Options[&quot;av_model_size&quot;] = k/2
+scalar Options[&quot;model_prior&quot;] = 1
+scalar Options[&quot;avg_model_size&quot;] = k/2
 scalar Options[&quot;alpha&quot;] = 0.6
-scalar Options[&quot;l_rank&quot;] = xmin(2^(k-1), 40)
+scalar Options[&quot;Nrank&quot;] = xmin(2^(k-1), 40)
 scalar Options[&quot;g_type&quot;] = 1
 scalar Options[&quot;do_joint&quot;] = 0
-scalar Options[&quot;h_predict&quot;] = 0
+scalar Options[&quot;Npredict&quot;] = 0
 scalar Options[&quot;Nrep&quot;] = Nrep
 scalar Options[&quot;burn&quot;] = 10
 scalar Options[&quot;verbosity&quot;] = 2
 scalar Options[&quot;show_progress&quot;] = 1
-scalar Options[&quot;do_plot&quot;] = 0
+scalar Options[&quot;do_plot&quot;] = do_plot_tmp
 # General checking, but still needs some manual work
 err2 = bcheck(&amp;Options, UserOpts)
 if err2
@@ -1317,13 +1333,13 @@ loop i=1..nelem(Booleans) --quiet
   endif
 endloop
 # We set arguments
-acc_type = Options[&quot;acc_type&quot;]
-av_model_size = Options[&quot;av_model_size&quot;]
+acc_type = Options[&quot;model_prior&quot;]
+av_model_size = Options[&quot;avg_model_size&quot;]
 alpha = Options[&quot;alpha&quot;]
-l_rank = Options[&quot;l_rank&quot;]
+l_rank = Options[&quot;Nrank&quot;]
 g_type = Options[&quot;g_type&quot;]
 do_joint = Options[&quot;do_joint&quot;]
-h_predict = Options[&quot;h_predict&quot;]
+h_predict = Options[&quot;Npredict&quot;]
 Nrep = Options[&quot;Nrep&quot;]
 burn = Options[&quot;burn&quot;]
 verbosity = Options[&quot;verbosity&quot;]
@@ -1513,7 +1529,7 @@ matrix m
 # We set general image options
 if MODE == &quot;inclusions&quot;
   title = sprintf(&quot;Variables Inclusions Based on Best %d Models&quot;, M.l_rank)
-  xlabel = &quot;Cumulative Model Probabilities&quot;
+  xlabel = &quot;Model number&quot;
   ylabel = &quot;Variable&quot;
   colorbox = &quot;unset colorbox&quot;
   height = xmax(int(M.k/41*768), 480)
@@ -1554,10 +1570,8 @@ loop i=1..M.k --quiet
 endloop
 xtics = &quot;(&quot;
 if MODE == &quot;inclusions&quot;
-  tmp = 0
   loop i=1..M.l_rank --quiet
-    tmp += M.Numerical_Likelihood[i]
-    xtics += sprintf(&quot;\&quot;%.2f\&quot; %d&quot;, tmp, i-1)
+    xtics += sprintf(&quot;\&quot;%.d\&quot; %d&quot;, i, i-1)
     if i == M.l_rank
       xtics += sprintf(&quot;)&quot;)
     else

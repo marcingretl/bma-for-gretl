@@ -19,7 +19,7 @@ function bundle BMA (series Y "Dependent variable",
                      list X_list "List of indenpendent variables (X)",
       bundle Options[null])
     /*
-       Bundle-based to carry out BMA analysis.
+       Bundle-based interface to carry out BMA analysis.
        Function returns bundle MODEL with (formatted) results.
     */
     bundle MODEL

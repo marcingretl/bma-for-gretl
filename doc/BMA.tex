@@ -36,8 +36,8 @@
 				of already visited models in memory and
 				reuse this data instead of re-estimating
 				-- huge speedup up to 66\%.
-			\item Averaging done at the end of MC$^3$ simulation
-				instead of on-the-fly strategy. 
+			\item Averaging is being done at the end of MC$^3$ simulation
+				instead of on-the-fly calculation. 
 			\item Switch from analytical model probabilities
 				to numerical ones in models ranking. This may cause
 				slightly different posterior results.
@@ -48,6 +48,9 @@
 			\item Add printing prior and posterior model size
 				average and standard deviation.
 			\item (to doc) New BMA\_Plot function for generating graphs.
+			\item (to doc) New names of some options variables.
+			\item (to doc) New method of showing progress (needs
+				\lstinline!$version! \footnotesize{\texttt{>= 20221}}).
 		\end{itemize}
 	\item[2.3] New algebra strategy and code cleanups:
 		\begin{itemize}

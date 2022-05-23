@@ -23,8 +23,16 @@ function void BMA_show_progress (scalar *rep,
     Function prints overall progress
     */
     if rep == percentage
-        printf "%d%s..", floor(100 * rep/Nrep), "%"
+        val = floor(100 * rep/Nrep)
+        if $version >= 20221
+            printf "%d%%\r", val
+        else
+            printf "%d%%", val
+            if val < 100
+                printf ".."
+            endif            
+        endif
         percentage += progress
-    endif
-    flush
+        flush
+    endif    
 end function

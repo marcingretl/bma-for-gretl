@@ -18,6 +18,7 @@ The public functions are:
 	\item \code{BMA_GUI()}~see~\ref{sec:BMA_GUI()}
 	\item \code{BMA_Print()}~see~\ref{sec:BMA_Print()}
 	\item \code{BMA_OldStyle()}~see~\ref{sec:BMA_OldStyle()}
+	\item \code{BMA_Plot()}~see~\ref{sec:BMA_Plot()}
 \end{enumerate}
 
 
@@ -32,13 +33,13 @@ function bundle BMA (series Y "Dependent variable",
 where 'Options' is a bundle with optional arguments. The default
 values for those arguments are:
 \begin{lstlisting}
- scalar Options["acc_type"] = 1
- scalar Options["av_model_size"] = k/2
+ scalar Options["model_prior"] = 1
+ scalar Options["avg_model_size"] = k/2
  scalar Options["alpha"] = 0.6
- scalar Options["l_rank"] = xmin(2^(k-1), 40)
+ scalar Options["Nrank"] = xmin(2^(k-1), 40)
  scalar Options["g_type"] = 1
  scalar Options["do_joint"] = 0
- scalar Options["h_predict"] = 0
+ scalar Options["Npredict"] = 0
  scalar Options["Nrep"] = Nrep
  scalar Options["burn"] = 10
  scalar Options["verbosity"] = 2
@@ -66,13 +67,13 @@ Meaning of optional arguments is as follows:
 		What is very important the \code{X_list} cannot contain a
 		\texttt{const} (\pkg{gretl}'s internal and automatically
 		generated constant term).
-	\item The \lstinline!int acc_type! is an integer $\in [1,2]$
-		indicating model prior	type (the default is binomia
-		$[\mathtt{acc\_type}=1]$, see Equations~\ref{eq:model_prior_binomial}
+	\item The \lstinline!int model_prior! is an integer $\in [1,2]$
+		indicating model prior	type (the default is binomial
+		$[\mathtt{model\_prior}=1]$, see Equations~\ref{eq:model_prior_binomial}
 		and \ref{eq:model_prior_binomial-beta}).
-	\item The \lstinline!scalar av_model_size! is the scalar $\geq0$
+	\item The \lstinline!scalar avg_model_size! is the scalar $\geq0$
 		of the prior average model size. Note, if
-		$\mathtt{av\_model\_size} = \frac{k}{2}$ (the default value)
+		$\mathtt{avg\_model\_size} = \frac{k}{2}$ (the default value)
 		and the model prior is set to binomial, we get the uniform prior
 		on the model space\footnote{In GUI interface the default value is 1.}.
 	\item The \lstinline!scalar alpha! $\in [0,1]$ is the significance
@@ -81,7 +82,7 @@ Meaning of optional arguments is as follows:
 		significance level \citep[see][]{Koop2003}. The default value
 		is $\alpha=0.6$, but setting $\alpha=1$ results in a model
 		consisting of 0 to \textit{k} randomly chosen explanatory variables.
-	\item The \lstinline!int l_rank! is an integer $\geq 2$ defining
+	\item The \lstinline!int Nrank! is an integer $\geq 2$ defining
 		the number of the top ranked models. The default value is 
 		$\min\{2^{k-1}; 40\}$.
 	\item The \lstinline!int g_type! is an integer $\in [1,5]$
@@ -93,7 +94,7 @@ Meaning of optional arguments is as follows:
 		which indicates whether we do jointness analysis and if so,
 		which measure to use. The default value is 0: ``None'',
 		see Section~\ref{sec:jointness_measures}.
-	\item The \lstinline!int h_predict! is an integer $\geq 0$
+	\item The \lstinline!int Npredict! is an integer $\geq 0$
 		which sets the number of out-of-sample forecasts.
 		The default value is 0.
 	\item The \lstinline!int Nrep! is an integer $\geq 0$ which
@@ -109,6 +110,8 @@ Meaning of optional arguments is as follows:
 		which switches progress printing during the simulation.
 		Note that it consumes a lot of CPU time and significantly
 		slows down the package.
+	\item The \lstinline!bool do_plot! is a boolean value which
+		switches plotting graphs after the simulation.
 %	\item The \code{bool force_dof_lack[0]} makes the BMA analysis to run even
 %	if there is not sufficient degrees of freedom.
 \end{itemize}
@@ -120,19 +123,20 @@ Meaning of optional arguments is as follows:
 \begin{lstlisting}
 function bundle BMA_GUI (series Y "Dependent variable",
  list X_list "List of indenpendent variables (X)",
- int acc_type[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
- scalar av_model_size[0::1] "Prior average model size",
+ int model_prior[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
+ scalar avg_model_size[0::1] "Prior average model size",
  scalar alpha[0:1:0.6] "Significance level for the initial model",
- int l_rank[2::4] "Number of the top ranked models",
+ int Nrank[2::4] "Number of the top ranked models",
  int g_type[1:5:1] "g-prior type" {"Benchmark prior",
 	"Unit Information Prior (g-UIP)", "Risk Inflation Criterion
 	(g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP"},
  int do_joint[0:7:0] "Jointness analysis" {"None", "Doppelhofer-Weeks Measure (DW1)", "Doppelhofer-Weeks Measure (DW2)", "Ley-Steel Measure (LS1)", "Ley-Steel Measure (LS2)", "Strachan Measure", "Yule's Q Measure (YQ)", "Modified Yule's Q Measure (YQM)"},
- int h_predict[0::0] "Number of out-of-sample forecasts",
+ int Npredict[0::0] "Number of out-of-sample forecasts",
  int Nrep[1e+06] "Total number of replications",
  int burn[0:99:10] "Percentage of burn-in draws",
  int verbosity[1:2:1] "Verbosity",
- bool show_progress[1] "Show overall progress")
+ bool show_progress[1] "Show overall progress",
+ bool do_plot[1] "Plot graphs?")
 \end{lstlisting}
 
 The words in quotation marks are the labels for the GUI shown in

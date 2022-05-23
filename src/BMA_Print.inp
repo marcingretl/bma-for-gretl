@@ -108,7 +108,7 @@ function void BMA_Print (bundle *M)
     
     # Jointess analysis
     if M.do_joint && nelem(M.jointness_m)
-        matrix jointess_measure = BMA_jointness_measure(&M)
+        matrix jointess_measure = BMA_jointness_measure(&M)        
         string jointess_measure_name = M.jointess_measure_names[M.do_joint]
         print "----------------------------------"
         printf "\n"

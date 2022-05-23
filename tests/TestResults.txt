@@ -4,7 +4,7 @@ open greene9_1.gdt
 include BMA.gfn
 set seed 1000000
 list greene = capital labor nfirm
-results_b = BMA(valadd, greene, _(g_type=3, h_predict=3, do_joint=2, Nrep=10000))
+results_b = BMA(valadd, greene, _(g_type=3, Npredict=3, do_joint=2, Nrep=10000))
 
 
 Results:

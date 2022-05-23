@@ -27,7 +27,7 @@ function void BMA_heatmap (const bundle M, string MODE)
     # We set general image options
     if MODE == "inclusions"
         title = sprintf("Variables Inclusions Based on Best %d Models", M.l_rank)
-        xlabel = "Cumulative Model Probabilities"
+        xlabel = "Model number"
         ylabel = "Variable"
         colorbox = "unset colorbox"
         height = xmax(int(M.k/41*768), 480)
@@ -69,10 +69,8 @@ function void BMA_heatmap (const bundle M, string MODE)
     endloop
     xtics = "("
     if MODE == "inclusions"
-        tmp = 0
         loop i=1..M.l_rank --quiet
-            tmp += M.Numerical_Likelihood[i]
-            xtics += sprintf("\"%.2f\" %d", tmp, i-1)
+            xtics += sprintf("\"%.d\" %d", i, i-1)
             if i == M.l_rank
                 xtics += sprintf(")")
             else

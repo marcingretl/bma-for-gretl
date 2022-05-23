@@ -85,6 +85,8 @@ function matrix BMA_jointness_measure (bundle *M)
             endif
         endloop
     endloop
+    jointness_measure = jointness_measure + upper(jointness_measure)'
+    jointness_measure[diag] = NA
 
     cnameset(jointness_measure, M.all_names_sp_new)
     rnameset(jointness_measure, M.all_names_sp_new)
