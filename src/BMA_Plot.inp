@@ -15,21 +15,21 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function void BMA_Plot (bundle *M)
+function void BMA_Plot (bundle *MODEL)
 /*
    BMA result bundle plot function.
     */
 
     # Heatmap for variable inclusion
-    BMA_heatmap(M, "inclusions")
+    BMA_heatmap(MODEL, "inclusions")
 
     # Heatmap for jointness
-    if M.do_joint
-        BMA_heatmap(M, "jointness")
+    if MODEL.do_joint
+        BMA_heatmap(MODEL, "jointness")
     endif
 
     # Models size distribution
-    plotmat = mreverse(M.mod_sizes, 1)
+    plotmat = mreverse(MODEL.mod_sizes, 1)
     plot plotmat
         options with-lp fit=none
         printf "set title \"%s\"", "Model Size Distribution"
@@ -38,7 +38,7 @@ function void BMA_Plot (bundle *M)
     end plot --output=display
 
     # Models size CDF
-    plotmat = M.models_probs_cdf
+    plotmat = MODEL.models_probs_cdf
     plot plotmat
         options with-line fit=none
         literal set grid

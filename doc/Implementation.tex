@@ -44,19 +44,30 @@ values for those arguments are:
  scalar Options["burn"] = 10
  scalar Options["verbosity"] = 2
  scalar Options["show_progress"] = 1
+ scalar Options["do_plot"] = do_plot
 \end{lstlisting}\label{sec:default_option_bundle}
-where \textit{k} stands for the number of independent variables
-and \lstinline!scalar Nrep! takes the following values:
+where \textit{k} stands for the number of independent variables,
+\lstinline!scalar Nrep! takes the following values:
 \begin{equation}
 	\mathtt{Nrep} = \left\{
 		\begin{array}{ccl}
 			10^3 & \mathrm{if} & k \leq 10,\\
 			10^4 & \mathrm{if} & k \in [11;15],\\
 			10^5 & \mathrm{if} & k \in [16;19],\\
-			10^6 & \mathrm{if} & k \geq 20.\\
+			10^6 & \mathrm{if} & k \geq 20,\\
 		\end{array}
 	\right.
 	\label{eq:Nrep_setup}
+\end{equation}
+and \lstinline!scalar do_plot! takes the following values:
+\begin{equation}
+	\mathtt{do\_plot} = \left\{
+	\begin{array}{crl}
+		1 & \mathrm{if} & \textrm{\lstinline!$version! {\footnotesize\texttt{>= 20221 \&\& }\lstinline!$sysinfo!\texttt{.gui\_mode == 1}}},\\
+		0 & \mathrm{else}. &\\
+	\end{array}
+	\right.
+	\label{eq:do_plot_setup}
 \end{equation}
 Meaning of optional arguments is as follows:
 \begin{itemize}
@@ -112,6 +123,7 @@ Meaning of optional arguments is as follows:
 		slows down the package.
 	\item The \lstinline!bool do_plot! is a boolean value which
 		switches plotting graphs after the simulation.
+		The default value is set up according to formula~\eqref{eq:do_plot_setup}.
 %	\item The \code{bool force_dof_lack[0]} makes the BMA analysis to run even
 %	if there is not sufficient degrees of freedom.
 \end{itemize}
@@ -153,9 +165,19 @@ with BMA results and prints results according to \code{verbosity} settings.
 
 \paragraph{\texttt{BMA\_OldStyle()}}\label{sec:BMA_OldStyle()}\mbox{}\\
 
-\noindent The last public function is \code{BMA_OldStyle} which is written
-for backwards compatibility and can be used with scripts prepared
+\noindent This is a public function which is written for
+backwards compatibility and can be used with scripts prepared
 for old versions of BMA package (prior to 2.0).
+
+
+\paragraph{\texttt{BMA\_Plot()}}\label{sec:BMA_Plot()}\mbox{}\\
+
+\noindent Function for plotting graphs is: 
+\begin{lstlisting}
+	function void BMA_Plot (bundle *MODEL)
+\end{lstlisting}
+This function takes as an argument reference to the bundle MODEL
+with BMA results and plots graphs according to \code{do_plot} settings.
 
 
 \subsubsection{The main loop}
@@ -167,7 +189,8 @@ controlled by following functions:
 	\item \code{BMA_setup()} -- bundle setup,
 	\item \code{BMA_main()} -- MCMC,
 	\item \code{BMA_summary()} -- final computations and bundle clean up,
-	\item \code{BMA_Print()} -- results printing.
+	\item \code{BMA_Print()} -- results printing,
+	\item \code{BMA_Plot()} -- plotting graphs (if switched on).
 \end{enumerate}
 
 Essentials of BMA analysis is the MCMC stuff driven by \code{BMA_main}.

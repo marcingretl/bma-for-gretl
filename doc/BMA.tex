@@ -6,8 +6,8 @@
         Jacek Kwiatkowski\\Nicolaus Copernicus University in Toruń}
 \Plainauthor{Marcin Błażejowski, Jacek Kwiatkowski}
 
-\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.0-svn}
-\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.0-svn}
+\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.0}
+\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.0}
 
 \Abstract{Bayesian model averaging is a model-building strategy that
   takes account of model uncertainty in
@@ -28,6 +28,12 @@
 	\url{https://sourceforge.net/projects/bma-for-gretl}
 \end{quote}
 
+\section*{To do}
+{\small%
+\begin{itemize}
+	\item Refactoring of Binomial-beta model prior.
+\end{itemize}}
+
 \section*{Changelog}
 {\small\begin{description}
 	\item[3.0] New MC3 strategy:
@@ -47,9 +53,9 @@
 				will be slightly different (only standard deviations).
 			\item Add printing prior and posterior model size
 				average and standard deviation.
-			\item (to doc) New BMA\_Plot function for generating graphs.
-			\item (to doc) New names of some options variables.
-			\item (to doc) New method of showing progress (needs
+			\item New BMA\_Plot function for generating graphs.
+			\item New names of some options variables.
+			\item New method of showing progress (needs
 				\lstinline!$version! \footnotesize{\texttt{>= 20221}}).
 		\end{itemize}
 	\item[2.3] New algebra strategy and code cleanups:

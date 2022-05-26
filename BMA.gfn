@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>3.0-svn</version>
-<date>2022-05-23</date>
+<version>3.0</version>
+<date>2022-05-26</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -369,19 +369,19 @@ return OldStyle
 </gretl-function>
 <gretl-function name="BMA_Plot" type="void" pkg-role="bundle-plot">
  <params count="1">
-  <param name="M" type="bundleref"/>
+  <param name="MODEL" type="bundleref"/>
  </params>
 <code>/*
 BMA result bundle plot function.
 */
 # Heatmap for variable inclusion
-BMA_heatmap(M, &quot;inclusions&quot;)
+BMA_heatmap(MODEL, &quot;inclusions&quot;)
 # Heatmap for jointness
-if M.do_joint
-  BMA_heatmap(M, &quot;jointness&quot;)
+if MODEL.do_joint
+  BMA_heatmap(MODEL, &quot;jointness&quot;)
 endif
 # Models size distribution
-plotmat = mreverse(M.mod_sizes, 1)
+plotmat = mreverse(MODEL.mod_sizes, 1)
 plot plotmat
   options with-lp fit=none
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size Distribution&quot;
@@ -389,7 +389,7 @@ plot plotmat
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Density&quot;
 end plot --output=display
 # Models size CDF
-plotmat = M.models_probs_cdf
+plotmat = MODEL.models_probs_cdf
 plot plotmat
   options with-line fit=none
   literal set grid
@@ -1054,11 +1054,6 @@ BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_
 <code>/*
 This function creates BUNDLE holding all BMA information.
 */
-printf &quot;\n#############################################################################\n&quot;
-printf &quot;To do:&quot;
-printf &quot;\n * Work on speed.&quot;
-printf &quot;\n * Clean up the code.&quot;
-printf &quot;\n#############################################################################\n&quot;
 bundle M
 list X_list = X_list_m
 list big_list = Y X_list
@@ -1284,9 +1279,9 @@ strings Integers = defarray(&quot;model_prior&quot;, &quot;Nrank&quot;, &quot;g_
 strings Booleans = defarray(&quot;show_progress&quot;, &quot;do_plot&quot;)
 strings Scalars = defarray(&quot;avg_model_size&quot;, &quot;alpha&quot;)
 if $version &gt;= 20221 &amp;&amp; $sysinfo.gui_mode == 1
-  do_plot_tmp = 1
+  do_plot = 1
 else
-  do_plot_tmp = 0
+  do_plot = 0
 endif
 # We set the default Nrep conditional on k
 if k &lt;= 10
@@ -1310,7 +1305,7 @@ scalar Options[&quot;Nrep&quot;] = Nrep
 scalar Options[&quot;burn&quot;] = 10
 scalar Options[&quot;verbosity&quot;] = 2
 scalar Options[&quot;show_progress&quot;] = 1
-scalar Options[&quot;do_plot&quot;] = do_plot_tmp
+scalar Options[&quot;do_plot&quot;] = do_plot
 # General checking, but still needs some manual work
 err2 = bcheck(&amp;Options, UserOpts)
 if err2
