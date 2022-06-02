@@ -22,14 +22,13 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     /*
        Function collects results from MC3 experiment.
     */
-    matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num #, models_probs_cum, percents1, percents2
+    matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num
     matrices models_structure_rank, models_estimates_rank
     scalar nr
     scalar weight = 0
     matrix bhat_avg = zeros(M.k)
     matrix bvar_avg = zeros(M.k)
     matrix mod_sizes = zeros(M.k)
-    #scalar mod_size = 0
     matrix var_prob = zeros(1,M.k)
     matrix Post_Results, tmp
     if M.do_joint
@@ -55,10 +54,10 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         models_forecasts = models_forecasts[idx]
     endif
 
-    # Models size cumulative distribution    
+    # Models size cumulative distribution
     models_probs = mreverse(msortby(models_counter ~ idx ~ seq(1, M.post_n_models_accepted)', 1))
     M.models_probs_cum = cum(dsort(models_probs[,1]))
-    
+
     # We build analytical and numerical rankings
     M.l_rank = xmin(M.l_rank, M.post_n_models_accepted)
     models_probs = models_probs[1:M.l_rank,]
@@ -81,22 +80,18 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
 
         if nelem(mod_struct) > 0 && sum(mod_struct) > 0
             X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
-        else
-            X_new_num = { 2 }
-        endif
-        var_idx = X_new_num[2:] - 2
+            var_idx = X_new_num[2:] - 2
 
-        bhat = models_estimates[i][2:,1]
-        bhat_avg[var_idx] += weight * bhat
-        bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
-        #mod_size += weight * sum(mod_struct)
-        ###
-        mod_sizes[sum(mod_struct)] += weight
-        ###
-        var_prob += weight * mod_struct
+            bhat = models_estimates[i][2:,1]
+            bhat_avg[var_idx] += weight * bhat
+            bvar_avg[var_idx] += weight * (models_estimates[i][2:,2] + bhat .^ 2)
 
-        if M.do_joint
-            jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .> 0))
+            mod_sizes[sum(mod_struct)] += weight
+            var_prob += weight * mod_struct
+
+            if M.do_joint
+                jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .> 0))
+            endif
         endif
 
         if M.h_predict
@@ -112,9 +107,6 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
 
     # Probability of variables
     M.var_prob = var_prob
-
-    # Average model size
-    #M.mod_size = mod_size
 
     # Jointness analysis
     if M.do_joint

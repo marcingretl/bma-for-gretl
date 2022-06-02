@@ -16,18 +16,18 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_Print (bundle *M)
-    /*
-    Function prints BMA results
+/*
+   Function prints BMA results
     */
     # We have to set sample
     if M.h_predict > 0
         smpl 1 M.last_obs
     endif
-    
+
     # We re-create Y process
     string Y_name = M.Y_name
     series @Y_name = M.Y
-    
+
     # Additional information in summary
     model_space = 2^M.k
     printf "\n"
@@ -55,7 +55,7 @@ function void BMA_Print (bundle *M)
         list start_model = M.StartModel
         ols @Y_name const start_model --simple
     endif
-    
+
     # Standard information (PIPs, Means and so on)
     print "----------------------------------"
     printf "\n"
@@ -85,8 +85,8 @@ function void BMA_Print (bundle *M)
             printf "Best %d models account for %.4f of mass\n", M.models_probs_percents[i,1], M.models_probs_percents[i,2]
         else
             printf "Best %d models account for %.4f of mass\n", M.models_probs_percents[i,1], M.models_probs_percents[i,2]
-        endif        
-    endloop    
+        endif
+    endloop
     printf "\nBest models ranking:\n"
     loop i=1..M.l_rank --quiet
         printf "Model %d:\t%f\n", i, M.Numerical_Likelihood[i]
@@ -95,7 +95,7 @@ function void BMA_Print (bundle *M)
     printf "\n"
     printf "Correlation coefficient between the analytical\n"
     printf "and numerical probabilities of the above models: %f\n", BMA_correlation_coeff(&M)
-    
+
     # Forecasts
     if M.h_predict > 0
         printf "\n"
@@ -105,10 +105,10 @@ function void BMA_Print (bundle *M)
         printf "%15f", M.prediction
         printf "\n"
     endif
-    
+
     # Jointess analysis
     if M.do_joint && nelem(M.jointness_m)
-        matrix jointess_measure = BMA_jointness_measure(&M)        
+        matrix jointess_measure = BMA_jointness_measure(&M)
         string jointess_measure_name = M.jointess_measure_names[M.do_joint]
         print "----------------------------------"
         printf "\n"
@@ -163,7 +163,7 @@ function void BMA_Print (bundle *M)
             endif
         endif
     endif
-    
+
     # Printing models in ranking
     if M.verbosity == 2
         matrix coeffmat
@@ -171,15 +171,21 @@ function void BMA_Print (bundle *M)
         printf "\n\nBest models estimates:"
         loop i=1..M.l_rank --quiet
             if M.mod_nume_prob[i]
+                coeffmat = M.mod_rank_estimates[i][,1:2]
                 printf "\n"
                 print "----------------------------------"
                 printf "\nModel: %d, posterior probability: %f", i, M.Numerical_Likelihood[i]
-                if sumr(M.mod_rank[i]) == 0
+                if rows(coeffmat) == 1
                     printf "\n\n  %s\n", "None of the variables were significant."
                     printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
                 else
-                    coeffmat = M.mod_rank_estimates[i][,1:2]
+                    Xnames = null
                     Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
+                    # Very crude workaround for examples when Xnames has unprintable elements
+                    if nelem(Xnames) != rows(coeffmat)
+                        Xnames = null
+                        Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
+                    endif
                     modprint coeffmat Xnames
                 endif
             endif
