@@ -32,10 +32,16 @@
 {\small%
 \begin{itemize}
 	\item Refactoring of Binomial-beta model prior.
+	\item Add forecasts plot.
 \end{itemize}}
 
 \section*{Changelog}
 {\small\begin{description}
+	\item[3.1] Bug fixes:
+		\begin{itemize}
+			\item Fix edge-case bug when empty model is accepted
+				and appears in ranking.			
+		\end{itemize}
 	\item[3.0] New MC3 strategy:
 		\begin{itemize}
 			\item Mechanism for storing characteristics 

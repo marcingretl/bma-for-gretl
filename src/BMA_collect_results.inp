@@ -69,7 +69,11 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     # We restore estimates for models in ranking
     loop i=1..M.l_rank --quiet
         M.mod_rank[i] = models_structure_rank[i]
-        M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
+        if sum(M.mod_rank[i]) == 0
+            M.mod_rank_estimates[i] = models_estimates_rank[i]
+        else
+            M.mod_rank_estimates[i] = models_estimates_rank[i][,1] ~ sqrt(models_estimates_rank[i][,2]) ~ transp(0 ~ (selifc(M.var_numbers2_const[2,2:], models_structure_rank[i])-2))
+        endif
     endloop
 
     # We average over all accepted models

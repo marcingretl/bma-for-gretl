@@ -171,23 +171,25 @@ function void BMA_Print (bundle *M)
         printf "\n\nBest models estimates:"
         loop i=1..M.l_rank --quiet
             if M.mod_nume_prob[i]
-                coeffmat = M.mod_rank_estimates[i][,1:2]
+                Xnames = null
                 printf "\n"
                 print "----------------------------------"
                 printf "\nModel: %d, posterior probability: %f", i, M.Numerical_Likelihood[i]
-                if rows(coeffmat) == 1
-                    printf "\n\n  %s\n", "None of the variables were significant."
-                    printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
-                else
-                    Xnames = null
+                if sum(M.mod_rank[i]) == 0
+                    #printf "\n\n  %s\n", "None of the variables were significant."
+                    #printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
+                    Xnames = defarray("const")
+                    coeffmat = M.mod_rank_estimates[i]
+                else                    
                     Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
+                    coeffmat = M.mod_rank_estimates[i][,1:2]
                     # Very crude workaround for examples when Xnames has unprintable elements
                     if nelem(Xnames) != rows(coeffmat)
                         Xnames = null
                         Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
-                    endif
-                    modprint coeffmat Xnames
+                    endif                    
                 endif
+                modprint coeffmat Xnames
             endif
         endloop
     endif
