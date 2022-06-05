@@ -1,0 +1,33 @@
+/*
+   BMA -- package implementing Bayesian Model Averaging for gretl
+   Copyright (C) 2012 Marcin Błażejowski and Jacek Kwiatkowski
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+function void BMA_print_status (const string message[null],
+                                const bool done[0], const scalar spaces[1])
+    /*
+       Function prints current execution status and flushes screen.
+    */
+    string SPACE = ""
+    if done == 1
+        loop i=1..spaces --quiet
+            SPACE += sprintf("%s", " ")
+        endloop
+        printf "%sdone!", SPACE
+    else
+        printf "\n%s: ", message
+    endif
+    flush
+end function

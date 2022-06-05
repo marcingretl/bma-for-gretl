@@ -19,6 +19,7 @@ function void BMA_summary (bundle *M)
     /*
     We summarise some BMA results and deleting redundand items from the returned bundle
     */
+    BMA_print_status("Summarizing")
     scalar tmps, factor
     string title
     matrix percents1, percents2
@@ -188,4 +189,6 @@ function void BMA_summary (bundle *M)
     delete M.Y_mat
     delete M.all_names_sp
     delete M.models_probs_cum
+    
+    BMA_print_status(null, 1, 9)
 end function

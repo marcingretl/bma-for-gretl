@@ -17,6 +17,7 @@ include src/BMA_bcheck.inp
 include src/BMA_collect_results.inp
 include src/BMA_estimate.inp
 include src/BMA_heatmap.inp
+include src/BMA_print_status.inp
 include src/BMA_Plot.inp
 include src/BMA_Print.inp
 include src/BMA_GUI.inp

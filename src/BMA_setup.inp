@@ -34,6 +34,7 @@ function bundle BMA_setup (const series Y,
     /*
        This function creates BUNDLE holding all BMA information.
     */
+    BMA_print_status("BMA setup")
     bundle M
     list X_list = X_list_m
     list big_list = Y X_list
@@ -139,7 +140,7 @@ function bundle BMA_setup (const series Y,
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
     string M.Y_name = Y_name # string with name of denpendent variable
-    
+
     if do_joint != 0
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
         strings M.jointess_measure_names = defarray("Doppelhofer-Weeks Measure (DW1)", \
@@ -149,7 +150,7 @@ function bundle BMA_setup (const series Y,
     else
         matrix M.jointness_m = {}
     endif
-    
+
     if acc_type == 1 # options for the prior
         string M.prior_name = "Binomial"
         scalar M.a = log(av_model_size/M.k)
@@ -202,9 +203,19 @@ function bundle BMA_setup (const series Y,
     elif g_type == 5
         string M.gtype = "Root of g-UIP"
     endif
+
     if verbosity == 1
         set warnings off
     endif
+
+    # MC3 progress
+    if $version >= 20221
+        scalar M.progress = floor(M.Nrep/100)
+    else
+        scalar M.progress = floor(M.Nrep/10)
+    endif
+
+    BMA_print_status(null, 1, 11)
 
     return M
 end function

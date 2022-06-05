@@ -22,6 +22,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     /*
        Function collects results from MC3 experiment.
     */
+    BMA_print_status("Collecting results", 0)
     matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num
     matrices models_structure_rank, models_estimates_rank
     scalar nr
@@ -125,4 +126,6 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
 
     # Models size distribution
     M.mod_sizes = seq(1, M.k)' ~ mod_sizes
+    
+    BMA_print_status(null, 1, 2)
 end function
