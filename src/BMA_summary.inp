@@ -189,6 +189,7 @@ function void BMA_summary (bundle *M)
     delete M.Y_mat
     delete M.all_names_sp
     delete M.models_probs_cum
+    delete M.progress
     
     BMA_print_status(null, 1, 9)
 end function

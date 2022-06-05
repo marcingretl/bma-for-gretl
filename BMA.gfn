@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2021c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1-svn</version>
-<date>2022-06-03</date>
+<date>2022-06-05</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -782,6 +782,7 @@ endif
 <code>/*
 We summarise some BMA results and deleting redundand items from the returned bundle
 */
+BMA_print_status(&quot;Summarizing&quot;)
 scalar tmps, factor
 string title
 matrix percents1, percents2
@@ -941,6 +942,8 @@ delete M.XtY_cross_const
 delete M.Y_mat
 delete M.all_names_sp
 delete M.models_probs_cum
+delete M.progress
+BMA_print_status(null, 1, 9)
 </code>
 </gretl-function>
 <gretl-function name="BMA_main" type="void" private="1">
@@ -951,8 +954,8 @@ delete M.models_probs_cum
 This is main BMA function with complete MC3 simulation procedure
 */
 # Local variables
-scalar progress = floor(M.Nrep/10) # progress of MCMC
-scalar percentage = progress # percentage of progress of MCMC
+BMA_print_status(&quot;MC3 setup&quot;)
+scalar percentage = M.progress # percentage of progress of MCMC
 string model_id # string containing model id (0-1 'image')
 scalar model_nr	# iteration number under which model's data are stored in matrices/arrays
 scalar model_nr_old
@@ -992,10 +995,14 @@ if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
   BMA_forecast(&amp;M)
   models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
 endif
+BMA_print_status(null, 1, 11)
 ##################
-# Part 2: Markov Chain Monte Carlo
-printf &quot;\nOverall progress: &quot;
-flush
+# Part 2: Markov Chain Monte Carlo Model Composition - MC3
+if M.show_progress == 1
+  BMA_print_status(&quot;MC3 overall progress&quot;)
+else
+  BMA_print_status(&quot;MC3&quot;)
+endif
 loop rep=1..M.Nrep --quiet
   # Now we draw the number of candidate variable
   scalar potential_var = randint(0, M.k)
@@ -1032,10 +1039,13 @@ loop rep=1..M.Nrep --quiet
     models_counter[model_nr_old] += 1
   endif
   # Flushing output - showing progress
-  if M.show_progress == 1
-    BMA_show_progress(&amp;rep, &amp;percentage, &amp;progress, M.Nrep)
+  if M.show_progress == 1 &amp;&amp; rep == percentage
+    BMA_show_progress(rep, &amp;percentage, M.progress, M.Nrep)
   endif
 endloop
+if M.show_progress == 0
+  BMA_print_status(null, 1, 17)
+endif
 # Now we collect results (averaging and rankings)
 BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_lprob, &amp;models_estimates, &amp;models_structure, &amp;models_X_new_num, &amp;models_forecasts)
 </code>
@@ -1062,6 +1072,7 @@ BMA_collect_results(&amp;M, &amp;known_models, &amp;models_counter, &amp;models_
 <code>/*
 This function creates BUNDLE holding all BMA information.
 */
+BMA_print_status(&quot;BMA setup&quot;)
 bundle M
 list X_list = X_list_m
 list big_list = Y X_list
@@ -1226,32 +1237,36 @@ endif
 if verbosity == 1
   set warnings off
 endif
+# MC3 progress
+if $version &gt;= 20221
+  scalar M.progress = floor(M.Nrep/100)
+else
+  scalar M.progress = floor(M.Nrep/10)
+endif
+BMA_print_status(null, 1, 11)
 return M
 </code>
 </gretl-function>
 <gretl-function name="BMA_show_progress" type="void" private="1">
  <params count="4">
-  <param name="rep" type="scalarref"/>
+  <param name="iter" type="scalar" const="true"/>
   <param name="percentage" type="scalarref"/>
-  <param name="progress" type="scalarref"/>
-  <param name="Nrep" type="scalar"/>
+  <param name="progress" type="scalar" const="true"/>
+  <param name="N" type="scalar" const="true"/>
  </params>
 <code>/*
 Function prints overall progress
 */
-if rep == percentage
-  val = floor(100 * rep/Nrep)
-  if $version &gt;= 20221
-    printf &quot;%d%%\r&quot;, val
-  else
-    printf &quot;%d%%&quot;, val
-    if val &lt; 100
-      printf &quot;..&quot;
-    endif
+if $version &gt;= 20221
+  printf &quot;%d%%\r&quot;, ceil(100 * iter/N)
+else
+  printf &quot;%d%%&quot;, floor(100 * iter/N)
+  if val &lt; 100
+    printf &quot;..&quot;
   endif
-  percentage += progress
-  flush
 endif
+percentage += progress
+flush
 </code>
 </gretl-function>
 <gretl-function name="BMA_bcheck" type="string" private="1">
@@ -1385,10 +1400,12 @@ return err
 <code>/*
 Function collects results from MC3 experiment.
 */
+BMA_print_status(&quot;Collecting results&quot;, 0)
 matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num
 matrices models_structure_rank, models_estimates_rank
 scalar nr
 scalar weight = 0
+scalar percentage
 matrix bhat_avg = zeros(M.k)
 matrix bvar_avg = zeros(M.k)
 matrix mod_sizes = zeros(M.k)
@@ -1434,6 +1451,16 @@ loop i=1..M.l_rank --quiet
   endif
 endloop
 # We average over all accepted models
+if M.show_progress == 1
+  BMA_print_status(&quot;           averaging&quot;)
+  if $version &gt;= 20221
+    scalar M.progress = ceil(nelem(models_counter)/100)
+  else
+    scalar M.progress = floor(nelem(models_counter)/10)
+  endif
+  percentage = M.progress
+  flush
+endif
 loop i=1..nelem(models_counter) --quiet
   weight = models_counter[i]
   mod_struct = models_structure[i]
@@ -1448,6 +1475,10 @@ loop i=1..nelem(models_counter) --quiet
     var_prob += weight * mod_struct
     if M.do_joint
       jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .&gt; 0))
+    endif
+    # Flushing output - showing progress
+    if M.show_progress == 1 &amp;&amp; i == percentage
+      BMA_show_progress(i, &amp;percentage, M.progress, nelem(models_counter))
     endif
   endif
   if M.h_predict
@@ -1472,6 +1503,12 @@ if M.h_predict
 endif
 # Models size distribution
 M.mod_sizes = seq(1, M.k)' ~ mod_sizes
+if M.show_progress == 1
+  printf &quot;\n&quot;
+  BMA_print_status(null, 1, 22)
+else
+  BMA_print_status(null, 1, 2)
+endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_estimate" type="void" private="1">
@@ -1633,6 +1670,27 @@ plot
   printf &quot;EOD&quot;
   literal plot $map matrix with image
 end plot --output=display
+</code>
+</gretl-function>
+<gretl-function name="BMA_print_status" type="void" private="1">
+ <params count="3">
+  <param name="message" type="string" optional="true" const="true"/>
+  <param name="done" type="bool" default="0" const="true"/>
+  <param name="spaces" type="scalar" default="1" const="true"/>
+ </params>
+<code>/*
+Function prints current execution status and flushes screen.
+*/
+string SPACE = &quot;&quot;
+if done == 1
+  loop i=1..spaces --quiet
+    SPACE += sprintf(&quot;%s&quot;, &quot; &quot;)
+  endloop
+  printf &quot;%sdone!&quot;, SPACE
+else
+  printf &quot;\n%s: &quot;, message
+endif
+flush
 </code>
 </gretl-function>
 <sample-script filename="examples/BMA_sample.inp">

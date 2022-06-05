@@ -15,24 +15,21 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function void BMA_show_progress (const scalar rep,
+function void BMA_show_progress (const scalar iter,
                                  scalar *percentage,
                                  const scalar progress,
-                                 const scalar Nrep)
+                                 const scalar N)
     /*
-    Function prints overall progress
+       Function prints overall progress
     */
-    if rep == percentage
-        val = floor(100 * rep/Nrep)
-        if $version >= 20221
-            printf "%d%%\r", val
-        else
-            printf "%d%%", val
-            if val < 100
-                printf ".."
-            endif            
+    if $version >= 20221
+        printf "%d%%\r", ceil(100 * iter/N)
+    else
+        printf "%d%%", floor(100 * iter/N)
+        if val < 100
+            printf ".."
         endif
-        percentage += progress
-        flush
-    endif    
+    endif
+    percentage += progress
+    flush
 end function

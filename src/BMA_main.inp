@@ -109,7 +109,7 @@ function void BMA_main (bundle *M)
         endif
         
         # Flushing output - showing progress
-        if M.show_progress == 1
+        if M.show_progress == 1 && rep == percentage
             BMA_show_progress(rep, &percentage, M.progress, M.Nrep)
         endif
     endloop
