@@ -132,13 +132,14 @@
 		sum, sumall, sumc, sumr, svd, tan, tanh, toepsolv, tolower, tr,
 		transp, trimr, typestr, uniform, uniq, unvech, upper, urcpval, values,
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
-		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle, _},
-	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle, void, bundles, null},  
+		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle,
+		mat2list, _},
+	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle, void, bundles, null},
+	morekeywords=[4]{\$nobs, \$stopwatch},
 	%   alsoletter={-},
 	sensitive=false,  
 	morecomment=[l]{\#},
 	morecomment=[l][\color{hanslgreen}]{--},
-	morecomment=[l][\color{hanslgreen}]{\$},
 	morecomment=[s]{/*}{*/},
 	morestring=[b]"
 }
@@ -153,6 +154,7 @@
 	keywordstyle={\bfseries\color{hanslred}},
 	keywordstyle=[2]{\color{hanslteal}},
 	keywordstyle=[3]{\bfseries\color{hanslgreen}},
+	keywordstyle=[4]{\bfseries\color{hanslgreen}},
 	commentstyle={\color{hanslblue}},
 	stringstyle={\color{hanslmagenta}}
 }
@@ -164,3 +166,4 @@
 \definecolor{hanslblue}{cmyk}{1,1,0,0} % {rgb}{0,0,1}
 \definecolor{hanslteal}{cmyk}{1,0,.45,0} %{.01,0,.45,1}
 \definecolor{hanslmagenta}{cmyk}{0,.96,0,0}
+\definecolor{hanslblack}{cmyk}{0,0,0,1}

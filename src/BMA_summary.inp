@@ -26,14 +26,14 @@ function void BMA_summary (bundle *M)
     scalar NORM = M.Nrep - M.Nburn
 
     # Normalisation of numerical probabilities of models in ranking
-    M.Numerical_Likelihood = M.mod_nume_prob ./ NORM
-    M.Post_Results = transp(M.var_prob ./ NORM)
-    M.bhat_avg = M.bhat_avg ./ NORM
-    M.bvar_avg = M.bvar_avg ./ NORM
+    M.Numerical_Likelihood = M.mod_nume_prob / NORM
+    M.Post_Results = transp(M.var_prob / NORM)
+    M.bhat_avg = M.bhat_avg / NORM
+    M.bvar_avg = M.bvar_avg / NORM
 
     # Average model size (including matrix for plot)
     M.mod_size = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
-    M.mod_sizes[,2] = M.mod_sizes[,2] ./ NORM
+    M.mod_sizes[,2] = M.mod_sizes[,2] / NORM
     M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
     M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
     M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
@@ -64,7 +64,6 @@ function void BMA_summary (bundle *M)
 
     # Best 100 models
     percents1 = { 5; 25; 50; 75; 100 }
-    #percents1 = selifr(percents1, percents1 .> M.l_rank)
     percents1 = selifr(percents1, percents1 .< M.post_n_models_accepted)
     percents1 = percents1 ~ zeros(nelem(percents1))
     if rows(percents1) > 0
@@ -112,9 +111,9 @@ function void BMA_summary (bundle *M)
     rnameset(M.Post_Results, M.all_names_sp)
 
     # Forecasts
-    if M.h_predict > 0
-        M.Yhat_avg = M.Yhat_avg ./ NORM
-        M.Yhat_var_avg = M.Yhat_var_avg ./ NORM
+    if M.h_predict
+        M.Yhat_avg = M.Yhat_avg / NORM
+        M.Yhat_var_avg = M.Yhat_var_avg / NORM
         M.Yhat_var_avg = sqrt(M.Yhat_var_avg - M.Yhat_avg .^ 2)
         M.prediction = M.Y_mat_predict ~ M.Yhat_avg ~ M.Yhat_var_avg
         cnameset(M.prediction, M.Y_name ~ " Mean Std.Dev.")
@@ -122,7 +121,7 @@ function void BMA_summary (bundle *M)
     endif
 
     # Jointess analysis
-    if M.do_joint != 0
+    if M.do_joint
         # We must clean up principal diagonal
         M.jointness_m[diag] = NA
         M.jointness_m = M.jointness_m / NORM
@@ -162,7 +161,7 @@ function void BMA_summary (bundle *M)
     delete M.XtXinv
     delete M.bhat_avg
     delete M.bvar_avg
-    if M.h_predict > 0
+    if M.h_predict
         delete M.big_mat_predict
         delete M.big_mat_dem_predict
         delete M.Y_mat_predict
@@ -191,5 +190,5 @@ function void BMA_summary (bundle *M)
     delete M.models_probs_cum
     delete M.progress
     
-    BMA_print_status(null, 1, 9)
+    BMA_print_status(null, 1, 10)
 end function

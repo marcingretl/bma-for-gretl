@@ -35,10 +35,12 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     strings Integers = defarray("model_prior", "Nrank", "g_type", "do_joint", "Npredict", "Nrep", "burn", "verbosity")
     strings Booleans = defarray("show_progress", "do_plot")
     strings Scalars = defarray("avg_model_size", "alpha")
-    if $version >= 20221 && $sysinfo.gui_mode == 1
+    if $sysinfo.gui_mode
         do_plot = 1
+        show_progress = 1
     else
         do_plot = 0
+        show_progress = 0
     endif
 
     # We set the default Nrep conditional on k
@@ -63,7 +65,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     scalar Options["Nrep"] = Nrep
     scalar Options["burn"] = 10
     scalar Options["verbosity"] = 2
-    scalar Options["show_progress"] = 1
+    scalar Options["show_progress"] = show_progress
     scalar Options["do_plot"] = do_plot
 
     # General checking, but still needs some manual work

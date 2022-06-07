@@ -18,7 +18,7 @@
 function void BMA_collect_results (bundle *M, bundle *known_models,
                                    matrix *models_counter, matrix *models_lprob,
                                    matrices *models_estimates, matrices *models_structure,
-                                   matrices *models_X_new_num, matrices *models_forecasts[null])
+                                   matrices *models_forecasts[null])
     /*
        Function collects results from MC3 experiment.
     */
@@ -49,7 +49,6 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     idx = selifr(seq(1, M.Nrep+1)', models_counter .> 0)
     M.post_n_models_accepted = nelem(idx)
     models_counter = models_counter[idx]
-    #models_X_new_num = models_X_new_num[idx]
     models_estimates = models_estimates[idx]
     models_structure = models_structure[idx]
     if M.h_predict
@@ -79,20 +78,15 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     endloop
 
     # We average over all accepted models
-    if M.show_progress == 1
-        BMA_print_status("           averaging")
-        if $version >= 20221
-            scalar M.progress = ceil(nelem(models_counter)/100)
-        else
-            scalar M.progress = floor(nelem(models_counter)/10)
-        endif
+    if M.show_progress
+        BMA_print_status("averaging", 0, 11, 1)
+        scalar M.progress = ceil(nelem(models_counter)/100)
         percentage = M.progress
         flush
     endif
     loop i=1..nelem(models_counter) --quiet
         weight = models_counter[i]
         mod_struct = models_structure[i]
-        #var_idx = (models_X_new_num[i][2:]) - 2
 
         if nelem(mod_struct) > 0 && sum(mod_struct) > 0
             X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ mod_struct)
@@ -110,7 +104,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
             endif
 
             # Flushing output - showing progress
-            if M.show_progress == 1 && i == percentage
+            if M.show_progress && i == percentage
                 BMA_show_progress(i, &percentage, M.progress, nelem(models_counter))
             endif
         endif
@@ -121,12 +115,15 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         endif
     endloop
 
-    # We save collected results in bundle M
+    #############################################
+    # We save collected results in the bundle M #
+    #############################################
+    
     # Coefficients and variances
     M.bhat_avg = bhat_avg'
     M.bvar_avg = bvar_avg'
 
-    # Probability of variables
+    # Probability of variables (for calculating PIPs)
     M.var_prob = var_prob
 
     # Jointness analysis
@@ -143,10 +140,10 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     # Models size distribution
     M.mod_sizes = seq(1, M.k)' ~ mod_sizes
 
-    if M.show_progress == 1
+    if M.show_progress
         printf "\n"
         BMA_print_status(null, 1, 22)
     else
-        BMA_print_status(null, 1, 2)
+        BMA_print_status(null, 1, 3)
     endif    
 end function

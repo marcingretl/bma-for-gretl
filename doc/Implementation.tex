@@ -7,9 +7,8 @@ script. Finally, we will show the outputs that are returned.
 
 
 \subsection[The core of the BMA code]{The core of the \pkg{BMA} code}
-The \pkg{BMA} package consists of 4 public and 23 private functions, but
-only 16 of them are used regularly. The name of each function starts
-with the prefix \code{BMA_}.
+The \pkg{BMA} package consists of 5 public and 18 private functions.
+The name of each function starts with the prefix \code{BMA_}.
 
 \subsubsection{Public functions}
 The public functions are:
@@ -43,7 +42,7 @@ values for those arguments are:
  scalar Options["Nrep"] = Nrep
  scalar Options["burn"] = 10
  scalar Options["verbosity"] = 2
- scalar Options["show_progress"] = 1
+ scalar Options["show_progress"] = show_progress
  scalar Options["do_plot"] = do_plot
 \end{lstlisting}\label{sec:default_option_bundle}
 where \textit{k} stands for the number of independent variables,
@@ -59,11 +58,21 @@ where \textit{k} stands for the number of independent variables,
 	\right.
 	\label{eq:Nrep_setup}
 \end{equation}
+\lstinline!scalar show_progress! takes the following values:
+\begin{equation}
+	\mathtt{show\_progress} = \left\{
+	\begin{array}{crl}
+		1 & \mathrm{if} & \textrm{\lstinline!$sysinfo!\texttt{.gui\_mode}},\\
+		0 & \mathrm{else}, &\\
+	\end{array}
+	\right.
+	\label{eq:show_progress_setup}
+\end{equation}
 and \lstinline!scalar do_plot! takes the following values:
 \begin{equation}
 	\mathtt{do\_plot} = \left\{
 	\begin{array}{crl}
-		1 & \mathrm{if} & \textrm{\lstinline!$version! {\footnotesize\texttt{>= 20221 \&\& }\lstinline!$sysinfo!\texttt{.gui\_mode == 1}}},\\
+		1 & \mathrm{if} & \textrm{\lstinline!$sysinfo!\texttt{.gui\_mode}},\\
 		0 & \mathrm{else}. &\\
 	\end{array}
 	\right.
@@ -119,8 +128,8 @@ Meaning of optional arguments is as follows:
 		for printing results. The default value is 2.
 	\item The \lstinline!bool show_progress! is a boolean value 
 		which switches progress printing during the simulation.
-		Note that it consumes a lot of CPU time and significantly
-		slows down the package.
+		The default value is set up according to formula~\eqref{eq:show_progress_setup}.
+		Note that it consumes some CPU time and slows down the package.
 	\item The \lstinline!bool do_plot! is a boolean value which
 		switches plotting graphs after the simulation.
 		The default value is set up according to formula~\eqref{eq:do_plot_setup}.

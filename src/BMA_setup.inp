@@ -39,9 +39,10 @@ function bundle BMA_setup (const series Y,
     list X_list = X_list_m
     list big_list = Y X_list
     list big_list_const = Y const X_list
-    #
-    # Basic parsing and checking
-    # Global variables
+    
+    ###############################################
+    # Global variables (given by user of default) #
+    ###############################################
     series M.Y = Y
     matrix M.X_list = X_list
     scalar M.acc_type = acc_type
@@ -59,7 +60,10 @@ function bundle BMA_setup (const series Y,
         scalar M.Norig = Norig
     endif
     scalar M.do_plot = do_plot
-    # Local variables
+    
+    ###################
+    # Local variables #
+    ###################
     matrix M.StartModel = {} # list with variables selected in starting model
     matrix M.X_list = X_list # X_list
     scalar M.k = nelem(X_list) # total number of indenpendent variables
@@ -75,7 +79,7 @@ function bundle BMA_setup (const series Y,
     M.big_mat_dem_const[,2] = 1 # We need substitude zeros with ones (the former because of stdize() function)
     scalar M.post_n_models = 0
     scalar M.post_n_models_accepted = 0
-    scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation
+    scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation    
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
@@ -140,8 +144,8 @@ function bundle BMA_setup (const series Y,
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
     string M.Y_name = Y_name # string with name of denpendent variable
-
-    if do_joint != 0
+    # Jointness
+    if do_joint
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
         strings M.jointess_measure_names = defarray("Doppelhofer-Weeks Measure (DW1)", \
           "Doppelhofer-Weeks Measure (DW2)", "Ley-Steel Measure (LS1)", \
@@ -150,7 +154,7 @@ function bundle BMA_setup (const series Y,
     else
         matrix M.jointness_m = {}
     endif
-
+    # Model prior
     if acc_type == 1 # options for the prior
         string M.prior_name = "Binomial"
         scalar M.a = log(av_model_size/M.k)
@@ -162,7 +166,7 @@ function bundle BMA_setup (const series Y,
         scalar M.b = (M.k - av_model_size)/av_model_size
         scalar M.c = lngamma(M.a + M.b) - lngamma(M.a) - lngamma(M.b)
     endif
-
+    # For averaging
     matrix M.bhat = {} # column vector containing the estimated coefficients for the current model
     matrix M.bvar = {} # column vector containing the variances of the coefficients for the current model
     matrix M.XtY = {} # X'Y (part of OLS)
@@ -175,7 +179,7 @@ function bundle BMA_setup (const series Y,
     matrix M.models_probs_percents = {} # CDF-like matrix for accepted models
     matrix M.models_probs_cdf = {} # accepted models CDF
     matrix M.models_probs_cum = {} # accepted models cumulation
-
+    
     # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     # g0 (g-prior)
@@ -204,18 +208,14 @@ function bundle BMA_setup (const series Y,
         string M.gtype = "Root of g-UIP"
     endif
 
-    if verbosity == 1
+    if verbosity
         set warnings off
     endif
 
-    # MC3 progress
-    if $version >= 20221
-        scalar M.progress = floor(M.Nrep/100)
-    else
-        scalar M.progress = floor(M.Nrep/10)
-    endif
+    # MC3 progress step
+    scalar M.progress = floor(M.Nrep/100)
 
-    BMA_print_status(null, 1, 11)
+    BMA_print_status(null, 1, 12)
 
     return M
 end function

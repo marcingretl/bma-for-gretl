@@ -16,8 +16,8 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_main (bundle *M)
-/*
-   This is main BMA function with complete MC3 simulation procedure
+    /*
+    This is main BMA function with complete MC3 simulation procedure.
     */
     # Local variables
     BMA_print_status("MC3 setup")
@@ -30,7 +30,6 @@ function void BMA_main (bundle *M)
     matrix models_lprob = zeros(M.Nrep+1)
     matrices models_estimates = array(M.Nrep+1)
     matrices models_structure = array(M.Nrep+1)
-    matrices models_X_new_num = null
     matrix mod_struct_draw
     if M.h_predict > 0
         matrices models_forecasts = array(M.Nrep+1)
@@ -41,8 +40,11 @@ function void BMA_main (bundle *M)
     if M.h_predict > 0
         smpl 1 M.last_obs
     endif
-    ##################
-    # Part 1: Starting model
+
+    ##########################
+    # Part 1: Starting model #
+    ##########################
+
     # We estimate starting model and construct starting mod_rank_struct and mod_rank
     BMA_initial_model(&M)
     BMA_estimate(&M)
@@ -56,19 +58,21 @@ function void BMA_main (bundle *M)
     models_structure[model_nr] = M.mod_struct_new
     models_lprob[model_nr] = M.lprob_new
     models_estimates[model_nr] = M.bhat ~ M.bvar
-    #models_X_new_num[model_nr] = M.X_new_num
     if M.h_predict > 0 && M.k_new > 0
         BMA_forecast(&M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
     endif
-    BMA_print_status(null, 1, 11)
-    ##################
-    # Part 2: Markov Chain Monte Carlo Model Composition - MC3
-    if M.show_progress == 1
-        BMA_print_status("MC3 overall progress")
+    BMA_print_status(null, 1, 12)
+
+    ############################################################
+    # Part 2: Markov Chain Monte Carlo Model Composition - MC3 #
+    ############################################################
+
+    if M.show_progress
+        BMA_print_status("MC3 overall progress", 0, 0, 1)
     else
         BMA_print_status("MC3")
-    endif    
+    endif
     loop rep=1..M.Nrep --quiet
         # Now we draw the number of candidate variable
         scalar potential_var = randint(0, M.k)
@@ -91,7 +95,6 @@ function void BMA_main (bundle *M)
                 models_structure[model_nr] = M.mod_struct_new
                 models_lprob[model_nr] = M.lprob_new
                 models_estimates[model_nr] = M.bhat ~ M.bvar
-                #models_X_new_num[model_nr] = M.X_new_num                
                 # Out-of-sample forecasts
                 if M.h_predict > 0 && M.k_new > 0
                     BMA_forecast(&M)
@@ -107,17 +110,17 @@ function void BMA_main (bundle *M)
         if rep > M.Nburn
             models_counter[model_nr_old] += 1
         endif
-        
+
         # Flushing output - showing progress
-        if M.show_progress == 1 && rep == percentage
+        if M.show_progress && rep == percentage
             BMA_show_progress(rep, &percentage, M.progress, M.Nrep)
         endif
     endloop
-    if M.show_progress == 0
-        BMA_print_status(null, 1, 17)
-    endif    
-    
+    if !M.show_progress
+        BMA_print_status(null, 1, 18)
+    endif
+
     # Now we collect results (averaging and rankings)
     BMA_collect_results(&M, &known_models, &models_counter, &models_lprob, \
-      &models_estimates, &models_structure, &models_X_new_num, &models_forecasts)
+      &models_estimates, &models_structure, &models_forecasts)
 end function

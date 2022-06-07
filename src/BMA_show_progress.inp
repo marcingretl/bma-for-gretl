@@ -22,14 +22,7 @@ function void BMA_show_progress (const scalar iter,
     /*
        Function prints overall progress
     */
-    if $version >= 20221
-        printf "%d%%\r", ceil(100 * iter/N)
-    else
-        printf "%d%%", floor(100 * iter/N)
-        if val < 100
-            printf ".."
-        endif
-    endif
+    printf "%d%%\r", ceil(100 * iter/N)
     percentage += progress
     flush
 end function
