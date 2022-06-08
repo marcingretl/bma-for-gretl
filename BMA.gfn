@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1-svn</version>
-<date>2022-06-07</date>
+<date>2022-06-08</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -382,29 +382,49 @@ return OldStyle
 <code>/*
 BMA result bundle plot function.
 */
+string legend, output, basename
+if $sysinfo.gui_mode
+  basename = &quot;display&quot;
+else
+  basename = strftime($now[1], &quot;%Y%m%d%H%M%S&quot;)
+endif
 # Heatmap for variable inclusion
-BMA_heatmap(MODEL, &quot;inclusions&quot;)
+BMA_heatmap(MODEL, &quot;inclusions&quot;, basename)
 # Heatmap for jointness
 if MODEL.do_joint
-  BMA_heatmap(MODEL, &quot;jointness&quot;)
+  BMA_heatmap(MODEL, &quot;jointness&quot;, basename)
 endif
 # Models size distribution
 plotmat = mreverse(MODEL.mod_sizes, 1)
+output = basename
+if !$sysinfo.gui_mode
+  output = output ~ &quot;-MSD.plt&quot;
+endif
+if MODEL.mod_size_av &lt; MODEL.av_model_size
+  legend = &quot;left&quot;
+else
+  legend = &quot;right&quot;
+endif
 plot plotmat
   options with-lp fit=none
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size Distribution&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Density&quot;
-end plot --output=display
+  printf &quot;set key %s top&quot;, legend
+end plot --output=@output
 # Models size CDF
 plotmat = MODEL.models_probs_cdf
+output = basename
+if !$sysinfo.gui_mode
+  output = output ~ &quot;-CDF.plt&quot;
+endif
 plot plotmat
   options with-line fit=none
   literal set grid
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;CDF of Model Size&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Number of Models&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Posterior Probability Mass&quot;
-end plot --output=display
+end plot --output=@output
 </code>
 </gretl-function>
 <gretl-function name="BMA_parse" type="string" private="1">
@@ -1293,7 +1313,7 @@ string arg_name
 strings Integers = defarray(&quot;model_prior&quot;, &quot;Nrank&quot;, &quot;g_type&quot;, &quot;do_joint&quot;, &quot;Npredict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
 strings Booleans = defarray(&quot;show_progress&quot;, &quot;do_plot&quot;)
 strings Scalars = defarray(&quot;avg_model_size&quot;, &quot;alpha&quot;)
-if $sysinfo.gui_mode == 1
+if $sysinfo.gui_mode
   do_plot = 1
   show_progress = 1
 else
@@ -1541,15 +1561,17 @@ M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
 </code>
 </gretl-function>
 <gretl-function name="BMA_heatmap" type="void" private="1">
- <params count="2">
+ <params count="3">
   <param name="M" type="bundle" const="true"/>
   <param name="MODE" type="string"/>
+  <param name="basename" type="string" optional="true" const="true"/>
  </params>
 <code>/*
-M - BMA result bundle, MODE - string indicating image mode {&quot;inclusions&quot;, &quot;jointness&quot;}
+M   - BMA result bundle, MODE  - string indicating image mode {&quot;inclusions&quot;, &quot;jointness&quot;}
+basename	- basename for gnuplot files
 */
 scalar nrows, ncols, tmp, height, width, minval, maxval
-string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate
+string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate, output
 matrix m
 # We set general image options
 if MODE == &quot;inclusions&quot;
@@ -1565,6 +1587,7 @@ if MODE == &quot;inclusions&quot;
   endloop
   m = mreverse(m')
   palette = &quot;0 'white', 1 'red'&quot;
+  output = &quot;-PIP.plt&quot;
 else
   title = sprintf(&quot;Jointness Based on %s&quot;, M.jointess_measure_names[M.do_joint])
   xlabel = &quot;Variable&quot;
@@ -1580,6 +1603,7 @@ else
     palette = sprintf(&quot;%s 'blue', 0 'white', %s 'red'&quot;, strsub(sprintf(&quot;%f&quot;, minval), &quot;,&quot;, &quot;.&quot;), strsub(sprintf(&quot;%f&quot;, maxval), &quot;,&quot;, &quot;.&quot;))
   endif
   rotate = &quot;set xtics rotate by 45 right&quot;
+  output = &quot;-Jointness.plt&quot;
 endif
 nrows = rows(m)
 ncols = cols(m)
@@ -1630,6 +1654,12 @@ loop i=1..nrows --quiet
     endif
   endloop
 endloop
+# We check if we display or save plot
+if $sysinfo.gui_mode
+  output = &quot;display&quot;
+else
+  output = sprintf(&quot;%s%s&quot;, basename, output)
+endif
 # We plot heatmap
 plot
   printf &quot;set term pngcairo font \&quot;Vera,9\&quot; size %d,%d noenhanced&quot;, width, height
@@ -1658,7 +1688,7 @@ plot
   printf &quot;%s&quot;, grid
   printf &quot;EOD&quot;
   literal plot $map matrix with image
-end plot --output=display
+end plot --output=@output
 </code>
 </gretl-function>
 <gretl-function name="BMA_print_status" type="void" private="1">

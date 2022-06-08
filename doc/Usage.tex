@@ -92,12 +92,12 @@ described on page~\pageref{sec:default_option_bundle}.
 On contrary, the corresponding ''big call'', i.e. with
 setting all possible parameters, would be as follows:
 \begin{lstlisting}
-bundle opts = defbundle("model_prior", 1, "avg_model_size", 1.5, \
- "alpha", 0.6, "Nrank", 4, "g_type", 1, "do_joint", 0, \
- "Npredict", 0, "Nrep", 1000, "burn", 10, "verbosity", 2, \
- "show_progress", 1, "do_plot", 1)
+ bundle opts = defbundle("model_prior", 1, "avg_model_size", 1.5, \
+  "alpha", 0.6, "Nrank", 4, "g_type", 1, "do_joint", 0, \
+  "Npredict", 0, "Nrep", 1000, "burn", 10, "verbosity", 2, \
+  "show_progress", 1, "do_plot", 1)
  
- BMA(valadd, greene, opts)
+  BMA(valadd, greene, opts)
 \end{lstlisting}
 
 or alternatively with the new syntax for creating a bundle

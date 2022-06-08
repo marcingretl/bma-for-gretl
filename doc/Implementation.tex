@@ -8,7 +8,7 @@ script. Finally, we will show the outputs that are returned.
 
 \subsection[The core of the BMA code]{The core of the \pkg{BMA} code}
 The \pkg{BMA} package consists of 5 public and 18 private functions.
-The name of each function starts with the prefix \code{BMA_}.
+The name of each function starts with the \code{BMA_} prefix.
 
 \subsubsection{Public functions}
 The public functions are:
@@ -62,7 +62,7 @@ where \textit{k} stands for the number of independent variables,
 \begin{equation}
 	\mathtt{show\_progress} = \left\{
 	\begin{array}{crl}
-		1 & \mathrm{if} & \textrm{\lstinline!$sysinfo!\texttt{.gui\_mode}},\\
+		1 & \mathrm{if} & \textrm{\lstinline!$sysinfo!\texttt{\small.gui\_mode}},\\
 		0 & \mathrm{else}, &\\
 	\end{array}
 	\right.
@@ -72,7 +72,7 @@ and \lstinline!scalar do_plot! takes the following values:
 \begin{equation}
 	\mathtt{do\_plot} = \left\{
 	\begin{array}{crl}
-		1 & \mathrm{if} & \textrm{\lstinline!$sysinfo!\texttt{.gui\_mode}},\\
+		1 & \mathrm{if} & \textrm{\lstinline!$sysinfo!\texttt{\small.gui\_mode}},\\
 		0 & \mathrm{else}. &\\
 	\end{array}
 	\right.
@@ -183,10 +183,13 @@ for old versions of BMA package (prior to 2.0).
 
 \noindent Function for plotting graphs is: 
 \begin{lstlisting}
-	function void BMA_Plot (bundle *MODEL)
+ function void BMA_Plot (bundle *MODEL)
 \end{lstlisting}
-This function takes as an argument reference to the bundle MODEL
+This function takes as an argument reference to the MODEL bundle
 with BMA results and plots graphs according to \code{do_plot} settings.
+In non-GUI mode (when \lstinline!$sysinfo!\texttt{\small.gui\_mode == 0}),
+plots are generated as scripts for \texttt{gnuplot} program. Save
+files have then base name set as \lstinline!strftime($now[1], "%Y%m%d%H%M%S")!.
 
 
 \subsubsection{The main loop}
