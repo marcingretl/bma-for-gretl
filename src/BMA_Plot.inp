@@ -19,13 +19,13 @@ function void BMA_Plot (bundle *MODEL)
 /*
    BMA result bundle plot function.
     */
-    string legend, output, basename
+    string legend, output, basename, xtics
 
     if $sysinfo.gui_mode
         basename = "display"
     else
         basename = strftime($now[1], "%Y%m%d%H%M%S")
-    endif    
+    endif
 
     # Heatmap for variable inclusion
     BMA_heatmap(MODEL, "inclusions", basename)
@@ -62,9 +62,38 @@ function void BMA_Plot (bundle *MODEL)
     endif
     plot plotmat
         options with-line fit=none
+        literal set xtics 1
         literal set grid
         printf "set title \"%s\"", "CDF of Model Size"
         printf "set xlabel \"%s\"", "Number of Models"
         printf "set ylabel \"%s\"", "Posterior Probability Mass"
     end plot --output=@output
+
+    # Predictive results
+    if MODEL.h_predict
+        plotmat = MODEL.prediction[,1:2]
+        bars = MODEL.prediction[,2:3]
+        cnameset(plotmat, cnameget(MODEL.prediction)[1:2])
+        output = basename
+        if !$sysinfo.gui_mode
+            output = output ~ "-predict.plt"
+        endif
+        xtics = "("
+        loop i=1..MODEL.h_predict --quiet           
+            xtics += sprintf("\"%s\" %d", rnameget(MODEL.prediction)[i], i)
+            if i == MODEL.h_predict
+                xtics += sprintf(")")
+            else
+                xtics += sprintf(", ")
+            endif
+        endloop
+        plot plotmat
+            options time-series with-lines
+            options with-line fit=none
+            options band=bars,1 band-style=bars            
+            printf "set title \"%s\"", "Predictive results"
+            printf "set xlabel \"%s\"", "Observation"
+            printf "set xtics %s", xtics
+        end plot --output=@output
+    endif
 end function

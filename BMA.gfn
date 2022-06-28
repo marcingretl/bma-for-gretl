@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1-svn</version>
-<date>2022-06-08</date>
+<date>2022-06-28</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -382,7 +382,7 @@ return OldStyle
 <code>/*
 BMA result bundle plot function.
 */
-string legend, output, basename
+string legend, output, basename, xtics
 if $sysinfo.gui_mode
   basename = &quot;display&quot;
 else
@@ -420,11 +420,39 @@ if !$sysinfo.gui_mode
 endif
 plot plotmat
   options with-line fit=none
+  literal set xtics 1
   literal set grid
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;CDF of Model Size&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Number of Models&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Posterior Probability Mass&quot;
 end plot --output=@output
+# Predictive results
+if MODEL.h_predict
+  plotmat = MODEL.prediction[,1:2]
+  bars = MODEL.prediction[,2:3]
+  cnameset(plotmat, cnameget(MODEL.prediction)[1:2])
+  output = basename
+  if !$sysinfo.gui_mode
+    output = output ~ &quot;-predict.plt&quot;
+  endif
+  xtics = &quot;(&quot;
+  loop i=1..MODEL.h_predict --quiet
+    xtics += sprintf(&quot;\&quot;%s\&quot; %d&quot;, rnameget(MODEL.prediction)[i], i)
+    if i == MODEL.h_predict
+      xtics += sprintf(&quot;)&quot;)
+    else
+      xtics += sprintf(&quot;, &quot;)
+    endif
+  endloop
+  plot plotmat
+    options time-series with-lines
+    options with-line fit=none
+    options band=bars,1 band-style=bars
+    printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Predictive results&quot;
+    printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Observation&quot;
+    printf &quot;set xtics %s&quot;, xtics
+  end plot --output=@output
+endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_parse" type="string" private="1">
