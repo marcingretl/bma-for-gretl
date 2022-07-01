@@ -187,7 +187,7 @@ function void BMA_Print (bundle *M)
                     if nelem(Xnames) != rows(coeffmat)
                         Xnames = null
                         Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
-                    endif                    
+                    endif
                 endif
                 modprint coeffmat Xnames
             endif

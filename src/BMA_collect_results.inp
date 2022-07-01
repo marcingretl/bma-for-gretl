@@ -102,23 +102,25 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
             if M.do_joint
                 jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .> 0))
             endif
-
-            # Flushing output - showing progress
-            if M.show_progress && i == percentage
-                BMA_show_progress(i, &percentage, M.progress, nelem(models_counter))
-            endif
+        else
+            M.empty_model_count = weight
         endif
 
-        if M.h_predict
+        if M.h_predict           
             Yhat_avg += weight * models_forecasts[i][,1]
             Yhat_var_avg += weight * models_forecasts[i][,2]
+        endif
+
+        # Flushing output - showing progress
+        if M.show_progress && i == percentage
+            BMA_show_progress(i, &percentage, M.progress, nelem(models_counter))
         endif
     endloop
 
     #############################################
     # We save collected results in the bundle M #
     #############################################
-    
+
     # Coefficients and variances
     M.bhat_avg = bhat_avg'
     M.bvar_avg = bvar_avg'
@@ -139,11 +141,12 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
 
     # Models size distribution
     M.mod_sizes = seq(1, M.k)' ~ mod_sizes
+    M.mod_sizes = {0} ~ M.empty_model_count | M.mod_sizes
 
     if M.show_progress
         printf "\n"
         BMA_print_status(null, 1, 22)
     else
         BMA_print_status(null, 1, 3)
-    endif    
+    endif
 end function

@@ -19,9 +19,15 @@ function void BMA_forecast (bundle *M)
     /*
     This function computes forecast of Y (average mean and average standard deviation):
     */
-    # Mean
-    M.Yhat = M.X_new_predict * M.bhat[2:M.k_new+1] + M.y_mean
+    # Mean and precision
+    if M.k_new == 0
+        M.Yhat = M.y_mean
+        precision = (($nobs - 1) / M.dj_new) * ((1 + 1/$nobs) .^ -1)
+    else
+        M.Yhat = M.X_new_predict * M.bhat[2:M.k_new+1] + M.y_mean
+        precision = (($nobs - 1) / M.dj_new) * ((1 + 1/$nobs + M.scaling_f[3] * diag(qform(M.X_new_predict, M.ZtZinv_new))) .^ -1)
+    endif
+    
     # Variance
-    precision = (($nobs - 1) / M.dj_new) * ((1 + 1/$nobs + M.scaling_f[3] * diag(qform(M.X_new_predict, M.ZtZinv_new))) .^ -1)
     M.Yhat_var = ($nobs - 1) / (precision * ($nobs - 3)) + M.Yhat .^ 2
 end function

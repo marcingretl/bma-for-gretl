@@ -58,7 +58,7 @@ function void BMA_main (bundle *M)
     models_structure[model_nr] = M.mod_struct_new
     models_lprob[model_nr] = M.lprob_new
     models_estimates[model_nr] = M.bhat ~ M.bvar
-    if M.h_predict > 0 && M.k_new > 0
+    if M.h_predict > 0 #&& M.k_new > 0
         BMA_forecast(&M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
     endif
@@ -96,7 +96,7 @@ function void BMA_main (bundle *M)
                 models_lprob[model_nr] = M.lprob_new
                 models_estimates[model_nr] = M.bhat ~ M.bvar
                 # Out-of-sample forecasts
-                if M.h_predict > 0 && M.k_new > 0
+                if M.h_predict > 0 #&& M.k_new > 0
                     BMA_forecast(&M)
                     models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
                 endif

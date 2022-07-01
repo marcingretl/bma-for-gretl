@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1-svn</version>
-<date>2022-06-28</date>
+<date>2022-07-01</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -400,13 +400,19 @@ output = basename
 if !$sysinfo.gui_mode
   output = output ~ &quot;-MSD.plt&quot;
 endif
-if MODEL.mod_size_av &lt; MODEL.av_model_size
+if rows(plotmat) &lt; 20
+  xtics = &quot;set xtics 1&quot;
+else
+  xtics = &quot;&quot;
+endif
+if MODEL.mod_size_av &gt; MODEL.av_model_size
   legend = &quot;left&quot;
 else
   legend = &quot;right&quot;
 endif
 plot plotmat
   options with-lp fit=none
+  printf &quot;%s&quot;, xtics
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size Distribution&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Density&quot;
@@ -418,10 +424,15 @@ output = basename
 if !$sysinfo.gui_mode
   output = output ~ &quot;-CDF.plt&quot;
 endif
+if rows(plotmat) &lt; 20
+  xtics = &quot;set xtics 1&quot;
+else
+  xtics = &quot;&quot;
+endif
 plot plotmat
   options with-line fit=none
-  literal set xtics 1
   literal set grid
+  printf &quot;%s&quot;, xtics
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;CDF of Model Size&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Number of Models&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Posterior Probability Mass&quot;
@@ -448,7 +459,7 @@ if MODEL.h_predict
     options time-series with-lines
     options with-line fit=none
     options band=bars,1 band-style=bars
-    printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Predictive results&quot;
+    printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Predictive results (with +/- one standard deviations as bars)&quot;
     printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Observation&quot;
     printf &quot;set xtics %s&quot;, xtics
   end plot --output=@output
@@ -798,10 +809,15 @@ eval pairs_related
 <code>/*
 This function computes forecast of Y (average mean and average standard deviation):
 */
-# Mean
-M.Yhat = M.X_new_predict * M.bhat[2:M.k_new+1] + M.y_mean
+# Mean and precision
+if M.k_new == 0
+  M.Yhat = M.y_mean
+  precision = (($nobs - 1) / M.dj_new) * ((1 + 1/$nobs) .^ -1)
+else
+  M.Yhat = M.X_new_predict * M.bhat[2:M.k_new+1] + M.y_mean
+  precision = (($nobs - 1) / M.dj_new) * ((1 + 1/$nobs + M.scaling_f[3] * diag(qform(M.X_new_predict, M.ZtZinv_new))) .^ -1)
+endif
 # Variance
-precision = (($nobs - 1) / M.dj_new) * ((1 + 1/$nobs + M.scaling_f[3] * diag(qform(M.X_new_predict, M.ZtZinv_new))) .^ -1)
 M.Yhat_var = ($nobs - 1) / (precision * ($nobs - 3)) + M.Yhat .^ 2
 </code>
 </gretl-function>
@@ -831,7 +847,7 @@ endif
 We summarise some BMA results and deleting redundand items from the returned bundle
 */
 BMA_print_status(&quot;Summarizing&quot;)
-scalar tmps, factor
+scalar tmps, factor, k
 string title
 matrix percents1, percents2
 scalar NORM = M.Nrep - M.Nburn
@@ -848,12 +864,18 @@ M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2
 M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
 tmps = M.av_model_size/M.k
 loop i=1..rows(M.mod_sizes) --quiet
-  if i == M.k
+  k = M.mod_sizes[i,1]
+  factor = bincoeff(M.k,k)
+  /*
+  if k == M.k || k == 0
     factor = 1
+    printf &quot;\n factor - newton: %d\n&quot;, factor - bincoeff(M.k,k)
   else
-    factor = prodr(seq(1,M.k)) / (prodr(seq(1,i)) * prodr(seq(1,M.k-i)))
+    factor = prodr(seq(1,M.k)) / (prodr(seq(1,k)) * prodr(seq(1,M.k-k)))
+    printf &quot;\n factor - newton: %d\n&quot;, factor - bincoeff(M.k,k)
   endif
-  M.mod_sizes[i,3] = (tmps^i * (1-tmps)^(M.k-i)) * factor
+  */
+  M.mod_sizes[i,3] = (tmps^k * (1-tmps)^(M.k-k)) * factor
 endloop
 M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
 # Models size distribution
@@ -990,6 +1012,7 @@ delete M.Y_mat
 delete M.all_names_sp
 delete M.models_probs_cum
 delete M.progress
+delete M.empty_model_count
 BMA_print_status(null, 1, 10)
 </code>
 </gretl-function>
@@ -1037,7 +1060,7 @@ known_models[model_id] = model_nr
 models_structure[model_nr] = M.mod_struct_new
 models_lprob[model_nr] = M.lprob_new
 models_estimates[model_nr] = M.bhat ~ M.bvar
-if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
+if M.h_predict &gt; 0 #&amp;&amp; M.k_new &gt; 0
   BMA_forecast(&amp;M)
   models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
 endif
@@ -1072,7 +1095,7 @@ loop rep=1..M.Nrep --quiet
       models_lprob[model_nr] = M.lprob_new
       models_estimates[model_nr] = M.bhat ~ M.bvar
       # Out-of-sample forecasts
-      if M.h_predict &gt; 0 &amp;&amp; M.k_new &gt; 0
+      if M.h_predict &gt; 0 #&amp;&amp; M.k_new &gt; 0
         BMA_forecast(&amp;M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
       endif
@@ -1258,6 +1281,7 @@ matrix M.mod_sizes = {} # Vector with models size distribution
 matrix M.models_probs_percents = {} # CDF-like matrix for accepted models
 matrix M.models_probs_cdf = {} # accepted models CDF
 matrix M.models_probs_cum = {} # accepted models cumulation
+scalar M.empty_model_count = 0 # Counter for empty model
 # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
 matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
 # g0 (g-prior)
@@ -1511,14 +1535,16 @@ loop i=1..nelem(models_counter) --quiet
     if M.do_joint
       jointness_m = upper(jointness_m .+ weight * ((mod_struct .* mod_struct') .&gt; 0))
     endif
-    # Flushing output - showing progress
-    if M.show_progress &amp;&amp; i == percentage
-      BMA_show_progress(i, &amp;percentage, M.progress, nelem(models_counter))
-    endif
+  else
+    M.empty_model_count = weight
   endif
   if M.h_predict
     Yhat_avg += weight * models_forecasts[i][,1]
     Yhat_var_avg += weight * models_forecasts[i][,2]
+  endif
+  # Flushing output - showing progress
+  if M.show_progress &amp;&amp; i == percentage
+    BMA_show_progress(i, &amp;percentage, M.progress, nelem(models_counter))
   endif
 endloop
 #############################################
@@ -1540,6 +1566,7 @@ if M.h_predict
 endif
 # Models size distribution
 M.mod_sizes = seq(1, M.k)' ~ mod_sizes
+M.mod_sizes = {0} ~ M.empty_model_count | M.mod_sizes
 if M.show_progress
   printf &quot;\n&quot;
   BMA_print_status(null, 1, 22)
@@ -1622,9 +1649,12 @@ else
   ylabel = xlabel
   height = xmin(xmax(int(M.k/41*1024), 640), 900)
   width = xmin(xmax(int(M.k/41*1024), 900), 1024)
-  m = mreverse(BMA_jointness_measure(&amp;M))
+  m = BMA_jointness_measure(&amp;M)
+  m[diag] = 0
   minval = minc(minr(m))
   maxval = maxc(maxr(m))
+  m[diag] = NA
+  m = mreverse(m)
   if minval == 0
     palette = sprintf(&quot;0 'white', %s 'red'&quot;, strsub(sprintf(&quot;%f&quot;, maxval), &quot;,&quot;, &quot;.&quot;))
   else

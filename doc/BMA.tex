@@ -37,7 +37,7 @@
 \section*{Changelog}
 {\small\begin{description}
 	\item[3.1] New plot options and bug fixes:
-		\begin{itemize}			
+		\begin{itemize}
 			\item Fix edge-case bug when empty model is accepted
 				and appears in ranking.
 			\item (to doc) Change step to 1\% for new progress
@@ -48,7 +48,9 @@
 				(which is basically 2022b).
 			\item Add plotting option in non-GUI mode.
 			\item (to doc) New plot for predictive results.
-			\item Force only integers on X axis in CDF of Model Size plot.
+			\item Force only integers on X axis in Distribution and CDF of Model Size plots.
+			\item Fix bug in calculating prior model probability for empty model (including plot).
+			\item Fix bug in forecasting based on empty model.
 			\item Code cleanups.
 		\end{itemize}\newpage
 	\item[3.0] New MC3 strategy:

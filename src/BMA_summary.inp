@@ -20,7 +20,7 @@ function void BMA_summary (bundle *M)
     We summarise some BMA results and deleting redundand items from the returned bundle
     */
     BMA_print_status("Summarizing")
-    scalar tmps, factor
+    scalar tmps, factor, k
     string title
     matrix percents1, percents2
     scalar NORM = M.Nrep - M.Nburn
@@ -37,14 +37,20 @@ function void BMA_summary (bundle *M)
     M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
     M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
     M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
-    tmps = M.av_model_size/M.k
+    tmps = M.av_model_size/M.k    
     loop i=1..rows(M.mod_sizes) --quiet
-        if i == M.k
+        k = M.mod_sizes[i,1]
+        factor = bincoeff(M.k,k)
+        /*
+        if k == M.k || k == 0
             factor = 1
+            printf "\n factor - newton: %d\n", factor - bincoeff(M.k,k)
         else
-            factor = prodr(seq(1,M.k)) / (prodr(seq(1,i)) * prodr(seq(1,M.k-i)))
+            factor = prodr(seq(1,M.k)) / (prodr(seq(1,k)) * prodr(seq(1,M.k-k)))
+            printf "\n factor - newton: %d\n", factor - bincoeff(M.k,k)
         endif
-        M.mod_sizes[i,3] = (tmps^i * (1-tmps)^(M.k-i)) * factor
+        */
+        M.mod_sizes[i,3] = (tmps^k * (1-tmps)^(M.k-k)) * factor
     endloop
     M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
 
@@ -189,6 +195,7 @@ function void BMA_summary (bundle *M)
     delete M.all_names_sp
     delete M.models_probs_cum
     delete M.progress
+    delete M.empty_model_count
     
     BMA_print_status(null, 1, 10)
 end function

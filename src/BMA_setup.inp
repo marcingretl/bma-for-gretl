@@ -179,6 +179,7 @@ function bundle BMA_setup (const series Y,
     matrix M.models_probs_percents = {} # CDF-like matrix for accepted models
     matrix M.models_probs_cdf = {} # accepted models CDF
     matrix M.models_probs_cum = {} # accepted models cumulation
+    scalar M.empty_model_count = 0 # Counter for empty model
     
     # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors

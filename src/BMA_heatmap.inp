@@ -46,9 +46,12 @@ function void BMA_heatmap (const bundle M, string MODE, const string basename[nu
         ylabel = xlabel
         height = xmin(xmax(int(M.k/41*1024), 640), 900)
         width = xmin(xmax(int(M.k/41*1024), 900), 1024)
-        m = mreverse(BMA_jointness_measure(&M))
+        m = BMA_jointness_measure(&M)
+        m[diag] = 0
         minval = minc(minr(m))
         maxval = maxc(maxr(m))
+        m[diag] = NA
+        m = mreverse(m)
         if minval == 0
             palette = sprintf("0 'white', %s 'red'", strsub(sprintf("%f", maxval), ",", "."))
         else

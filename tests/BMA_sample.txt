@@ -1,5 +1,5 @@
 gretl version 2022b-git
-Current session: 2022-05-26 11:27
+Current session: 2022-06-30 09:40
 
 #######################################################
 #   https://sourceforge.net/projects/bma-for-gretl/   #
@@ -15,7 +15,13 @@ Listing 5 variables:
   0) const      1) valadd     2) capital    3) labor      4) nfirm    
 
 
-Overall progress: 100%
+BMA setup:            done!
+MC3 setup:            done!
+MC3 overall progress: 100%
+Collecting results:
+           averaging: 100%
+                      done!
+Summarizing:          done!
 ----------------------------------
 Model prior: Binomial
 Prior average model size: 1.500000
@@ -46,7 +52,7 @@ SSR = 268686, R-squared = 0.988005
 
 Prior:
 	average model size: 1.500000
-	standard deviation: 0.684653
+	standard deviation: 0.866025
 Posterior:
 	average model size: 1.984778
 	standard deviation: 0.543130
