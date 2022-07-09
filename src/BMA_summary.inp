@@ -40,17 +40,8 @@ function void BMA_summary (bundle *M)
     tmps = M.av_model_size/M.k    
     loop i=1..rows(M.mod_sizes) --quiet
         k = M.mod_sizes[i,1]
-        factor = bincoeff(M.k,k)
-        /*
-        if k == M.k || k == 0
-            factor = 1
-            printf "\n factor - newton: %d\n", factor - bincoeff(M.k,k)
-        else
-            factor = prodr(seq(1,M.k)) / (prodr(seq(1,k)) * prodr(seq(1,M.k-k)))
-            printf "\n factor - newton: %d\n", factor - bincoeff(M.k,k)
-        endif
-        */
-        M.mod_sizes[i,3] = (tmps^k * (1-tmps)^(M.k-k)) * factor
+        #M.mod_sizes[i,3] = (tmps^k * (1-tmps)^(M.k-k)) * bincoeff(M.k,k)
+        M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
     endloop
     M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
 

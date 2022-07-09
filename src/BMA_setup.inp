@@ -36,10 +36,11 @@ function bundle BMA_setup (const series Y,
     */
     BMA_print_status("BMA setup")
     bundle M
+    scalar tmp
     list X_list = X_list_m
     list big_list = Y X_list
     list big_list_const = Y const X_list
-    
+
     ###############################################
     # Global variables (given by user of default) #
     ###############################################
@@ -60,7 +61,7 @@ function bundle BMA_setup (const series Y,
         scalar M.Norig = Norig
     endif
     scalar M.do_plot = do_plot
-    
+
     ###################
     # Local variables #
     ###################
@@ -79,7 +80,7 @@ function bundle BMA_setup (const series Y,
     M.big_mat_dem_const[,2] = 1 # We need substitude zeros with ones (the former because of stdize() function)
     scalar M.post_n_models = 0
     scalar M.post_n_models_accepted = 0
-    scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation    
+    scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
@@ -155,17 +156,26 @@ function bundle BMA_setup (const series Y,
         matrix M.jointness_m = {}
     endif
     # Model prior
+    matrix M.model_prior_log = zeros(M.k+1)
     if acc_type == 1 # options for the prior
         string M.prior_name = "Binomial"
         scalar M.a = log(av_model_size/M.k)
         scalar M.b = log(1 - av_model_size/M.k)
         scalar M.c = 0
+        tmp = M.av_model_size/M.k
+        loop i=0..M.k --quiet
+            M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i)) # bincoeff(M.k,i)
+        endloop
     else
         string M.prior_name = "Binomial-Beta"
         scalar M.a = 1
         scalar M.b = (M.k - av_model_size)/av_model_size
         scalar M.c = lngamma(M.a + M.b) - lngamma(M.a) - lngamma(M.b)
+        loop i=0..M.k --quiet
+            M.model_prior_log[i+1] = log((gammafun(i+1) * gammafun(M.k-i+M.b) / gammafun(1+M.k+M.b)) / (gammafun(M.a) * gammafun(M.b) / gammafun(M.a+M.b)))
+        endloop
     endif
+
     # For averaging
     matrix M.bhat = {} # column vector containing the estimated coefficients for the current model
     matrix M.bvar = {} # column vector containing the variances of the coefficients for the current model
@@ -180,7 +190,7 @@ function bundle BMA_setup (const series Y,
     matrix M.models_probs_cdf = {} # accepted models CDF
     matrix M.models_probs_cum = {} # accepted models cumulation
     scalar M.empty_model_count = 0 # Counter for empty model
-    
+
     # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     # g0 (g-prior)
