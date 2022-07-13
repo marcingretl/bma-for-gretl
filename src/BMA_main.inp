@@ -50,7 +50,6 @@ function void BMA_main (bundle *M)
     BMA_estimate(&M)
     M.lprob_old = M.lprob_new
     M.mod_struct_old = M.mod_struct_new
-    #
     model_id = sprintf("%d", M.mod_struct_old)[1:end-1] # we trim the "\n" at the end !!!
     model_nr = M.Nrep+1
     model_nr_old = model_nr
@@ -58,7 +57,7 @@ function void BMA_main (bundle *M)
     models_structure[model_nr] = M.mod_struct_new
     models_lprob[model_nr] = M.lprob_new
     models_estimates[model_nr] = M.bhat ~ M.bvar
-    if M.h_predict > 0 #&& M.k_new > 0
+    if M.h_predict > 0
         BMA_forecast(&M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
     endif
@@ -88,31 +87,26 @@ function void BMA_main (bundle *M)
                 model_nr = known_models[model_id]
                 M.lprob_new = models_lprob[model_nr]
             else
-                # We estimate newly drawn model
+                # We estimate newly drawn model, do out-of-sample forecasts and save results
                 BMA_estimate(&M)
                 model_nr = rep
                 known_models[model_id] = model_nr
                 models_structure[model_nr] = M.mod_struct_new
                 models_lprob[model_nr] = M.lprob_new
-                models_estimates[model_nr] = M.bhat ~ M.bvar
-                # Out-of-sample forecasts
-                if M.h_predict > 0 #&& M.k_new > 0
+                models_estimates[model_nr] = M.bhat ~ M.bvar                
+                if M.h_predict > 0
                     BMA_forecast(&M)
                     models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
                 endif
             endif
 
             # Now we decide if to accept the new model
-            #BMA_accep_model(&M, &model_nr_old, &model_nr)
-            ###########
             if M.model_prior_log[M.k_new+1]-M.model_prior_log[M.k_old+1]+M.lprob_new-M.lprob_old > log(randgen1(u,0,1))
-                # We accept new model
                 M.lprob_old = M.lprob_new
                 M.mod_struct_old = M.mod_struct_new
                 M.k_old = M.k_new
                 model_nr_old = model_nr
             endif
-            ###########
         endif
 
         # Now we count models

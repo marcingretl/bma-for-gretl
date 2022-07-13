@@ -71,7 +71,7 @@ function void BMA_summary (bundle *M)
     # We look for certain percentiles
     percents2 = { 50; 75; 90; 95; 99 }
     if nelem(percents1) > 0
-        percents2 = selifr(percents2, percents2 .> percents1[rows(percents1),2]) # In future: use [end,end] syntax
+        percents2 = selifr(percents2, percents2 .> percents1[end,end])
         tmps = percents1[rows(percents1),1]
     else
         tmps = 1

@@ -96,9 +96,9 @@ function bundle BMA_setup (const series Y,
         strings M.predict_obs_names = obslabel(seq(M.last_obs + 1, $nobs)) # obs labels for forecasts
         smpl 1 M.last_obs # setting sample
         matrix M.big_mat = M.big_mat[1:M.last_obs,] # big_mat for limited sample
-        matrix M.big_mat_dem = stdize(M.big_mat, -1) #M.big_mat_dem[1:M.last_obs,] # big_mat_dem for limited sample
+        matrix M.big_mat_dem = stdize(M.big_mat, -1) # big_mat_dem for limited sample
         matrix M.big_mat_const = M.big_mat_const[1:M.last_obs,] # big_mat for limited sample
-        matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) #M.big_mat_dem_const[1:M.last_obs,] # big_mat_dem for limited sample
+        matrix M.big_mat_dem_const = stdize(M.big_mat_const, -1) # big_mat_dem for limited sample
         M.big_mat_dem_const[,2] = 1
     else
         matrix M.big_mat_dem_predict = {}
