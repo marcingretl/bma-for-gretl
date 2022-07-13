@@ -4,11 +4,9 @@ include src/BMA_parse.inp
 include src/BMA_initial_model.inp
 include src/BMA_correlation_coeff.inp
 include src/BMA_gprior.inp
-include src/BMA_accept_prob.inp
 include src/BMA_jointness_measure.inp
 include src/BMA_jointness_pairs.inp
 include src/BMA_forecast.inp
-include src/BMA_accep_model.inp
 include src/BMA_summary.inp
 include src/BMA_main.inp
 include src/BMA_setup.inp

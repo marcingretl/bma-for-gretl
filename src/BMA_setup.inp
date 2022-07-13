@@ -12,7 +12,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU General Ppublic License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function bundle BMA_setup (const series Y,
@@ -81,6 +81,7 @@ function bundle BMA_setup (const series Y,
     scalar M.post_n_models = 0
     scalar M.post_n_models_accepted = 0
     scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation
+
     # In case of "out-of-sample" prediction
     if h_predict > 0
         scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
@@ -106,6 +107,7 @@ function bundle BMA_setup (const series Y,
         matrix M.Y_mat_predict = {}
         strings M.predict_obs_names = array(0)
     endif
+
     # New model
     matrix M.ZtZinv_new = {} # inverse of Z'Z (X's without constant term)
     scalar M.k_new = 0 # number of variables in the current (new) model
@@ -145,6 +147,7 @@ function bundle BMA_setup (const series Y,
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
     string M.Y_name = Y_name # string with name of denpendent variable
+
     # Jointness
     if do_joint
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
@@ -155,6 +158,7 @@ function bundle BMA_setup (const series Y,
     else
         matrix M.jointness_m = {}
     endif
+    
     # Model prior
     matrix M.model_prior_log = zeros(M.k+1)
     if acc_type == 1 # options for the prior

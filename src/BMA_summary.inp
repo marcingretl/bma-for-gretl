@@ -37,10 +37,8 @@ function void BMA_summary (bundle *M)
     M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
     M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
     M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
-    tmps = M.av_model_size/M.k    
     loop i=1..rows(M.mod_sizes) --quiet
         k = M.mod_sizes[i,1]
-        #M.mod_sizes[i,3] = (tmps^k * (1-tmps)^(M.k-k)) * bincoeff(M.k,k)
         M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
     endloop
     M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))

@@ -60,7 +60,7 @@ function void BMA_Print (bundle *M)
     print "----------------------------------"
     printf "\n"
     printf "Prior:\n"
-    printf "\taverage model size: %f\n", M.av_model_size
+    printf "\taverage model size: %f\n", sum(M.mod_sizes[,1] .* M.mod_sizes[,3])
     printf "\tstandard deviation: %f\n", M.mod_size_sd_prior
     printf "Posterior:\n"
     printf "\taverage model size: %f\n", M.mod_size_av
@@ -176,8 +176,6 @@ function void BMA_Print (bundle *M)
                 print "----------------------------------"
                 printf "\nModel: %d, posterior probability: %f", i, M.Numerical_Likelihood[i]
                 if sum(M.mod_rank[i]) == 0
-                    #printf "\n\n  %s\n", "None of the variables were significant."
-                    #printf "  %s\n", "Model includes only the intercept term which is simply the average of the dependent variable."
                     Xnames = defarray("const")
                     coeffmat = M.mod_rank_estimates[i]
                 else                    

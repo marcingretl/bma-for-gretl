@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1-svn</version>
-<date>2022-07-09</date>
+<date>2022-07-13</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -111,7 +111,7 @@ endif
 print &quot;----------------------------------&quot;
 printf &quot;\n&quot;
 printf &quot;Prior:\n&quot;
-printf &quot;\taverage model size: %f\n&quot;, M.av_model_size
+printf &quot;\taverage model size: %f\n&quot;, sum(M.mod_sizes[,1] .* M.mod_sizes[,3])
 printf &quot;\tstandard deviation: %f\n&quot;, M.mod_size_sd_prior
 printf &quot;Posterior:\n&quot;
 printf &quot;\taverage model size: %f\n&quot;, M.mod_size_av
@@ -224,8 +224,6 @@ if M.verbosity == 2
       print &quot;----------------------------------&quot;
       printf &quot;\nModel: %d, posterior probability: %f&quot;, i, M.Numerical_Likelihood[i]
       if sum(M.mod_rank[i]) == 0
-        #printf &quot;\n\n  %s\n&quot;, &quot;None of the variables were significant.&quot;
-        #printf &quot;  %s\n&quot;, &quot;Model includes only the intercept term which is simply the average of the dependent variable.&quot;
         Xnames = defarray(&quot;const&quot;)
         coeffmat = M.mod_rank_estimates[i]
       else
@@ -666,33 +664,6 @@ endif
 return gprior
 </code>
 </gretl-function>
-<gretl-function name="BMA_accept_prob" type="scalar" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function computes log of posterior odds ratio.
-Local variables:
-A, B - scalars for computing probability based on Binomial-beta
-Returns: the scalar with probability of current draw
-*/
-scalar priorOR = M.model_prior_log[M.k_new+1] - M.model_prior_log[M.k_old+1]
-/*
-if M.acc_type == 1 # Binomial
-  priorOR = (M.k_new - M.k_old)*(M.a - M.b)
-  priorOR = M.model_prior_log[M.k_new+1] - M.model_prior_log[M.k_old+1]
-elif M.acc_type == 2 # Binomial-beta
-  scalar A = 0
-  scalar B = 0
-  A = lngamma(M.k + 1) - lngamma(M.k_new + 1) - lngamma(M.k - M.k_new + 1)
-  B = lngamma(M.a + M.k_new) + lngamma(M.k + M.b - M.k_new) - lngamma(M.a + M.b + M.k)
-  priorOR = A + B + M.c
-  priorOR = M.model_prior_log[M.k_new+1] - M.model_prior_log[M.k_old+1]
-endif
-*/
-return priorOR + M.lprob_new - M.lprob_old
-</code>
-</gretl-function>
 <gretl-function name="BMA_jointness_measure" type="matrix" private="1">
  <params count="1">
   <param name="M" type="bundleref"/>
@@ -827,24 +798,6 @@ endif
 M.Yhat_var = ($nobs - 1) / (precision * ($nobs - 3)) + M.Yhat .^ 2
 </code>
 </gretl-function>
-<gretl-function name="BMA_accep_model" type="void" private="1">
- <params count="3">
-  <param name="M" type="bundleref"/>
-  <param name="model_nr_old" type="scalarref"/>
-  <param name="model_nr" type="scalarref"/>
- </params>
-<code>/*
-Function computes &quot;probability&quot; of the new model and checks if it is bigger than some random value drawn form U(0,1).
-*/
-if BMA_accept_prob(&amp;M) &gt; log(randgen1(u,0,1))
-  # We accept new model
-  M.lprob_old = M.lprob_new
-  M.mod_struct_old = M.mod_struct_new
-  M.k_old = M.k_new
-  model_nr_old = model_nr
-endif
-</code>
-</gretl-function>
 <gretl-function name="BMA_summary" type="void" private="1">
  <params count="1">
   <param name="M" type="bundleref"/>
@@ -868,10 +821,8 @@ M.mod_sizes[,2] = M.mod_sizes[,2] / NORM
 M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
 M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
 M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
-tmps = M.av_model_size/M.k
 loop i=1..rows(M.mod_sizes) --quiet
   k = M.mod_sizes[i,1]
-  #M.mod_sizes[i,3] = (tmps^k * (1-tmps)^(M.k-k)) * bincoeff(M.k,k)
   M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
 endloop
 M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
@@ -1098,7 +1049,16 @@ loop rep=1..M.Nrep --quiet
       endif
     endif
     # Now we decide if to accept the new model
-    BMA_accep_model(&amp;M, &amp;model_nr_old, &amp;model_nr)
+    #BMA_accep_model(&amp;M, &amp;model_nr_old, &amp;model_nr)
+    ###########
+    if M.model_prior_log[M.k_new+1]-M.model_prior_log[M.k_old+1]+M.lprob_new-M.lprob_old &gt; log(randgen1(u,0,1))
+      # We accept new model
+      M.lprob_old = M.lprob_new
+      M.mod_struct_old = M.mod_struct_new
+      M.k_old = M.k_new
+      model_nr_old = model_nr
+    endif
+    ###########
   endif
   # Now we count models
   if rep &gt; M.Nburn
