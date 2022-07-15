@@ -71,7 +71,11 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     # General checking, but still needs some manual work
     err2 = bcheck(&Options, UserOpts)
     if err2
-        err = "Look at the PDF documentation for expected types of arguments."
+        err = sprintf("Valid options are:\n")
+        loop i=1..nelem(getkeys(Options)) --quiet
+            err += sprintf("\t%s\n", getkeys(Options)[i])
+        endloop
+        err += sprintf(" Look at the PDF documentation for expected types of arguments.")
     endif
 
     # We check integers
