@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1-svn</version>
-<date>2022-07-15</date>
+<date>2022-07-17</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -145,7 +145,7 @@ endloop
 printf &quot;Total probability of the models in ranking (numerical): %f\n&quot;, sumc(M.Numerical_Likelihood)
 printf &quot;\n&quot;
 printf &quot;Correlation coefficient between the analytical\n&quot;
-printf &quot;and numerical probabilities of the above models: %f\n&quot;, BMA_correlation_coeff(&amp;M)
+printf &quot;and numerical probabilities of the above models: %f\n&quot;, corr(M.Numerical_Likelihood, M.mod_rank_prob)
 # Forecasts
 if M.h_predict &gt; 0
   printf &quot;\n&quot;
@@ -594,40 +594,6 @@ if M.k_new
 endif
 </code>
 </gretl-function>
-<gretl-function name="BMA_correlation_coeff" type="scalar" private="1">
- <params count="1">
-  <param name="M" type="bundleref"/>
- </params>
-<code>/*
-Function computes Pearson correlation coefficient between 2 ranking vectors:
-Local variables:
-tmp1, tmp2		- matrices with normalized analitycal and numerical probabilites
-j				- scalar with number of the first row in rankings to ommit
-Returns: correlation coefficient between analitical and numerical rankings
-*/
-# Starting values
-matrix tmp1 = M.mod_rank_prob
-matrix tmp2 = M.Numerical_Likelihood
-scalar j = 0
-# We check if there are zeros in numerical probablities...
-# ...and if so we ommit such rows in both rankings.
-loop i=1..M.l_rank --quiet
-  if tmp2[i] == 0.0
-    scalar j = i
-    break
-  endif
-endloop
-if j &gt;= 3
-  tmp1 = tmp1[1:j-1,]
-  tmp2 = tmp2[1:j-1,]
-endif
-# Now we have to normalize the given rankings
-tmp1 -= maxc(tmp1)
-tmp1 = exp(tmp1) ./ sumc(exp(tmp1))
-tmp2 = tmp2 ./ sumc(tmp2)
-return corr(tmp1,tmp2)
-</code>
-</gretl-function>
 <gretl-function name="BMA_gprior" type="scalar" private="1">
  <params count="2">
   <param name="k" type="scalar"/>
@@ -805,7 +771,8 @@ scalar tmps, factor, k
 string title
 matrix percents1, percents2
 scalar NORM = M.Nrep - M.Nburn
-# Normalisation of numerical probabilities of models in ranking
+# Normalisations
+M.mod_rank_prob = exp(M.mod_rank_prob) / sum(exp(M.mod_rank_prob))
 M.Numerical_Likelihood = M.mod_nume_prob / NORM
 M.Post_Results = transp(M.var_prob / NORM)
 M.bhat_avg = M.bhat_avg / NORM
@@ -1042,7 +1009,8 @@ loop rep=1..M.Nrep --quiet
       endif
     endif
     # Now we decide if to accept the new model
-    if M.model_prior_log[M.k_new+1]-M.model_prior_log[M.k_old+1]+M.lprob_new-M.lprob_old &gt; log(randgen1(u,0,1))
+    #M.model_prior_log[M.k_new+1]-M.model_prior_log[M.k_old+1]+M.lprob_new-M.lprob_old
+    if M.lprob_new-M.lprob_old &gt; log(randgen1(u,0,1))
       M.lprob_old = M.lprob_new
       M.mod_struct_old = M.mod_struct_new
       M.k_old = M.k_new
@@ -1564,8 +1532,8 @@ matrix M.XtY = M.XtY_cross_const[M.X_new_num]
 M.XtXinv = invpd(M.X_new)
 M.yMy = M.scaling_f[7] - qform(M.XtY', M.XtXinv)
 # This code was in former BMA_lprob
-# We compute marginal data density for current draw
-M.lprob_new = M.scaling_f[5]*(M.k_new + 1) - M.scaling_f[6]*log(M.scaling_f[3]*M.yMy + M.scaling_f[4])
+# We compute log of posterior probability for current draw
+M.lprob_new = M.model_prior_log[M.k_new+1] + M.scaling_f[5]*(M.k_new+1) - M.scaling_f[6]*log(M.scaling_f[3]*M.yMy + M.scaling_f[4])
 # This code was in former BMA_ols
 # We compute posterior beta vector end covariance matrix.
 matrix Vhat = M.XtXinv / (1 + M.scaling_f[1])

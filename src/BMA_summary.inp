@@ -25,7 +25,8 @@ function void BMA_summary (bundle *M)
     matrix percents1, percents2
     scalar NORM = M.Nrep - M.Nburn
 
-    # Normalisation of numerical probabilities of models in ranking
+    # Normalisations
+    M.mod_rank_prob = exp(M.mod_rank_prob) / sum(exp(M.mod_rank_prob))
     M.Numerical_Likelihood = M.mod_nume_prob / NORM
     M.Post_Results = transp(M.var_prob / NORM)
     M.bhat_avg = M.bhat_avg / NORM
