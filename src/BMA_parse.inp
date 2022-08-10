@@ -34,23 +34,24 @@ function string BMA_parse (bundle *M,
     # Local variables
     scalar k = nelem(X_list)
     string err = ""
+    
     # We check if given X_list does not include Y
     if inlist(X_list, Y_name) != 0
         X_list -= X_list[inlist(X_list, Y_name)]
         k -= 1
         print "Dependent viariable was removed from the X list."
     endif
+    
     # We check if given X_list does not include const
     if inlist(X_list, const) != 0
         X_list -= const
         k -= 1
         print "Const was removed from the X list."
     endif
-    # We check if given variables are not co-linear
-    # dropcoll() seems not to work good here
+    
+    # We check if given variables are not co-linear    
     /*
        if force_dof_lack == 0
-       printf "Jestem %d", force_dof_lack
        ols Y X_list const --quiet
        if $ncoeff < k + 1
        X_list = $xlist - const
@@ -58,11 +59,13 @@ function string BMA_parse (bundle *M,
        endif
        endif
     */
+    
     # We check if average model size is within 0 and K
     if av_model_size <= 0 || av_model_size >= k
         err = "Average model size should be greater then 0 and lower than K"
         return err
     endif
+    
     # We check if number of models in ranking is not greater than 2^K (model space)
     if l_rank > 2^k
         err = "Number of the top ranked models cannot be greater than 2^K (space of parameters)"

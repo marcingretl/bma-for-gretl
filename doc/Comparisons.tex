@@ -78,14 +78,14 @@ burn-in draws, 2000000 iterations.  Model prior was set to uniform. We
 considered two scenarios for our experiment: with or without jointness
 analysis.
 
-\begin{table}[ht!]
+\begin{table}[H]
 	\caption{Run time in seconds of Bayesian model averaging software packages for FLS data.}
 	\centering
 	\begin{tabular}{lccccc}\hline
 		Run time &\proglang{R}-\pkg{BMS} &\proglang{R}-\pkg{BMA} &\proglang{R}-\pkg{BAS} &\pkg{FLSBMA} &\pkg{gretl}-\pkg{BMA}\\\hline
 		\\[-10pt]
-		Without jointness analysis &277 &87 &53 & &241\\
-		With jointness analysis 	&	&	&	&612 &258\\\hline  
+		Without jointness analysis	&277&87 &53 &	&193\\
+		With jointness analysis		&	&	&	&612&208\\\hline  
 	\end{tabular}	
 	\label{tab:FLS_packages_timings}
 \end{table}

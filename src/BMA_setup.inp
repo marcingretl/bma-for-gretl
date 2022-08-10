@@ -168,7 +168,7 @@ function bundle BMA_setup (const series Y,
         scalar M.c = 0
         tmp = M.av_model_size/M.k
         loop i=0..M.k --quiet
-            M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i)) # bincoeff(M.k,i)
+            M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i))
         endloop
     else
         string M.prior_name = "Binomial-Beta"

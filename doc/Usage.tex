@@ -201,9 +201,9 @@ countries and 41 potential growth determinants for the period 1960 to
 	Applied Econometrics} online data archive
 	(\url{http://qed.econ.queensu.ca/jae/2001-v16.5/fernandez-ley-steel/}).
 	The reported chain (3000000 replications with 33\% burn-in draws)
-	took about 527 seconds of CPU time on a PC with old AMD Phenom II X6
+	took about 415 seconds of CPU time on a PC with old AMD Phenom II X6
 	1100T CPU, 6.0~Gb of RAM running under Debian GNU/Linux. We used
-	\pkg{gretl}~2022b-git compiled by GCC~11.3.0. The seed for RNG was set
+	\pkg{gretl}~2022b compiled by GCC~12.1.0. The seed for RNG was set
 	to 1000000. The dependent variable is the growth rate from 1960--1992.}.
 The initial estimation sample consists of indices $i=1,\ldots,69$ and
 the out-of-sample evaluation indices are from 70 to 72.
@@ -320,18 +320,25 @@ GDPsh560,Equip_Inv     2.2350
 	\end{CodeOutput}
 \end{CodeChunk}
 
-\begin{figure}[hb!]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=.66\columnwidth, keepaspectratio]{variables_inclusions_heatmap}
-	\includegraphics[width=.66\columnwidth, keepaspectratio]{jointness_heatmap}
-	\caption{Graphs with posterior results.}
+	\includegraphics[width=.99\columnwidth, keepaspectratio]{predictive_results}
+	\caption{Graphs with posterior results-predictive results.}
+	\label{fig:Resulting_graphs-predictive_results}
+\end{figure}\raggedbottom
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.99\columnwidth, keepaspectratio]{variables_inclusions_heatmap}
+	\includegraphics[width=.99\columnwidth, keepaspectratio]{jointness_heatmap}
+	\caption{Graphs with posterior results-heatmaps.}
 	\label{fig:Resulting_graphs-heatmaps}
 \end{figure}
 
-\begin{figure}[ht!]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=.66\columnwidth, keepaspectratio]{model_size_distribution}
-	\includegraphics[width=.66\columnwidth, keepaspectratio]{model_size_cdf}
-	\caption{Graphs with posterior results.}
+	\includegraphics[width=.99\columnwidth, keepaspectratio]{model_size_distribution}
+	\includegraphics[width=.99\columnwidth, keepaspectratio]{model_size_cdf}
+	\caption{Graphs with posterior results-model size.}
 	\label{fig:Resulting_graphs-model_size}
-\end{figure}%\clearpage
+\end{figure}

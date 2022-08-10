@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>3.1-svn</version>
-<date>2022-07-17</date>
+<version>3.1</version>
+<date>2022-08-10</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -494,10 +494,8 @@ if inlist(X_list, const) != 0
   print &quot;Const was removed from the X list.&quot;
 endif
 # We check if given variables are not co-linear
-# dropcoll() seems not to work good here
 /*
 if force_dof_lack == 0
-  printf &quot;Jestem %d&quot;, force_dof_lack
   ols Y X_list const --quiet
   if $ncoeff &lt; k + 1
     X_list = $xlist - const
@@ -719,9 +717,9 @@ and jointness statistics for these pairs:
 MODE			- string with type of relation between variables
 *n_pairs		- pointer to the scalar with number of pairs of related variables
 *var_numbers	- pointer to the matrix holding numbers of variables
-*shift			- pointer to the scalar holding total number of previous pairs (shift in the &quot;pairs&quot; vector)
-*pairs			- pointer to the vector holding (ordered) pairs of hightly related variables
-jointness_m		- matrix with counts for every pair
+*shift		- pointer to the scalar holding total number of previous pairs (shift in the &quot;pairs&quot; vector)
+*pairs		- pointer to the vector holding (ordered) pairs of hightly related variables
+jointness_m	- matrix with counts for every pair
 */
 matrix pairs_related = pairs[shift + 1 : shift + n_pairs, ]
 shift += n_pairs
@@ -1009,7 +1007,6 @@ loop rep=1..M.Nrep --quiet
       endif
     endif
     # Now we decide if to accept the new model
-    #M.model_prior_log[M.k_new+1]-M.model_prior_log[M.k_old+1]+M.lprob_new-M.lprob_old
     if M.lprob_new-M.lprob_old &gt; log(randgen1(u,0,1))
       M.lprob_old = M.lprob_new
       M.mod_struct_old = M.mod_struct_new
@@ -1180,7 +1177,7 @@ if acc_type == 1 # options for the prior
   scalar M.c = 0
   tmp = M.av_model_size/M.k
   loop i=0..M.k --quiet
-    M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i)) # bincoeff(M.k,i)
+    M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i))
   endloop
 else
   string M.prior_name = &quot;Binomial-Beta&quot;
@@ -1549,7 +1546,7 @@ M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
   <param name="basename" type="string" optional="true" const="true"/>
  </params>
 <code>/*
-M   - BMA result bundle, MODE  - string indicating image mode {&quot;inclusions&quot;, &quot;jointness&quot;}
+M  - BMA result bundle, MODE  - string indicating image mode {&quot;inclusions&quot;, &quot;jointness&quot;}
 basename	- basename for gnuplot files
 */
 scalar nrows, ncols, tmp, height, width, minval, maxval
@@ -1685,8 +1682,8 @@ end plot --output=@output
  </params>
 <code>/*
 Function prints current execution status and flushes screen.
-message - text to be printed
-done	- if this is end of stage
+message 	- text to be printed
+done		- if this is end of stage
 pspaces	- number of prior paces
 spacesp	- number of post spaces
 */

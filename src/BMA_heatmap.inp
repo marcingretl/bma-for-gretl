@@ -17,7 +17,7 @@
 */
 function void BMA_heatmap (const bundle M, string MODE, const string basename[null])
 /*
-   M			- BMA result bundle,
+   M		- BMA result bundle,
    MODE		- string indicating image mode {"inclusions", "jointness"}
    basename	- basename for gnuplot files
     */
