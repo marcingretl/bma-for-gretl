@@ -16,8 +16,8 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function void BMA_summary (bundle *M)
-    /*
-    We summarise some BMA results and deleting redundand items from the returned bundle
+/*
+   We summarise some BMA results and deleting redundand items from the returned bundle
     */
     BMA_print_status("Summarizing")
     scalar tmps, factor, k
@@ -66,8 +66,8 @@ function void BMA_summary (bundle *M)
         loop i=1..rows(percents1) --quiet
             percents1[i,2] = M.models_probs_cum[percents1[i,1]]
         endloop
-    percents1 = selifr(percents1, percents1[,2] .> 0)
-    endif    
+        percents1 = selifr(percents1, percents1[,2] .> 0)
+    endif
 
     # We look for certain percentiles
     percents2 = { 50; 75; 90; 95; 99 }
@@ -76,7 +76,7 @@ function void BMA_summary (bundle *M)
         tmps = percents1[rows(percents1),1]
     else
         tmps = 1
-    endif    
+    endif
     percents2 = zeros(nelem(percents2)) ~ percents2
     nr = 1
     loop i=tmps..M.post_n_models_accepted-1 --quiet
@@ -91,8 +91,12 @@ function void BMA_summary (bundle *M)
     percents2 = selifr(percents2, percents2[,1] .> 0)
     M.models_probs_percents = percents2 | { M.post_n_models_accepted , 1 }
     if nelem(percents1) > 0
+        tmps = sum(contains(percents2[,1], percents1[,1]))
+        if tmps > 0
+            M.models_probs_percents = M.models_probs_percents[tmps+1:end,]
+        endif
         M.models_probs_percents = percents1 | M.models_probs_percents
-    endif    
+    endif
 
     # We construct Post_Results matrix
     matrix bvar = sqrt(M.bvar_avg - M.bhat_avg.^2)
@@ -186,6 +190,6 @@ function void BMA_summary (bundle *M)
     delete M.models_probs_cum
     delete M.progress
     delete M.empty_model_count
-    
+
     BMA_print_status(null, 1, 10)
 end function

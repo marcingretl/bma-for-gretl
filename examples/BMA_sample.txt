@@ -1,5 +1,5 @@
-gretl version 2022b-git
-Current session: 2022-06-30 09:40
+gretl version 2022c-git
+Current session: 2022-08-26 16:42
 
 #######################################################
 #   https://sourceforge.net/projects/bma-for-gretl/   #
@@ -14,6 +14,7 @@ observations range: 1 to 25
 Listing 5 variables:
   0) const      1) valadd     2) capital    3) labor      4) nfirm    
 
+BMA 3.1, 2022-08-26 (Marcin Błażejowski, Jacek Kwiatkowski)
 
 BMA setup:            done!
 MC3 setup:            done!

@@ -17,7 +17,7 @@
 */
 function bundle BMA_GUI (series Y "Dependent variable",
                          list X_list "List of indenpendent variables (X)",
-                         int model_prior[1:2:1] "Model prior" {"Binomial", "Binomial-Beta"},
+                         int model_prior[1:2:1] "Model prior" {"Binomial", "Beta-Binomial"},
                          scalar avg_model_size[0::1] "Prior average model size",
                          scalar alpha[0:1:0.6] "Significance level for the initial model",
                          int Nrank[2::4] "Number of the top ranked models",

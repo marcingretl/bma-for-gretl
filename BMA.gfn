@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.1</version>
-<date>2022-08-10</date>
+<date>2022-08-26</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -11,6 +11,8 @@
 <help>
 pdfdoc:BMA.pdf
 </help>
+<data-files count="1">
+examples </data-files>
 <gretl-function name="BMA" type="bundle">
  <params count="3">
   <param name="Y" type="series">
@@ -249,7 +251,7 @@ printf &quot;\n\n&quot;
   <param name="model_prior" type="int" min="1" max="2" default="1">
 <description>Model prior</description>
 <labels count="2">
-"Binomial" "Binomial-Beta" </labels>
+"Binomial" "Beta-Binomial" </labels>
   </param>
   <param name="avg_model_size" type="scalar" min="0" default="1">
 <description>Prior average model size</description>
@@ -830,6 +832,10 @@ endloop
 percents2 = selifr(percents2, percents2[,1] .&gt; 0)
 M.models_probs_percents = percents2 | { M.post_n_models_accepted , 1 }
 if nelem(percents1) &gt; 0
+  tmps = sum(contains(percents2[,1], percents1[,1]))
+  if tmps &gt; 0
+    M.models_probs_percents = M.models_probs_percents[tmps+1:end,]
+  endif
   M.models_probs_percents = percents1 | M.models_probs_percents
 endif
 # We construct Post_Results matrix
