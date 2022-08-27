@@ -1,5 +1,5 @@
 gretl version 2022c-git
-Current session: 2022-08-26 17:09
+Current session: 2022-08-27 12:11
 
 ? set verbose off
 Read datafile UKM1.gdt
@@ -1181,4 +1181,3 @@ Model: 40, posterior probability: 0.000367
 ----------------------------------
 
 
- 

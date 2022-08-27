@@ -3,7 +3,10 @@ set verbose off
 open UKM1.gdt --quiet
 include BMA.gfn
 
-list UKM1_GUM = m_1 m_2 m_3 m_4 p p_1 p_2 p_3 p_4 y y_1 y_2 y_3 y_4 Rn Rn_1 Rn_2 Rn_3 Rn_4
+maxlag = 4
+
+list X = p y Rn
+list UKM1_GUM = m(-1 to -maxlag) X(0 to -maxlag) 
 
 #########################################################################################
 # We use RIC as g-prior and different model priors here: Binomial - 1, Binomial-Beta -2 #
@@ -13,5 +16,5 @@ matrix ModelPriors = { 1 ; 2 }
 loop i=1..nelem(ModelPriors) --quiet
     sufix = sprintf("%d", ModelPriors[i])
     set seed 1000000
-    BMA_gprior_@sufix = BMA(m, UKM1_GUM, _(g_type=3, model_prior=ModelPriors[i], Npredict=16))
+    BMA_model_prior_@sufix = BMA(m, UKM1_GUM, _(g_type=3, model_prior=ModelPriors[i], Npredict=16))
 endloop
