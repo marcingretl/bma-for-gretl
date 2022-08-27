@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-addon name="BMA" minver="2022b" lives-in-subdir="true">
 <author>Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>3.1</version>
+<version>3.2-svn</version>
 <date>2022-08-26</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
