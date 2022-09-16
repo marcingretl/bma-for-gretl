@@ -1,7 +1,7 @@
 author = Marcin Błażejowski, Jacek Kwiatkowski
 email = marcin@gretlconference.org
 version = 3.2-svn
-date = 2022-08-26
+date = 2022-09-16
 description = Bayesian Model Averaging for the linear regression models with jointness measures
 tags = C11 C52
 min-version = 2022b

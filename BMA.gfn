@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.2-svn</version>
-<date>2022-08-26</date>
+<date>2022-09-16</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -270,7 +270,7 @@ printf &quot;\n\n&quot;
   <param name="do_joint" type="int" min="0" max="7" default="0">
 <description>Jointness analysis</description>
 <labels count="8">
-"None" "Doppelhofer-Weeks Measure (DW1)" "Doppelhofer-Weeks Measure (DW2)" "Ley-Steel Measure (LS1)" "Ley-Steel Measure (LS2)" "Strachan Measure" "Yule's Q Measure (YQ)" "Modified Yule's Q Measure (YQM)" </labels>
+"None" "Doppelhofer-Weeks Measure (DW1)" "Doppelhofer-Weeks Measure (DW2)" "Ley-Steel Measure (LS1)" "Ley-Steel Measure (LS2)" "Strachan Measure (SM)" "Yule's Q Measure (YQ)" "Modified Yule's Q Measure (MYQ)" </labels>
   </param>
   <param name="Npredict" type="int" min="0" default="0">
 <description>Number of out-of-sample forecasts</description>
@@ -487,7 +487,7 @@ string err = &quot;&quot;
 if inlist(X_list, Y_name) != 0
   X_list -= X_list[inlist(X_list, Y_name)]
   k -= 1
-  print &quot;Dependent viariable was removed from the X list.&quot;
+  print &quot;Dependent variable was removed from the X list.&quot;
 endif
 # We check if given X_list does not include const
 if inlist(X_list, const) != 0
@@ -507,7 +507,7 @@ endif
 */
 # We check if average model size is within 0 and K
 if av_model_size &lt;= 0 || av_model_size &gt;= k
-  err = &quot;Average model size should be greater then 0 and lower than K&quot;
+  err = &quot;Average model size should be greater than 0 and lower than K&quot;
   return err
 endif
 # We check if number of models in ranking is not greater than 2^K (model space)
@@ -1170,7 +1170,7 @@ string M.Y_name = Y_name # string with name of denpendent variable
 # Jointness
 if do_joint
   matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
-  strings M.jointess_measure_names = defarray(&quot;Doppelhofer-Weeks Measure (DW1)&quot;, &quot;Doppelhofer-Weeks Measure (DW2)&quot;, &quot;Ley-Steel Measure (LS1)&quot;, &quot;Ley-Steel Measure (LS2)&quot;, &quot;Strachan Measure&quot;, &quot;Yule's Q Measure (YQ)&quot;, &quot;Modified Yule's Q Measure (YQM)&quot;)
+  strings M.jointess_measure_names = defarray(&quot;Doppelhofer-Weeks Measure (DW1)&quot;, &quot;Doppelhofer-Weeks Measure (DW2)&quot;, &quot;Ley-Steel Measure (LS1)&quot;, &quot;Ley-Steel Measure (LS2)&quot;, &quot;Strachan Measure (SM)&quot;, &quot;Yule's Q Measure (YQ)&quot;, &quot;Modified Yule's Q Measure (MYQ)&quot;)
 else
   matrix M.jointness_m = {}
 endif
@@ -1547,7 +1547,7 @@ M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
 </gretl-function>
 <gretl-function name="BMA_heatmap" type="void" private="1">
  <params count="3">
-  <param name="M" type="bundle" const="true"/>
+  <param name="M" type="bundle"/>
   <param name="MODE" type="string"/>
   <param name="basename" type="string" optional="true" const="true"/>
  </params>

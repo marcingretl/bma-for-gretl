@@ -23,7 +23,7 @@ function bundle BMA_GUI (series Y "Dependent variable",
                          int Nrank[2::4] "Number of the top ranked models",
                          int g_type[1:5:1] "g-prior type" {"Benchmark prior", "Unit Information Prior (g-UIP)", "Risk Inflation Criterion (g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP"},
                          int do_joint[0:7:0] "Jointness analysis" {"None", "Doppelhofer-Weeks Measure (DW1)", "Doppelhofer-Weeks Measure (DW2)", \
-                         "Ley-Steel Measure (LS1)", "Ley-Steel Measure (LS2)", "Strachan Measure", "Yule's Q Measure (YQ)", "Modified Yule's Q Measure (YQM)"},
+                         "Ley-Steel Measure (LS1)", "Ley-Steel Measure (LS2)", "Strachan Measure (SM)", "Yule's Q Measure (YQ)", "Modified Yule's Q Measure (MYQ)"},
                          int Npredict[0::0] "Number of out-of-sample forecasts",
                          int Nrep[1e+06] "Total number of replications",
                          int burn[0:99:10] "Percentage of burn-in draws",

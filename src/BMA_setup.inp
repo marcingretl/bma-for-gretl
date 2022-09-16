@@ -153,8 +153,8 @@ function bundle BMA_setup (const series Y,
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
         strings M.jointess_measure_names = defarray("Doppelhofer-Weeks Measure (DW1)", \
           "Doppelhofer-Weeks Measure (DW2)", "Ley-Steel Measure (LS1)", \
-          "Ley-Steel Measure (LS2)", "Strachan Measure", "Yule's Q Measure (YQ)", \
-          "Modified Yule's Q Measure (YQM)")
+          "Ley-Steel Measure (LS2)", "Strachan Measure (SM)", "Yule's Q Measure (YQ)", \
+          "Modified Yule's Q Measure (MYQ)")
     else
         matrix M.jointness_m = {}
     endif

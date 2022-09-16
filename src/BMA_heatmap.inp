@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function void BMA_heatmap (const bundle M, string MODE, const string basename[null])
+function void BMA_heatmap (bundle M, string MODE, const string basename[null])
 /*
    M		- BMA result bundle,
    MODE		- string indicating image mode {"inclusions", "jointness"}

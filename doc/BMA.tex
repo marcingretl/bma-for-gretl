@@ -6,8 +6,8 @@
         Jacek Kwiatkowski\\Nicolaus Copernicus University in Toruń}
 \Plainauthor{Marcin Błażejowski, Jacek Kwiatkowski}
 
-\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.1}
-\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.1}
+\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.2-svn}
+\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.2-svn}
 
 \Abstract{Bayesian model averaging is a model-building strategy that
   takes account of model uncertainty in
@@ -28,14 +28,17 @@
 	\url{https://sourceforge.net/projects/bma-for-gretl}
 \end{quote}
 
-\section*{To do}
-{\small%
-\begin{itemize}
-	\item Refactoring of Binomial-beta model prior.
-\end{itemize}}
+%\section*{To do}
+%{\small%}
 
 \section*{Changelog}
 {\small\begin{description}
+	\item[3.2] Some cleanups:
+		\begin{itemize}
+			\item Few typos corrected.
+			\item Modify call to BMA\_jointness\_measure() according
+				to new ''const guarantee'' constraint in 2022b version.
+		\end{itemize}
 	\item[3.1] New plot options and bug fixes:
 		\begin{itemize}
 			\item Fix edge-case bug when empty model is accepted
