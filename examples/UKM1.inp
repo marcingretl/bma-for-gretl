@@ -1,7 +1,7 @@
 set verbose off
 
-open UKM1.gdt --quiet
 include BMA.gfn
+open UKM1.gdt --frompkg=BMA
 
 maxlag = 4
 

@@ -1,6 +1,6 @@
 set verbose off
-open FLS_41t72.gdt
 include BMA.gfn
+open FLS_41t72.gdt --frompkg=BMA
 
 # We set the seed in order to exact reproduction of results
 set seed 1000000

@@ -123,42 +123,49 @@ function void BMA_Print (bundle *M)
         scalar significant_com = 0
         matrix pairs = zeros(round(0.5*M.k^2), 3)
         scalar pair = 0
-        loop i=1..M.k --quiet
-            loop j=i+1..M.k --quiet
-                if abs(jointess_measure[i,j]) > 1
-                    pair += 1
-                    pairs[pair,1] = jointess_measure[i,j]
-                    pairs[pair,2] = i
-                    pairs[pair,3] = j
-                    if jointess_measure[i,j] < 0
-                        if jointess_measure[i,j] < -2
-                            strong_sub += 1
+        # We need to decide if we print related pairs
+        if (M.do_joint >= 1 && M.do_joint <= 4) || M.do_joint == 7
+            scalar strong_sub_th = M.do_joint == 7 ? -0.65 : -2
+            scalar strong_com_th = M.do_joint == 7 ? 0.65 : 2
+            scalar significant_relation = M.do_joint == 7 ? 0.3 : 1
+            loop i=1..M.k --quiet
+                loop j=i+1..M.k --quiet
+                    if abs(jointess_measure[i,j]) > significant_relation
+                        pair += 1
+                        pairs[pair,1] = jointess_measure[i,j]
+                        pairs[pair,2] = i
+                        pairs[pair,3] = j
+                        if jointess_measure[i,j] < 0
+                            if jointess_measure[i,j] < strong_sub_th
+                                strong_sub += 1
+                                eval jointess_measure[i,j]
+                            else
+                                significant_sub += 1
+                            endif
                         else
-                            significant_sub += 1
-                        endif
-                    else
-                        if jointess_measure[i,j] > 2
-                            strong_com += 1
-                        else
-                            significant_com += 1
+                            if jointess_measure[i,j] > strong_com_th
+                                strong_com += 1
+                            else
+                                significant_com += 1
+                            endif
                         endif
                     endif
-                endif
+                endloop
             endloop
-        endloop
-        if pair > 0
+        endif
+        if pair
             pairs = msortby(pairs[1:pair, ], 1)
             scalar shift = 0
-            if strong_sub > 0
+            if strong_sub
                 BMA_jointness_pairs("Strong substitutes:", &strong_sub, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
-            if significant_sub > 0
+            if significant_sub
                 BMA_jointness_pairs("Significant substitutes:", &significant_sub, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
-            if significant_com > 0
+            if significant_com
                 BMA_jointness_pairs("Significant complements:", &significant_com, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
-            if strong_com > 0
+            if strong_com
                 BMA_jointness_pairs("Strong complements:", &strong_com, M.var_numbers, &shift, &pairs, M.jointness_m)
             endif
         endif
@@ -178,7 +185,7 @@ function void BMA_Print (bundle *M)
                 if sum(M.mod_rank[i]) == 0
                     Xnames = defarray("const")
                     coeffmat = M.mod_rank_estimates[i]
-                else                    
+                else
                     Xnames = defarray("const") + M.all_names_sp_new[M.mod_rank_estimates[i][2:,3]]
                     coeffmat = M.mod_rank_estimates[i][,1:2]
                 endif

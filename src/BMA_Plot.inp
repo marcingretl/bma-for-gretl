@@ -20,11 +20,13 @@ function void BMA_Plot (bundle *MODEL)
    BMA result bundle plot function.
     */
     string legend, output, basename, xtics
+    string terminal_opts = ""
 
     if $sysinfo.gui_mode
         basename = "display"
     else
         basename = strftime($now[1], "%Y%m%d%H%M%S")
+        terminal_opts = sprintf("%s\n%s", "set terminal png", "set output '| display png:-'")
     endif
 
     # Heatmap for variable inclusion
@@ -52,6 +54,7 @@ function void BMA_Plot (bundle *MODEL)
         legend = "right"
     endif
     plot plotmat
+        printf "%s", terminal_opts
         options with-lp fit=none
         printf "%s", xtics
         printf "set title \"%s\"", "Model Size Distribution"
@@ -72,6 +75,7 @@ function void BMA_Plot (bundle *MODEL)
         xtics = ""
     endif    
     plot plotmat
+        printf "%s", terminal_opts
         options with-line fit=none
         literal set grid
         printf "%s", xtics
@@ -99,6 +103,7 @@ function void BMA_Plot (bundle *MODEL)
             endif
         endloop
         plot plotmat
+            printf "%s", terminal_opts
             options time-series with-lines
             options with-line fit=none
             options band=bars,1 band-style=bars
