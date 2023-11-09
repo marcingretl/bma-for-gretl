@@ -24,24 +24,23 @@ function bundle BMA (series Y "Dependent variable",
     */
     bundle MODEL
     string Y_name = argname(Y)
+    scalar Norig = NA
     series @Y_name = Y
-    scalar acc_type,av_model_size,alpha,l_rank,g_type,do_joint,h_predict,Nrep,burn,verbosity,show_progress,do_plot
     string err
 
     if !exists(Options)
         bundle Options
     endif
 
-    # Basic parsing and checking
-    err = BMA_bcheck(Options, nelem(X_list), &acc_type, &av_model_size, &alpha,
-      &l_rank, &g_type, &do_joint, &h_predict, &Nrep, &burn, &verbosity,
-      &show_progress, &do_plot)
+    # Bundle check and setting default values (if needed)
+    err = BMA_bcheck(Options, &MODEL, nelem(X_list))
     if strlen(err) != 0
         funcerr "@err !!!"
         return MODEL
     endif
     Norig = $nobs
-    
+
+    # Handling missing values
     smpl Y X_list --no-missing --quiet
     if Norig != $nobs
         printf "\nThere are missing values in dataset!"
@@ -49,23 +48,26 @@ function bundle BMA (series Y "Dependent variable",
         Norig = NA
     endif
 
-    err = BMA_parse(&MODEL, Y, argname(Y), X_list, av_model_size, l_rank)
+    # Basic parsing and checking
+    err = BMA_parse(&MODEL, Y, argname(Y), X_list)
     if strlen(err) != 0
-        funcerr "@err !!!"
+        if MODEL["_gui"]
+            MODEL["err"] = err
+        else
+            funcerr "@err !!!"
+        endif
     else
-        MODEL = BMA_setup(Y, MODEL.X_list, acc_type, av_model_size, alpha,
-          l_rank, g_type, do_joint, h_predict, Nrep, burn, verbosity,
-          argname(Y), show_progress, Norig, do_plot)
+        MODEL = BMA_setup(&MODEL, Norig)
         # Setting sample for forecasting
-        if MODEL.h_predict > 0
-            smpl 1 MODEL.last_obs
+        if MODEL["Npredict"]
+            smpl 1 MODEL["last_obs"]
         endif
         BMA_main(&MODEL)
         BMA_summary(&MODEL)
         BMA_Print(&MODEL)
-        if MODEL.do_plot
+        if MODEL["do_plot"]
             BMA_Plot(&MODEL)
-        endif        
+        endif
     endif
 
     set warnings on

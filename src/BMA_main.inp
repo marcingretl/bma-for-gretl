@@ -31,20 +31,20 @@ function void BMA_main (bundle *M)
     matrices models_estimates = array(M.Nrep+1)
     matrices models_structure = array(M.Nrep+1)
     matrix mod_struct_draw
-    if M.h_predict > 0
+    if M.Npredict
         matrices models_forecasts = array(M.Nrep+1)
     else
         matrices models_forecasts = null
     endif
     # Sample setting for prediction
-    if M.h_predict > 0
+    if M.Npredict
         smpl 1 M.last_obs
     endif
 
     ##########################
     # Part 1: Starting model #
     ##########################
-
+    
     # We estimate starting model and construct starting mod_rank_struct and mod_rank
     BMA_initial_model(&M)
     BMA_estimate(&M)
@@ -57,7 +57,7 @@ function void BMA_main (bundle *M)
     models_structure[model_nr] = M.mod_struct_new
     models_lprob[model_nr] = M.lprob_new
     models_estimates[model_nr] = M.bhat ~ M.bvar
-    if M.h_predict > 0
+    if M.Npredict
         BMA_forecast(&M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
     endif
@@ -94,7 +94,7 @@ function void BMA_main (bundle *M)
                 models_structure[model_nr] = M.mod_struct_new
                 models_lprob[model_nr] = M.lprob_new
                 models_estimates[model_nr] = M.bhat ~ M.bvar                
-                if M.h_predict > 0
+                if M.Npredict
                     BMA_forecast(&M)
                     models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
                 endif

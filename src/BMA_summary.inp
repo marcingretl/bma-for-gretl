@@ -42,7 +42,7 @@ function void BMA_summary (bundle *M)
         k = M.mod_sizes[i,1]
         M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
     endloop
-    M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.av_model_size) .^2 .* M.mod_sizes[,3]))
+    M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.avg_model_size) .^2 .* M.mod_sizes[,3]))
 
     # Models size distribution
     title = "Size Posterior Prior"
@@ -111,7 +111,7 @@ function void BMA_summary (bundle *M)
     rnameset(M.Post_Results, M.all_names_sp)
 
     # Forecasts
-    if M.h_predict
+    if M.Npredict
         M.Yhat_avg = M.Yhat_avg / NORM
         M.Yhat_var_avg = M.Yhat_var_avg / NORM
         M.Yhat_var_avg = sqrt(M.Yhat_var_avg - M.Yhat_avg .^ 2)
@@ -161,7 +161,7 @@ function void BMA_summary (bundle *M)
     delete M.XtXinv
     delete M.bhat_avg
     delete M.bvar_avg
-    if M.h_predict
+    if M.Npredict
         delete M.big_mat_predict
         delete M.big_mat_dem_predict
         delete M.Y_mat_predict
@@ -170,7 +170,7 @@ function void BMA_summary (bundle *M)
         delete M.predict_obs_names
         delete M.Yhat
     endif
-    delete M.acc_type
+    delete M.model_prior
     delete M.g_type
     delete M.bhat_old
     delete M.bvar_old

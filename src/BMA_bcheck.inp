@@ -15,26 +15,61 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, scalar *av_model_size,
-                            scalar *alpha, scalar *l_rank, scalar *g_type, scalar *do_joint,
-                            scalar *h_predict, scalar *Nrep, scalar *burn, scalar *verbosity,
-                            scalar *show_progress, scalar *do_plot)
-    /*
-       This function checks options bundle and returns error message in
-       any problem found.
-       Parameters:
+function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
+/*
+   This function checks options bundle and returns error message in
+   any problem found.
+   Parameters:
 
-       UserOpts - bundle with user-defined options for BMA
-       k - number of independent variables
+   UserOpts - bundle with user-defined options for BMA
+   k - number of independent variables
     */
     string err = ""
+    string separator = ", "
     scalar err2
-    bundle Options
+    bundle Options, Overloadable
     scalar arg_val
     string arg_name
     strings Integers = defarray("model_prior", "Nrank", "g_type", "do_joint", "Npredict", "Nrep", "burn", "verbosity")
     strings Booleans = defarray("show_progress", "do_plot")
     strings Scalars = defarray("avg_model_size", "alpha")
+    strings ModelPriorTypes = defarray("Binomial", "Beta-Binomial")
+    strings GPriorTypes = defarray("Benchmark", "UIP", "RIC", "HQC", "RootUIP")
+    strings GPriorNames = defarray("Benchmark prior", "Unit Information Prior (g-UIP)",\
+      "Risk Inflation Criterion (g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP")
+    strings OverloadableKeys
+    Overloadable["model_prior"] = _(binomial=1, betabinomial=2, valid=tolower(flatten(ModelPriorTypes, separator)))
+    Overloadable["do_joint"] = _(none=0, dw1=1, dw2=2, ls1=3, ls2=4, sm=5, yq=6, myq=7, valid="none, DW1, DW2, LS1, LS2, SM, YQ, MYQ")
+    Overloadable["g_type"] = _(benchmark=1, uip=2, ric=3, hqc=4, rootuip=5, valid=tolower(flatten(GPriorTypes, separator)))
+
+    # We look for overloaded parameters and convert them into integers
+    OverloadableKeys = getkeys(Overloadable)
+    loop i=1..nelem(OverloadableKeys) --quiet
+        arg_name = OverloadableKeys[i]
+        if inbundle(UserOpts, arg_name)
+            if typeof(UserOpts[arg_name]) == 4
+                parameter_value = strsub(tolower(UserOpts[arg_name]), " ", "")
+                if arg_name == "model_prior"
+                    parameter_value = strsub(parameter_value, "-", "")
+                endif
+                if inbundle(Overloadable[arg_name], parameter_value)
+                    UserOpts[arg_name] = Overloadable[arg_name][parameter_value]
+                else
+                    err = sprintf("Unknown '%s' value for parameter %s.\n", UserOpts[arg_name], arg_name)
+                    err += sprintf(" Valid options are: %s", Overloadable[arg_name].valid)
+                    return err
+                endif
+            elif typeof(UserOpts[arg_name]) == 1 && arg_name == "model_type"
+                if UserOpts[arg_name] <= nelem(ModelTypes)
+                    UserOpts[arg_name] = ModelTypes[UserOpts[arg_name]]
+                else
+                    err = sprintf("Model type value (model_type=%d) is out of bounds (must be <= %d)", UserOpts[arg_name], nelem(ModelTypes))
+                    return err
+                endif
+            endif
+        endif
+    endloop
+
     if $sysinfo.gui_mode
         do_plot = 1
         show_progress = 1
@@ -67,6 +102,7 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
     scalar Options["verbosity"] = 2
     scalar Options["show_progress"] = show_progress
     scalar Options["do_plot"] = do_plot
+    scalar Options["_gui"] = 0
 
     # General checking, but still needs some manual work
     err2 = bcheck(&Options, UserOpts)
@@ -96,40 +132,34 @@ function string BMA_bcheck (const bundle UserOpts, scalar k, scalar *acc_type, s
         endif
     endloop
 
-    # We set arguments
-    acc_type = Options["model_prior"]
-    av_model_size = Options["avg_model_size"]
-    alpha = Options["alpha"]
-    l_rank = Options["Nrank"]
-    g_type = Options["g_type"]
-    do_joint = Options["do_joint"]
-    h_predict = Options["Npredict"]
-    Nrep = Options["Nrep"]
-    burn = Options["burn"]
-    verbosity = Options["verbosity"]
-    show_progress = Options["show_progress"]
-    do_plot = Options["do_plot"]
-
     # We check arguments for valid values
-    if acc_type < 1 || acc_type > 2
+    if Options.model_prior < 1 || Options.model_prior > 2
         err += "Model prior takes the integer values in the range [1; 2]"
-    elif alpha < 0 || alpha > 1
+    elif Options.alpha < 0 || Options.alpha > 1
         err += "The significance level (alpha) takes the real values in the range [0; 1]"
-    elif g_type < 0 || g_type > 5
+    elif Options.g_type < 0 || Options.g_type > 5
         err += "Zellner's g-prior takes the integer values in the range [1; 5]"
-    elif do_joint < 0 || do_joint > 7
+    elif Options.do_joint < 0 || Options.do_joint > 7
         err += "Jointess type (do_joint) takes the integer values in the range [1; 7]"
-    elif h_predict < 0
+    elif Options.Npredict < 0
         err += "Number of out-of-sample forecasts (h_predict) takes the integer values"
-    elif h_predict >= round($nobs/2)
+    elif Options.Npredict >= round($nobs/2)
         printf("Number of out-of-sample forecasts is more than 50%s of sample length.\n", "%")
-    elif Nrep < 0
+    elif Options.Nrep < 0
         err += "Total number of replications (Nrep) takes the integer values"
-    elif burn < 0 || burn > 99
+    elif Options.burn < 0 || Options.burn > 99
         err += "Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]"
-    elif verbosity < 1 || verbosity > 2
+    elif Options.verbosity < 1 || Options.verbosity > 2
         err += "Verbosity takes the integer values in the range [1; 2]"
     endif
+
+    # We save options in M
+    M = Options
+    M.GPriorTypes = GPriorTypes    
+    M.ModelPriorTypes = ModelPriorTypes    
+    if err == ""
+        M.gtype = GPriorNames[M.g_type]
+    endif    
 
     return err
 end function

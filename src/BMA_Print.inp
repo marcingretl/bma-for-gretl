@@ -20,7 +20,7 @@ function void BMA_Print (bundle *M)
    Function prints BMA results
     */
     # We have to set sample
-    if M.h_predict > 0
+    if M.Npredict
         smpl 1 M.last_obs
     endif
 
@@ -34,7 +34,7 @@ function void BMA_Print (bundle *M)
     if M.verbosity == 2
         print "----------------------------------"
         printf "Model prior: %s\n", M.prior_name
-        printf "Prior average model size: %f\n", M.av_model_size
+        printf "Prior average model size: %f\n", M.avg_model_size
         printf "Significance level for the initial model: %f\n", M.alpha
         printf "g-prior: %s\n", M.gtype
         printf "Total number of iterations: %d\n", M.Nrep
@@ -88,7 +88,7 @@ function void BMA_Print (bundle *M)
         endif
     endloop
     printf "\nBest models ranking:\n"
-    loop i=1..M.l_rank --quiet
+    loop i=1..M.Nrank --quiet
         printf "Model %d:\t%f\n", i, M.Numerical_Likelihood[i]
     endloop
     printf "Total probability of the models in ranking (numerical): %f\n", sumc(M.Numerical_Likelihood)
@@ -97,7 +97,7 @@ function void BMA_Print (bundle *M)
     printf "and numerical probabilities of the above models: %f\n", corr(M.Numerical_Likelihood, M.mod_rank_prob)
 
     # Forecasts
-    if M.h_predict > 0
+    if M.Npredict
         printf "\n"
         print "----------------------------------"
         printf "\n"
@@ -138,7 +138,6 @@ function void BMA_Print (bundle *M)
                         if jointess_measure[i,j] < 0
                             if jointess_measure[i,j] < strong_sub_th
                                 strong_sub += 1
-                                eval jointess_measure[i,j]
                             else
                                 significant_sub += 1
                             endif
@@ -176,7 +175,7 @@ function void BMA_Print (bundle *M)
         matrix coeffmat
         strings Xnames # names of X-es
         printf "\n\nBest models estimates:"
-        loop i=1..M.l_rank --quiet
+        loop i=1..M.Nrank --quiet
             if M.mod_nume_prob[i]
                 Xnames = null
                 printf "\n"

@@ -18,17 +18,13 @@
 function string BMA_parse (bundle *M,
                            series Y,
                            string Y_name,
-                           list X_list,
-                           scalar av_model_size,
-                           scalar l_rank)
+                           list X_list)
     /*
        Function parses given list of variables end checks several conditions:
        M				-	pointer to the bundle
        Y				-	dependent variable
        Y_name			-	name of dependent variable
        X_list			-	list of given independent variables
-       *av_model_size	-	pointer to the scalar with prior average model size
-       *l_rank			-	pointer to the scalar with number of models in ranking
        Returns: string err holding the first error found in given dataset
     */
     # Local variables
@@ -61,17 +57,20 @@ function string BMA_parse (bundle *M,
     */
     
     # We check if average model size is within 0 and K
-    if av_model_size <= 0 || av_model_size >= k
+    if M["avg_model_size"] <= 0 || M["avg_model_size"] >= k
         err = "Average model size should be greater than 0 and lower than K"
         return err
     endif
     
     # We check if number of models in ranking is not greater than 2^K (model space)
-    if l_rank > 2^k
+    if M["Nrank"] > 2^k
         err = "Number of the top ranked models cannot be greater than 2^K (space of parameters)"
         return err
     endif
+
     matrix M.X_list = X_list
+    series M.Y = Y
+    string M.Y_name = Y_name
 
     return err
 end function

@@ -48,7 +48,7 @@ function void BMA_Plot (bundle *MODEL)
     else
         xtics = ""
     endif
-    if MODEL.mod_size_av > MODEL.av_model_size
+    if MODEL.mod_size_av > MODEL.avg_model_size
         legend = "left"
     else
         legend = "right"
@@ -85,7 +85,7 @@ function void BMA_Plot (bundle *MODEL)
     end plot --output=@output
 
     # Predictive results
-    if MODEL.h_predict
+    if MODEL.Npredict
         plotmat = MODEL.prediction[,1:2]
         bars = MODEL.prediction[,2:3]
         cnameset(plotmat, cnameget(MODEL.prediction)[1:2])
@@ -94,9 +94,9 @@ function void BMA_Plot (bundle *MODEL)
             output = output ~ "-predict.plt"
         endif
         xtics = "("
-        loop i=1..MODEL.h_predict --quiet
+        loop i=1..MODEL.Npredict --quiet
             xtics += sprintf("\"%s\" %d", rnameget(MODEL.prediction)[i], i)
-            if i == MODEL.h_predict
+            if i == MODEL.Npredict
                 xtics += sprintf(")")
             else
                 xtics += sprintf(", ")

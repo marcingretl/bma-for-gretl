@@ -15,37 +15,21 @@
    You should have received a copy of the GNU General Ppublic License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function bundle BMA_setup (const series Y,
-                           matrix X_list_m,
-                           int acc_type[1:2:],
-                           scalar av_model_size[0::],
-                           scalar alpha[0:1:],
-                           int l_rank[2::],
-                           int g_type[1:5:],
-                           int do_joint[0:7],
-                           int h_predict[0::],
-                           int Nrep,
-                           int burn[0:99:],
-                           int verbosity[1:2:],
-                           string Y_name,
-                           bool show_progress,
-                           int Norig,
-                           bool do_plot)
+function bundle BMA_setup (bundle *M, int Norig)
     /*
        This function creates BUNDLE holding all BMA information.
     */
     BMA_print_status("BMA setup")
-    bundle M
     scalar tmp
-    list X_list = X_list_m
+    list X_list = M.X_list
+    series Y = M.Y
     list big_list = Y X_list
     list big_list_const = Y const X_list
 
     ###############################################
     # Global variables (given by user of default) #
     ###############################################
-    series M.Y = Y
-    matrix M.X_list = X_list
+    /*
     scalar M.acc_type = acc_type
     scalar M.av_model_size = av_model_size
     scalar M.alpha = alpha
@@ -57,18 +41,18 @@ function bundle BMA_setup (const series Y,
     scalar M.burn = burn
     scalar M.verbosity = verbosity
     scalar M.show_progress = show_progress
+    scalar M.do_plot = do_plot
+    */
     if ok(Norig)
         scalar M.Norig = Norig
-    endif
-    scalar M.do_plot = do_plot
+    endif    
 
     ###################
     # Local variables #
     ###################
     matrix M.StartModel = {} # list with variables selected in starting model
-    matrix M.X_list = X_list # X_list
-    scalar M.k = nelem(X_list) # total number of indenpendent variables
-    scalar M.Nburn = round(burn/100*Nrep) # number of burn-in draws
+    scalar M.k = nelem(M.X_list) # total number of indenpendent variables
+    scalar M.Nburn = round(M.burn/100*M.Nrep) # number of burn-in draws
     matrix M.var_numbers = big_list # vector containing numbers of all variables (including Y) in the dataset (not in the procedure)
     matrix M.var_numbers2 = transp(msortby(transp(M.var_numbers[2:1+M.k] | seq(2,1+M.k)), 2)) # vector containing the dataset numbers of all variables and their order in the 'big_list'
     matrix M.big_mat = { big_list } # matrix of all variables (including Y)
@@ -83,15 +67,15 @@ function bundle BMA_setup (const series Y,
     scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation
 
     # In case of "out-of-sample" prediction
-    if h_predict > 0
-        scalar M.last_obs = $nobs-h_predict # number of "out-of-sample" forecasts
+    if M.Npredict
+        scalar M.last_obs = $nobs-M.Npredict # number of "out-of-sample" forecasts
         matrix M.big_mat_predict = M.big_mat_const[M.last_obs+1:$nobs,] # "out-of-sample" matrix of all variables (including Y)
         matrix M.big_mat_dem_predict = M.big_mat_dem_const[M.last_obs+1:$nobs,] # "out-of-sample" matrix of all demeaned variables (including Y)
         matrix M.Y_mat_predict = M.big_mat_predict[,1] # "out-of-sample" matrix of the dependent variable
-        matrix M.Yhat = zeros(h_predict,1) # vector of Y predictions in current draw
-        matrix M.Yhat_var = zeros(h_predict) # vector of Y variances of predictions in current draw
-        matrix M.Yhat_avg = zeros(h_predict,1) # vector of Y predictions - average
-        matrix M.Yhat_var_avg = zeros(h_predict,1) # predicion variance
+        matrix M.Yhat = zeros(M.Npredict,1) # vector of Y predictions in current draw
+        matrix M.Yhat_var = zeros(M.Npredict) # vector of Y variances of predictions in current draw
+        matrix M.Yhat_avg = zeros(M.Npredict,1) # vector of Y predictions - average
+        matrix M.Yhat_var_avg = zeros(M.Npredict,1) # predicion variance
         matrix M.prediction = {} # matrix with prediction results
         strings M.predict_obs_names = obslabel(seq(M.last_obs + 1, $nobs)) # obs labels for forecasts
         smpl 1 M.last_obs # setting sample
@@ -136,20 +120,19 @@ function bundle BMA_setup (const series Y,
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     matrix M.mod_struct_old = zeros(1,M.k) # 0-1 vector containing the structure of the old model
     matrix M.mod_struct_new = zeros(1,M.k) # 0-1 vector containing the structure of the current model
-    matrix M.mod_rank_prob = zeros(l_rank,1) # probability of the models in ranking (analytical)
-    matrix M.mod_nume_prob = zeros(l_rank,1) # probability of the models in ranking (numerical)
-    matrices M.mod_rank_estimates = array(l_rank) # estimates of models in ranking
-    matrices M.mod_rank = array(l_rank) # estimates of models in ranking
-    matrix M.mod_rank_dec = zeros(l_rank) # Decimal representation of models in ranking
+    matrix M.mod_rank_prob = zeros(M.Nrank,1) # probability of the models in ranking (analytical)
+    matrix M.mod_nume_prob = zeros(M.Nrank,1) # probability of the models in ranking (numerical)
+    matrices M.mod_rank_estimates = array(M.Nrank) # estimates of models in ranking
+    matrices M.mod_rank = array(M.Nrank) # estimates of models in ranking
+    matrix M.mod_rank_dec = zeros(M.Nrank) # Decimal representation of models in ranking
     strings M.all_names_sp_new = varnames(X_list)
     matrix M.bhat_old = {} # column vector containing the estimated coefficients for the old model
     matrix M.bvar_old = {} # column vector containing the variances of the coefficients for the old model
     matrix M.var_prob = zeros(1,M.k) # vector containing PIPs
     string M.all_names_sp = strsub(varname(X_list), ",", " ") # string with names of all independent variables
-    string M.Y_name = Y_name # string with name of denpendent variable
 
     # Jointness
-    if do_joint
+    if M.do_joint
         matrix M.jointness_m = zeros(M.k,M.k) # square matrix containing counts of coexistence (jointness) of every pair of indenpendent variables
         strings M.jointess_measure_names = defarray("Doppelhofer-Weeks Measure (DW1)", \
           "Doppelhofer-Weeks Measure (DW2)", "Ley-Steel Measure (LS1)", \
@@ -158,22 +141,21 @@ function bundle BMA_setup (const series Y,
     else
         matrix M.jointness_m = {}
     endif
-    
+
     # Model prior
     matrix M.model_prior_log = zeros(M.k+1)
-    if acc_type == 1 # options for the prior
-        string M.prior_name = "Binomial"
-        scalar M.a = log(av_model_size/M.k)
-        scalar M.b = log(1 - av_model_size/M.k)
+    string M.prior_name = M.ModelPriorTypes[M.model_prior]
+    if M.prior_name == "Binomial"
+        scalar M.a = log(M.avg_model_size/M.k)
+        scalar M.b = log(1 - M.avg_model_size/M.k)
         scalar M.c = 0
-        tmp = M.av_model_size/M.k
+        tmp = M.avg_model_size/M.k
         loop i=0..M.k --quiet
             M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i))
         endloop
     else
-        string M.prior_name = "Binomial-Beta"
         scalar M.a = 1
-        scalar M.b = (M.k - av_model_size)/av_model_size
+        scalar M.b = (M.k - M.avg_model_size)/M.avg_model_size
         scalar M.c = lngamma(M.a + M.b) - lngamma(M.a) - lngamma(M.b)
         loop i=0..M.k --quiet
             M.model_prior_log[i+1] = log((gammafun(i+1) * gammafun(M.k-i+M.b) / gammafun(1+M.k+M.b)) / (gammafun(M.a) * gammafun(M.b) / gammafun(M.a+M.b)))
@@ -198,7 +180,7 @@ function bundle BMA_setup (const series Y,
     # Setting scaling factors: g0, g1, g2, .5*log(g1), .5*(n-1), Y'Y
     matrix M.scaling_f = zeros(7,1) # vector containing the scaling factors
     # g0 (g-prior)
-    M.scaling_f[1] = BMA_gprior(M.k, g_type)
+    M.scaling_f[1] = BMA_gprior(M.k, M.g_type)
     # g1 (g/(1+g))
     M.scaling_f[2] = M.scaling_f[1] / (1 + M.scaling_f[1])
     # g2 (1/(1+g))
@@ -210,20 +192,9 @@ function bundle BMA_setup (const series Y,
     # .5*(n-1)
     M.scaling_f[6] = .5 * ($nobs - 1)
     # Y'Y (sum of squares of Y)
-    M.scaling_f[7] = M.Y_mat'M.Y_mat
-    if g_type == 1
-        string M.gtype = "Benchmark prior"
-    elif g_type == 2
-        string M.gtype = "Unit Information Prior (g-UIP)"
-    elif g_type == 3
-        string M.gtype = "Risk Inflation Criterion (g-RIC)"
-    elif g_type == 4
-        string M.gtype = "Hannan and Quinn HQC"
-    elif g_type == 5
-        string M.gtype = "Root of g-UIP"
-    endif
+    M.scaling_f[7] = M.Y_mat'M.Y_mat    
 
-    if verbosity
+    if M.verbosity
         set warnings off
     endif
 

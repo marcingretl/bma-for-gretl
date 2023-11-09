@@ -25,19 +25,19 @@ function void BMA_estimate (bundle *M)
     # If we have at least one variable we create new X matrix, otherwise it includes "Ones" only.
     if M.k_new
         M.X_new_num = selifc(M.var_numbers2_const[2,], 1 ~ M.mod_struct_new)
-        if M.h_predict > 0
+        if M.Npredict
             M.X_new_predict = selifc(M.big_mat_dem_predict[,3:], M.mod_struct_new)
         endif
     else
         M.X_new_num = { 2 }
-        if M.h_predict > 0
+        if M.Npredict
             M.X_new_predict = {}
         endif
     endif
     M.X_new = M.big_cross_const[M.X_new_num, M.X_new_num]
 
     # This code was in former BMA_matrix_precompute
-    if M.k_new > 0 && M.h_predict > 0
+    if M.k_new && M.Npredict
         M.ZtZinv_new = invpd(M.X_new[2:,2:])
     endif
     matrix M.XtY = M.XtY_cross_const[M.X_new_num]
