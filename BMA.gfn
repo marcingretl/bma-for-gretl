@@ -3,7 +3,7 @@
 <gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.2-svn</version>
-<date>2023-11-09</date>
+<date>2023-11-10</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -318,7 +318,10 @@ printf &quot;\n\n&quot;
 GUI-based function to carry out BMA analysis.
 Function is a wrapper to bundle-based BMA() interface.
 */
-bundle Options
+
+bundle Options, RES
+string err
+
 string Y_name = argname(Y)
 series @Y_name = Y
 scalar Options[&quot;model_prior&quot;] = model_prior
@@ -333,8 +336,16 @@ scalar Options[&quot;burn&quot;] = burn
 scalar Options[&quot;verbosity&quot;] = verbosity
 scalar Options[&quot;show_progress&quot;] = show_progress
 scalar Options[&quot;do_plot&quot;] = do_plot
+scalar Options[&quot;_gui&quot;] = 1
 
-return BMA(@Y_name, X_list, Options)
+RES = BMA(@Y_name, X_list, Options)
+
+if inbundle(RES, &quot;err&quot;)
+  err = RES[&quot;err&quot;]
+  funcerr &quot;@err !!!&quot;
+endif
+
+return RES
 </code>
 </gretl-function>
 <gretl-function name="BMA_OldStyle" type="bundle">
@@ -404,14 +415,23 @@ BMA result bundle plot function.
 */
 string legend, output, basename, xtics
 string terminal_opts = &quot;&quot;
+scalar idx, error
+strings title
 
 if $sysinfo.gui_mode
   basename = &quot;display&quot;
 else
   basename = strftime($now[1], &quot;%Y%m%d%H%M%S&quot;)
-  terminal_opts = sprintf(&quot;%s\n%s&quot;, &quot;set terminal png&quot;, &quot;set output '| display png:-'&quot;)
+  if $sysinfo[&quot;os&quot;] == &quot;windows&quot;
+    terminal_opts = sprintf(&quot;%s&quot;, &quot;set terminal windows&quot;)
+  else
+    terminal_opts = sprintf(&quot;%s\n%s&quot;, &quot;set terminal png&quot;, &quot;set output '| display png:-'&quot;)
+  endif
 endif
 
+#########################################################
+#						Heatmaps						#
+#########################################################
 # Heatmap for variable inclusion
 BMA_heatmap(MODEL, &quot;inclusions&quot;, basename)
 
@@ -420,31 +440,31 @@ if MODEL.do_joint
   BMA_heatmap(MODEL, &quot;jointness&quot;, basename)
 endif
 
-# Models size distribution
+#########################################################
+#						Distributions					#
+#########################################################
+# Model size distribution
 plotmat = mreverse(MODEL.mod_sizes, 1)
 output = basename
 if !$sysinfo.gui_mode
   output = output ~ &quot;-MSD.plt&quot;
 endif
-if rows(plotmat) &lt; 20
-  xtics = &quot;set xtics 1&quot;
-else
-  xtics = &quot;&quot;
-endif
-if MODEL.mod_size_av &gt; MODEL.avg_model_size
-  legend = &quot;left&quot;
-else
-  legend = &quot;right&quot;
-endif
-plot plotmat
+xtics = rows(plotmat) &lt; 20 ? &quot;set xtics 1&quot; : &quot;&quot;
+legend = MODEL.mod_size_av &gt; MODEL.avg_model_size ? &quot;left&quot; : &quot;right&quot;
+catch plot plotmat
   printf &quot;%s&quot;, terminal_opts
   options with-lp fit=none
+  literal set link y2 via y inverse y
   printf &quot;%s&quot;, xtics
   printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Model Size Distribution&quot;
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Density&quot;
   printf &quot;set key %s top&quot;, legend
 end plot --output=@output
+error = $error
+if error
+  printf &quot;Model Size Distribution: %s\n&quot;, errmsg(error)
+endif
 
 # Models size CDF
 plotmat = MODEL.models_probs_cdf
@@ -452,12 +472,8 @@ output = basename
 if !$sysinfo.gui_mode
   output = output ~ &quot;-CDF.plt&quot;
 endif
-if rows(plotmat) &lt; 20
-  xtics = &quot;set xtics 1&quot;
-else
-  xtics = &quot;&quot;
-endif
-plot plotmat
+xtics = rows(plotmat) &lt; 20 ? &quot;set xtics 1&quot; : &quot;&quot;
+catch plot plotmat
   printf &quot;%s&quot;, terminal_opts
   options with-line fit=none
   literal set grid
@@ -466,7 +482,39 @@ plot plotmat
   printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Number of Models&quot;
   printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Posterior Probability Mass&quot;
 end plot --output=@output
+error = $error
+if error
+  printf &quot;CDF of Model Size: %s\n&quot;, errmsg(error)
+endif
 
+# Model prior distribution values
+idx = 1
+title = defarray(MODEL.prior_name, &quot;Size&quot;)
+plotmat = exp(MODEL.model_prior_log)[idx:end] ~ MODEL.mod_sizes[,1]
+cnameset(plotmat, title)
+output = basename
+if !$sysinfo.gui_mode
+  output = output ~ &quot;-MPD.plt&quot;
+endif
+xtics = rows(plotmat) &lt; 20 ? &quot;set xtics 1&quot; : &quot;&quot;
+catch plot plotmat
+  printf &quot;%s&quot;, terminal_opts
+  options with-lp fit=none
+  literal set link y2 via y inverse y
+  printf &quot;%s&quot;, xtics
+  printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Prior Model Probabilities&quot;
+  printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Model Size&quot;
+  printf &quot;set ylabel \&quot;%s\&quot;&quot;, &quot;Value&quot;
+  printf &quot;set key %s top&quot;, legend
+end plot --output=@output
+error = $error
+if error
+  printf &quot;Prior Model Probabilities: %s\n&quot;, errmsg(error)
+endif
+
+#########################################################
+#						Forecasts						#
+#########################################################
 # Predictive results
 if MODEL.Npredict
   plotmat = MODEL.prediction[,1:2]
@@ -485,7 +533,8 @@ if MODEL.Npredict
       xtics += sprintf(&quot;, &quot;)
     endif
   endloop
-  plot plotmat
+  legend = plotmat[end,1] &gt; plotmat[1,1] ? &quot;left&quot; : &quot;right&quot;
+  catch plot plotmat
     printf &quot;%s&quot;, terminal_opts
     options time-series with-lines
     options with-line fit=none
@@ -493,7 +542,12 @@ if MODEL.Npredict
     printf &quot;set title \&quot;%s\&quot;&quot;, &quot;Predictive results (with +/- one standard deviations as bars)&quot;
     printf &quot;set xlabel \&quot;%s\&quot;&quot;, &quot;Observation&quot;
     printf &quot;set xtics %s&quot;, xtics
+    printf &quot;set key %s top&quot;, legend
   end plot --output=@output
+  error = $error
+  if error
+    printf &quot;Predictive results: %s\n&quot;, errmsg(error)
+  endif
 endif
 </code>
 </gretl-function>
@@ -1673,8 +1727,8 @@ M.bvar = diag((M.dj_new / ($nobs - 2)) * Vhat)
 M  - BMA result bundle, MODE  - string indicating image mode {&quot;inclusions&quot;, &quot;jointness&quot;}
 basename	- basename for gnuplot files
 */
-scalar nrows, ncols, tmp, height, width, minval, maxval
-string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate, output
+scalar nrows, ncols, tmp, height, width, minval, maxval, error
+string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate, output, terminal_opts
 matrix m
 
 # We set general image options
@@ -1767,13 +1821,19 @@ endloop
 # We check if we display or save plot
 if $sysinfo.gui_mode
   output = &quot;display&quot;
+  terminal_opts = sprintf(&quot;set term pngcairo font \&quot;Vera,9\&quot; size %d,%d noenhanced&quot;, width, height)
 else
   output = sprintf(&quot;%s%s&quot;, basename, output)
+  if $sysinfo[&quot;os&quot;] == &quot;windows&quot;
+    terminal_opts = sprintf(&quot;%s&quot;, &quot;set terminal windows&quot;)
+  else
+    terminal_opts = sprintf(&quot;%s\n%s&quot;, &quot;set terminal png&quot;, &quot;set output '| display png:-'&quot;)
+  endif
 endif
 
 # We plot heatmap
-plot
-  printf &quot;set term pngcairo font \&quot;Vera,9\&quot; size %d,%d noenhanced&quot;, width, height
+catch plot
+  printf &quot;%s&quot;, terminal_opts
   literal set encoding utf8
   literal set decimalsign '.'
   literal set nokey
@@ -1800,6 +1860,10 @@ plot
   printf &quot;EOD&quot;
   literal plot $map matrix with image
 end plot --output=@output
+error = $error
+if error
+  printf &quot;%s: %s\n&quot;, title, errmsg(error)
+endif
 </code>
 </gretl-function>
 <gretl-function name="BMA_print_status" type="void" private="1">

@@ -21,14 +21,23 @@ function void BMA_Plot (bundle *MODEL)
     */
     string legend, output, basename, xtics
     string terminal_opts = ""
+    scalar idx, error
+    strings title
 
     if $sysinfo.gui_mode
         basename = "display"
     else
         basename = strftime($now[1], "%Y%m%d%H%M%S")
-        terminal_opts = sprintf("%s\n%s", "set terminal png", "set output '| display png:-'")
+        if $sysinfo["os"] == "windows"
+            terminal_opts = sprintf("%s", "set terminal windows")
+        else
+            terminal_opts = sprintf("%s\n%s", "set terminal png", "set output '| display png:-'")
+        endif
     endif
 
+    #########################################################
+    #						Heatmaps						#
+    #########################################################
     # Heatmap for variable inclusion
     BMA_heatmap(MODEL, "inclusions", basename)
 
@@ -37,31 +46,31 @@ function void BMA_Plot (bundle *MODEL)
         BMA_heatmap(MODEL, "jointness", basename)
     endif
 
-    # Models size distribution
+    #########################################################
+    #						Distributions					#
+    #########################################################
+    # Model size distribution
     plotmat = mreverse(MODEL.mod_sizes, 1)
     output = basename
     if !$sysinfo.gui_mode
         output = output ~ "-MSD.plt"
     endif
-    if rows(plotmat) < 20
-        xtics = "set xtics 1"
-    else
-        xtics = ""
-    endif
-    if MODEL.mod_size_av > MODEL.avg_model_size
-        legend = "left"
-    else
-        legend = "right"
-    endif
-    plot plotmat
+    xtics = rows(plotmat) < 20 ? "set xtics 1" : ""
+    legend = MODEL.mod_size_av > MODEL.avg_model_size ? "left" : "right"
+    catch plot plotmat
         printf "%s", terminal_opts
         options with-lp fit=none
+        literal set link y2 via y inverse y
         printf "%s", xtics
         printf "set title \"%s\"", "Model Size Distribution"
         printf "set xlabel \"%s\"", "Model Size"
         printf "set ylabel \"%s\"", "Density"
         printf "set key %s top", legend
     end plot --output=@output
+    error = $error
+    if error
+        printf "Model Size Distribution: %s\n", errmsg(error)
+    endif
 
     # Models size CDF
     plotmat = MODEL.models_probs_cdf
@@ -69,12 +78,8 @@ function void BMA_Plot (bundle *MODEL)
     if !$sysinfo.gui_mode
         output = output ~ "-CDF.plt"
     endif
-    if rows(plotmat) < 20
-        xtics = "set xtics 1"
-    else
-        xtics = ""
-    endif    
-    plot plotmat
+    xtics = rows(plotmat) < 20 ? "set xtics 1" : ""
+    catch plot plotmat
         printf "%s", terminal_opts
         options with-line fit=none
         literal set grid
@@ -83,7 +88,39 @@ function void BMA_Plot (bundle *MODEL)
         printf "set xlabel \"%s\"", "Number of Models"
         printf "set ylabel \"%s\"", "Posterior Probability Mass"
     end plot --output=@output
+    error = $error
+    if error
+        printf "CDF of Model Size: %s\n", errmsg(error)
+    endif
 
+    # Model prior distribution values
+    idx = 1
+    title = defarray(MODEL.prior_name, "Size")
+    plotmat = exp(MODEL.model_prior_log)[idx:end] ~ MODEL.mod_sizes[,1]    
+    cnameset(plotmat, title)
+    output = basename
+    if !$sysinfo.gui_mode
+        output = output ~ "-MPD.plt"
+    endif
+    xtics = rows(plotmat) < 20 ? "set xtics 1" : ""
+    catch plot plotmat
+        printf "%s", terminal_opts
+        options with-lp fit=none
+        literal set link y2 via y inverse y
+        printf "%s", xtics
+        printf "set title \"%s\"", "Prior Model Probabilities"
+        printf "set xlabel \"%s\"", "Model Size"
+        printf "set ylabel \"%s\"", "Value"
+        printf "set key %s top", legend
+    end plot --output=@output
+    error = $error
+    if error
+        printf "Prior Model Probabilities: %s\n", errmsg(error)
+    endif
+
+    #########################################################
+    #						Forecasts						#
+    #########################################################
     # Predictive results
     if MODEL.Npredict
         plotmat = MODEL.prediction[,1:2]
@@ -102,7 +139,8 @@ function void BMA_Plot (bundle *MODEL)
                 xtics += sprintf(", ")
             endif
         endloop
-        plot plotmat
+        legend = plotmat[end,1] > plotmat[1,1] ? "left" : "right"
+        catch plot plotmat
             printf "%s", terminal_opts
             options time-series with-lines
             options with-line fit=none
@@ -110,6 +148,11 @@ function void BMA_Plot (bundle *MODEL)
             printf "set title \"%s\"", "Predictive results (with +/- one standard deviations as bars)"
             printf "set xlabel \"%s\"", "Observation"
             printf "set xtics %s", xtics
+            printf "set key %s top", legend
         end plot --output=@output
+        error = $error
+        if error
+            printf "Predictive results: %s\n", errmsg(error)
+        endif
     endif
 end function

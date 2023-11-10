@@ -21,8 +21,8 @@ function void BMA_heatmap (bundle M, string MODE, const string basename[null])
    MODE		- string indicating image mode {"inclusions", "jointness"}
    basename	- basename for gnuplot files
     */
-    scalar nrows, ncols, tmp, height, width, minval, maxval
-    string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate, output
+    scalar nrows, ncols, tmp, height, width, minval, maxval, error
+    string grid, title, xlabel, ylabel, xtics, ytics, colorbox, palette, rotate, output, terminal_opts
     matrix m
 
     # We set general image options
@@ -115,13 +115,19 @@ function void BMA_heatmap (bundle M, string MODE, const string basename[null])
     # We check if we display or save plot
     if $sysinfo.gui_mode
         output = "display"
+        terminal_opts = sprintf("set term pngcairo font \"Vera,9\" size %d,%d noenhanced", width, height)
     else
         output = sprintf("%s%s", basename, output)
+        if $sysinfo["os"] == "windows"
+            terminal_opts = sprintf("%s", "set terminal windows")
+        else
+            terminal_opts = sprintf("%s\n%s", "set terminal png", "set output '| display png:-'")
+        endif        
     endif
 
     # We plot heatmap
-    plot
-        printf "set term pngcairo font \"Vera,9\" size %d,%d noenhanced", width, height
+    catch plot
+        printf "%s", terminal_opts
         literal set encoding utf8
         literal set decimalsign '.'
         literal set nokey
@@ -148,4 +154,8 @@ function void BMA_heatmap (bundle M, string MODE, const string basename[null])
         printf "EOD"
         literal plot $map matrix with image
     end plot --output=@output
+    error = $error
+    if error
+        printf "%s: %s\n", title, errmsg(error)
+    endif
 end function
