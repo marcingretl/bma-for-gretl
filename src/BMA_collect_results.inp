@@ -22,7 +22,9 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     /*
        Function collects results from MC3 experiment.
     */
-    BMA_print_status("Collecting results", 0)
+    if M.verbosity
+        BMA_print_status("Collecting results", 0)
+    endif
     matrix idx, var_idx, bhat, mod_struct, models_probs, X_new_num
     matrices models_structure_rank, models_estimates_rank
     scalar nr
@@ -78,7 +80,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     endloop
 
     # We average over all accepted models
-    if M.show_progress
+    if M.show_progress && M.verbosity
         BMA_print_status("averaging", 0, 11, 1)
         scalar M.progress = ceil(nelem(models_counter)/100)
         percentage = M.progress
@@ -112,7 +114,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         endif
 
         # Flushing output - showing progress
-        if M.show_progress && i == percentage
+        if M.show_progress && M.verbosity && i == percentage
             BMA_show_progress(i, &percentage, M.progress, nelem(models_counter))
         endif
     endloop
@@ -143,10 +145,12 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     M.mod_sizes = seq(1, M.k)' ~ mod_sizes
     M.mod_sizes = {0} ~ M.empty_model_count | M.mod_sizes
 
-    if M.show_progress
-        printf "\n"
-        BMA_print_status(null, 1, 22)
-    else
-        BMA_print_status(null, 1, 3)
+    if M.verbosity
+        if M.show_progress
+            printf "\n"
+            BMA_print_status(null, 1, 22)
+        else
+            BMA_print_status(null, 1, 3)
+        endif
     endif
 end function

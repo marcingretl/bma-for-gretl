@@ -149,8 +149,8 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
         err += "Total number of replications (Nrep) takes the integer values"
     elif Options.burn < 0 || Options.burn > 99
         err += "Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]"
-    elif Options.verbosity < 1 || Options.verbosity > 2
-        err += "Verbosity takes the integer values in the range [1; 2]"
+    elif Options.verbosity < 0 || Options.verbosity > 2
+        err += "Verbosity takes the integer values in the range [0; 2]"
     endif
 
     # We save options in M

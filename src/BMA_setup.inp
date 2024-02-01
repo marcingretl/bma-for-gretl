@@ -16,10 +16,12 @@
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 function bundle BMA_setup (bundle *M, int Norig)
-    /*
-       This function creates BUNDLE holding all BMA information.
+/*
+   This function creates BUNDLE holding all BMA information.
     */
-    BMA_print_status("BMA setup")
+    if M.verbosity
+        BMA_print_status("BMA setup")
+    endif
     scalar tmp
     list X_list = M.X_list
     series Y = M.Y
@@ -29,23 +31,9 @@ function bundle BMA_setup (bundle *M, int Norig)
     ###############################################
     # Global variables (given by user of default) #
     ###############################################
-    /*
-    scalar M.acc_type = acc_type
-    scalar M.av_model_size = av_model_size
-    scalar M.alpha = alpha
-    scalar M.l_rank = l_rank
-    scalar M.g_type = g_type
-    scalar M.do_joint = do_joint
-    scalar M.h_predict = h_predict
-    scalar M.Nrep = Nrep
-    scalar M.burn = burn
-    scalar M.verbosity = verbosity
-    scalar M.show_progress = show_progress
-    scalar M.do_plot = do_plot
-    */
     if ok(Norig)
         scalar M.Norig = Norig
-    endif    
+    endif
 
     ###################
     # Local variables #
@@ -192,7 +180,7 @@ function bundle BMA_setup (bundle *M, int Norig)
     # .5*(n-1)
     M.scaling_f[6] = .5 * ($nobs - 1)
     # Y'Y (sum of squares of Y)
-    M.scaling_f[7] = M.Y_mat'M.Y_mat    
+    M.scaling_f[7] = M.Y_mat'M.Y_mat
 
     if M.verbosity
         set warnings off
@@ -201,7 +189,9 @@ function bundle BMA_setup (bundle *M, int Norig)
     # MC3 progress step
     scalar M.progress = floor(M.Nrep/100)
 
-    BMA_print_status(null, 1, 12)
+    if M.verbosity
+        BMA_print_status(null, 1, 12)
+    endif
 
     return M
 end function

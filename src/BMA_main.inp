@@ -20,7 +20,9 @@ function void BMA_main (bundle *M)
    This is main BMA function with complete MC3 simulation procedure.
     */
     # Local variables
-    BMA_print_status("MC3 setup")
+    if M.verbosity
+        BMA_print_status("MC3 setup")
+    endif
     scalar percentage = M.progress # percentage of progress of MCMC
     string model_id # string containing model id (0-1 'image')
     scalar model_nr	# iteration number under which model's data are stored in matrices/arrays
@@ -44,7 +46,7 @@ function void BMA_main (bundle *M)
     ##########################
     # Part 1: Starting model #
     ##########################
-    
+
     # We estimate starting model and construct starting mod_rank_struct and mod_rank
     BMA_initial_model(&M)
     BMA_estimate(&M)
@@ -61,16 +63,20 @@ function void BMA_main (bundle *M)
         BMA_forecast(&M)
         models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
     endif
-    BMA_print_status(null, 1, 12)
+    if M.verbosity
+        BMA_print_status(null, 1, 12)
+    endif
 
     ############################################################
     # Part 2: Markov Chain Monte Carlo Model Composition - MC3 #
     ############################################################
 
-    if M.show_progress
-        BMA_print_status("MC3 overall progress", 0, 0, 1)
-    else
-        BMA_print_status("MC3")
+    if M.verbosity
+        if M.show_progress
+            BMA_print_status("MC3 overall progress", 0, 0, 1)
+        else
+            BMA_print_status("MC3")
+        endif
     endif
     loop rep=1..M.Nrep --quiet
         # Now we draw the number of candidate variable
@@ -93,7 +99,7 @@ function void BMA_main (bundle *M)
                 known_models[model_id] = model_nr
                 models_structure[model_nr] = M.mod_struct_new
                 models_lprob[model_nr] = M.lprob_new
-                models_estimates[model_nr] = M.bhat ~ M.bvar                
+                models_estimates[model_nr] = M.bhat ~ M.bvar
                 if M.Npredict
                     BMA_forecast(&M)
                     models_forecasts[model_nr] = M.Yhat ~ M.Yhat_var
@@ -115,11 +121,11 @@ function void BMA_main (bundle *M)
         endif
 
         # Flushing output - showing progress
-        if M.show_progress && rep == percentage
+        if M.show_progress && M.verbosity && rep == percentage
             BMA_show_progress(rep, &percentage, M.progress, M.Nrep)
         endif
     endloop
-    if !M.show_progress
+    if !M.show_progress && M.verbosity
         BMA_print_status(null, 1, 18)
     endif
 

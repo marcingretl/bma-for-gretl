@@ -123,9 +123,11 @@ Meaning of optional arguments is as follows:
 	\item The \lstinline!int burn! is an integer $\in [1,100]$ with
 		the percentage of burn-in draws	ranging from 0\% to 99\%.
 		The default value is 10\%.
-	\item The \lstinline!int verbosity! is an integer $\in [1,2]$
+	\item The \lstinline!int verbosity! is an integer $\in [0,2]$
 		which indicates the level of verbosity of the \pkg{BMA} package
 		for printing results. The default value is 2.
+		Note: setting this parameter to 0 supresses printing
+		anything (including graphs).
 	\item The \lstinline!bool show_progress! is a boolean value 
 		which switches progress printing during the simulation.
 		The default value is set up according to formula~\eqref{eq:show_progress_setup}.

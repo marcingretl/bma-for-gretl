@@ -64,9 +64,11 @@ function bundle BMA (series Y "Dependent variable",
         endif
         BMA_main(&MODEL)
         BMA_summary(&MODEL)
-        BMA_Print(&MODEL)
-        if MODEL["do_plot"]
-            BMA_Plot(&MODEL)
+        if MODEL["verbosity"]
+            BMA_Print(&MODEL)
+            if MODEL["do_plot"]
+                BMA_Plot(&MODEL)
+            endif
         endif
     endif
 

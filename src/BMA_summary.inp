@@ -19,7 +19,9 @@ function void BMA_summary (bundle *M)
 /*
    We summarise some BMA results and deleting redundand items from the returned bundle
     */
-    BMA_print_status("Summarizing")
+    if M.verbosity
+        BMA_print_status("Summarizing")
+    endif
     scalar tmps, factor, k
     string title
     matrix percents1, percents2
@@ -191,5 +193,7 @@ function void BMA_summary (bundle *M)
     delete M.progress
     delete M.empty_model_count
 
-    BMA_print_status(null, 1, 10)
+    if M.verbosity
+        BMA_print_status(null, 1, 10)
+    endif    
 end function
