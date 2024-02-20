@@ -15,10 +15,16 @@
    You should have received a copy of the GNU General Public License
    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-function void BMA_Print (bundle *M)
+function void BMA_Print (bundle *MODEL)
 /*
    Function prints BMA results
     */
+
+    scalar avg_model_size
+
+    # We make a copy of MODEL
+    bundle M = MODEL
+
     # We have to set sample
     if M.Npredict
         smpl 1 M.last_obs
@@ -28,12 +34,22 @@ function void BMA_Print (bundle *M)
     string Y_name = M.Y_name
     series @Y_name = M.Y
 
+    # We set up real prior avg_model_size
+    if instring("custom", M.prior_name)
+        avg_model_size = NA
+    else
+        avg_model_size = sum(M.mod_sizes[,1] .* M.mod_sizes[,3])
+    endif
+
     # Additional information in summary
     model_space = 2^M.k
     printf "\n"
     if M.verbosity == 2
         print "----------------------------------"
         printf "Model prior: %s\n", M.prior_name
+        if M.prior_name == "Beta-Binomial"
+            printf "   hyperparameter 'a': %g\n", M.a
+        endif
         printf "Prior average model size: %f\n", M.avg_model_size
         printf "Significance level for the initial model: %f\n", M.alpha
         printf "g-prior: %s\n", M.gtype
@@ -60,7 +76,7 @@ function void BMA_Print (bundle *M)
     print "----------------------------------"
     printf "\n"
     printf "Prior:\n"
-    printf "\taverage model size: %f\n", sum(M.mod_sizes[,1] .* M.mod_sizes[,3])
+    printf "\taverage model size: %f\n", avg_model_size
     printf "\tstandard deviation: %f\n", M.mod_size_sd_prior
     printf "Posterior:\n"
     printf "\taverage model size: %f\n", M.mod_size_av
@@ -73,6 +89,11 @@ function void BMA_Print (bundle *M)
         printf "%15f", M.Post_Results
     else
         printf "%15f", mreverse(msortby(M.Post_Results, 1))
+    endif
+    if M.prior_name == "custom"
+        printf "\n"
+        print "Inclusion Probabilities"
+        printf "%15f", M.IncProbs
     endif
     printf "\n"
     print "----------------------------------"

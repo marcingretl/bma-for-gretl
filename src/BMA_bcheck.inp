@@ -32,13 +32,13 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     string arg_name
     strings Integers = defarray("model_prior", "Nrank", "g_type", "do_joint", "Npredict", "Nrep", "burn", "verbosity")
     strings Booleans = defarray("show_progress", "do_plot")
-    strings Scalars = defarray("avg_model_size", "alpha")
-    strings ModelPriorTypes = defarray("Binomial", "Beta-Binomial")
+    strings Scalars = defarray("avg_model_size", "alpha", "a")
+    strings ModelPriorTypes = defarray("Binomial", "Beta-Binomial", "custom")
     strings GPriorTypes = defarray("Benchmark", "UIP", "RIC", "HQC", "RootUIP")
     strings GPriorNames = defarray("Benchmark prior", "Unit Information Prior (g-UIP)",\
       "Risk Inflation Criterion (g-RIC)", "Hannan and Quinn HQC", "Root of g-UIP")
     strings OverloadableKeys
-    Overloadable["model_prior"] = _(binomial=1, betabinomial=2, valid=tolower(flatten(ModelPriorTypes, separator)))
+    Overloadable["model_prior"] = _(binomial=1, betabinomial=2, custom=3, valid=tolower(flatten(ModelPriorTypes, separator)))
     Overloadable["do_joint"] = _(none=0, dw1=1, dw2=2, ls1=3, ls2=4, sm=5, yq=6, myq=7, valid="none, DW1, DW2, LS1, LS2, SM, YQ, MYQ")
     Overloadable["g_type"] = _(benchmark=1, uip=2, ric=3, hqc=4, rootuip=5, valid=tolower(flatten(GPriorTypes, separator)))
 
@@ -89,6 +89,17 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
         Nrep = 1e+06
     endif
 
+    # We check if given theta is scalar or matrix and set its temporal value (if needed)
+    if inbundle(UserOpts, "theta") && !(typeof(UserOpts["theta"]) == 1 || typeof(UserOpts["theta"]) == 3)
+        err += sprintf("Theta must be either scalar or matrix, is: %s", typestr(typeof(UserOpts["theta"])))
+        return err
+    elif inbundle(UserOpts, "theta") && typeof(UserOpts["theta"]) == 1
+        UserOpts["theta"] = -1 * UserOpts["theta"]
+        model_prior_tmp = 3
+    elif inbundle(UserOpts, "theta") && typeof(UserOpts["theta"]) == 3
+        model_prior_tmp = 3
+    endif
+
     # Template bundle with default values
     scalar Options["model_prior"] = 1
     scalar Options["avg_model_size"] = k/2
@@ -102,6 +113,8 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     scalar Options["verbosity"] = 2
     scalar Options["show_progress"] = show_progress
     scalar Options["do_plot"] = do_plot
+    scalar Options["a"] = 1
+    matrix Options["theta"] = {NA}
     scalar Options["_gui"] = 0
 
     # General checking, but still needs some manual work
@@ -133,8 +146,8 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     endloop
 
     # We check arguments for valid values
-    if Options.model_prior < 1 || Options.model_prior > 2
-        err += "Model prior takes the integer values in the range [1; 2]"
+    if Options.model_prior < 1 || Options.model_prior > 3
+        err += "Model prior takes the integer values in the range [1; 3]"
     elif Options.alpha < 0 || Options.alpha > 1
         err += "The significance level (alpha) takes the real values in the range [0; 1]"
     elif Options.g_type < 0 || Options.g_type > 5
@@ -151,15 +164,21 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
         err += "Percentage of burn-in draws (do_burn) takes the integer values in the range [0; 99]"
     elif Options.verbosity < 0 || Options.verbosity > 2
         err += "Verbosity takes the integer values in the range [0; 2]"
+    elif sum(ok(Options.theta)) && (min(Options.theta) <= 0 || max(Options.theta) >= 1) && typeof(UserOpts["theta"]) == 3
+        err += "Prior Inclusion Probabilities (theta) takes the real values in the range (0; 1)"
+    elif sum(ok(Options.theta)) && Options.model_prior < 3
+        err += sprintf("You may not mix %s model prior with Prior Inclusion Probabilities (theta)", ModelPriorTypes[Options.model_prior+1])
+    elif Options.a <= 0
+        err += "Hyperparameter 'a' must be greater than zero"
     endif
 
     # We save options in M
     M = Options
-    M.GPriorTypes = GPriorTypes    
-    M.ModelPriorTypes = ModelPriorTypes    
+    M.GPriorTypes = GPriorTypes
+    M.ModelPriorTypes = ModelPriorTypes
     if err == ""
         M.gtype = GPriorNames[M.g_type]
-    endif    
+    endif
 
     return err
 end function

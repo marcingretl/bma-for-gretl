@@ -22,11 +22,13 @@ function bundle BMA_setup (bundle *M, int Norig)
     if M.verbosity
         BMA_print_status("BMA setup")
     endif
+
     scalar tmp
     list X_list = M.X_list
     series Y = M.Y
     list big_list = Y X_list
     list big_list_const = Y const X_list
+    matrix theta_tmp
 
     ###############################################
     # Global variables (given by user of default) #
@@ -53,6 +55,7 @@ function bundle BMA_setup (bundle *M, int Norig)
     scalar M.post_n_models = 0
     scalar M.post_n_models_accepted = 0
     scalar M.mod_size_sd_prior = 0 # Prior model size standard deviation
+    scalar M.b = NA
 
     # In case of "out-of-sample" prediction
     if M.Npredict
@@ -134,20 +137,52 @@ function bundle BMA_setup (bundle *M, int Norig)
     matrix M.model_prior_log = zeros(M.k+1)
     string M.prior_name = M.ModelPriorTypes[M.model_prior]
     if M.prior_name == "Binomial"
-        scalar M.a = log(M.avg_model_size/M.k)
-        scalar M.b = log(1 - M.avg_model_size/M.k)
-        scalar M.c = 0
+        M.a = log(M.avg_model_size/M.k)
+        M.b = log(1 - M.avg_model_size/M.k)
         tmp = M.avg_model_size/M.k
         loop i=0..M.k --quiet
             M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i))
         endloop
-    else
-        scalar M.a = 1
-        scalar M.b = (M.k - M.avg_model_size)/M.avg_model_size
-        scalar M.c = lngamma(M.a + M.b) - lngamma(M.a) - lngamma(M.b)
+    elif M.prior_name == "Beta-Binomial"
+        #scalar M.b = (M.k - M.avg_model_size)/M.avg_model_size
+        M.b = M.a*(M.k/M.avg_model_size - 1)
         loop i=0..M.k --quiet
-            M.model_prior_log[i+1] = log((gammafun(i+1) * gammafun(M.k-i+M.b) / gammafun(1+M.k+M.b)) / (gammafun(M.a) * gammafun(M.b) / gammafun(M.a+M.b)))
+            M.model_prior_log[i+1] = log((gammafun(i+M.a) * gammafun(M.k-i+M.b) / gammafun(M.a+M.k+M.b)) / (gammafun(M.a) * gammafun(M.b) / gammafun(M.a+M.b)))
         endloop
+    elif M.prior_name == "custom"
+        theta_tmp = transp(ones(M.k))
+        cnameset(theta_tmp, X_list)
+        if nelem(M.theta) == 1 && isnan(M.theta)
+            theta_tmp *= 0.5
+        elif nelem(M.theta) == 1 && !isnan(M.theta)
+            theta_tmp *= -M.theta
+        else
+            theta_tmp *= NA
+            thata_names = rows(M.theta) == 1 ? cnameget(M.theta) : rnameget(M.theta)
+            if !nelem(thata_names)
+                return "Prior Inclusion Probabilities (theta) does not have variables names"
+            endif
+            loop foreach x X_list --quiet
+                loop i=1..nelem(thata_names) --quiet
+                    if thata_names[i] == "$x"
+                        theta_tmp[inlist(X_list, "$x")] = M.theta[i]
+                        break
+                    endif
+                endloop
+            endloop
+            if sum(ok(theta_tmp)) != nelem(theta_tmp)
+                if sum(!ok(theta_tmp)) == 1
+                    err = cnameget(theta_tmp)[selifc(seq(1, nelem(theta_tmp)), !ok(theta_tmp))]
+                else
+                    err = flatten(cnameget(theta_tmp)[selifc(seq(1, nelem(theta_tmp)), !ok(theta_tmp))], ",")
+                endif
+                err = sprintf("Prior Inclusion Probabilities (theta) matrix does not hold value(s) for (%s)!!!", err)
+                funcerr err
+            endif
+        endif
+        M.avg_model_size = NA
+        M.theta = theta_tmp
+        matrix M.IncProbs = {}
     endif
 
     # For averaging

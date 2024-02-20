@@ -23,9 +23,14 @@ function void BMA_summary (bundle *M)
         BMA_print_status("Summarizing")
     endif
     scalar tmps, factor, k
-    string title
+    strings title
     matrix percents1, percents2
     scalar NORM = M.Nrep - M.Nburn
+    if M.prior_name == "custom"
+        title = cnameget(M.theta)
+        M.theta = transp(M.theta)
+        rnameset(M.theta, title)
+    endif
 
     # Normalisations
     M.mod_rank_prob = exp(M.mod_rank_prob) / sum(exp(M.mod_rank_prob))
@@ -44,10 +49,14 @@ function void BMA_summary (bundle *M)
         k = M.mod_sizes[i,1]
         M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
     endloop
-    M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.avg_model_size) .^2 .* M.mod_sizes[,3]))
+    if instring("custom", M.prior_name)
+        M.mod_size_sd_prior = NA
+    else
+        M.mod_size_sd_prior = sqrt(sum((M.mod_sizes[,1] - M.avg_model_size) .^2 .* M.mod_sizes[,3]))
+    endif
 
     # Models size distribution
-    title = "Size Posterior Prior"
+    title = defarray("Size", "Posterior", "Prior")
     cnameset(M.mod_sizes, title)
 
     # Models size CDF
@@ -108,9 +117,16 @@ function void BMA_summary (bundle *M)
     M.Post_Results = M.Post_Results ~ tmp
     tmp = sqrt((M.Post_Results[,3] .* M.Post_Results[,3] .+ M.Post_Results[,2] .* M.Post_Results[,2]) ./ M.Post_Results[,1] .- M.Post_Results[,4] .* M.Post_Results[,4])
     M.Post_Results = M.Post_Results ~ tmp
-    title = "PIP Mean Std.Dev. Cond.Mean Cond.Std.Dev"
+    title = defarray("PIP", "Mean", "Std.Dev.", "Cond.Mean", "Cond.Std.Dev.")
     cnameset(M.Post_Results, title)
     rnameset(M.Post_Results, M.all_names_sp)
+    if M.prior_name == "custom"
+        tmp = M.Post_Results[,1]
+        tmp = M.theta ~ tmp
+        title = defarray("Prior", "PIP")
+        cnameset(tmp, title)
+        M.IncProbs = mreverse(msortby(tmp, 2))
+    endif
 
     # Forecasts
     if M.Npredict
@@ -154,9 +170,10 @@ function void BMA_summary (bundle *M)
     delete M.yMy
     delete M.mod_struct_new
     delete M.var_prob
-    delete M.a
+    if M.prior_name != "Beta-Binomial"
+        delete M.a
+    endif
     delete M.b
-    delete M.c
     delete M.bhat
     delete M.bvar
     delete M.XtY
@@ -195,5 +212,5 @@ function void BMA_summary (bundle *M)
 
     if M.verbosity
         BMA_print_status(null, 1, 10)
-    endif    
+    endif
 end function
