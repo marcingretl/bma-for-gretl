@@ -2,12 +2,12 @@
 \usepackage{amsmath,amssymb,rotating,multirow,thumbpdf,float}
 \graphicspath{{graph/}}
 
-\author{Marcin Błażejowski\\WSB University in Toruń\ \And
-        Jacek Kwiatkowski\\Nicolaus Copernicus University in Toruń}
+\author{Marcin Błażejowski\\WSB Merito University in Torun\ \And
+        Jacek Kwiatkowski\\Nicolaus Copernicus University in Torun}
 \Plainauthor{Marcin Błażejowski, Jacek Kwiatkowski}
 
-\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.2-svn}
-\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.2-svn}
+\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.2}
+\Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.2}
 
 \Abstract{Bayesian model averaging is a model-building strategy that
   takes account of model uncertainty in
@@ -20,15 +20,15 @@
 \Keywords{Bayesian model averaging, jointness measures, \pkg{gretl}, \proglang{Hansl}}
 \Plainkeywords{Bayesian model averaging, jointness measures, gretl, Hansl}
 
-
-\newcommand{\compiler}{Debian~Clang~16.0.6~(19)}
-\newcommand{\blas}{OpenBLAS~0.3.21}
+\newcommand{\gretlver}{2024a-git}
+\newcommand{\compiler}{Debian~Clang~17.0.6~(5)}
+\newcommand{\blas}{OpenBLAS~0.3.26}
 
 \begin{document}
 	
 \section*{Project's main page:}
 \begin{quote}
-	\centering	
+	\centering
 	\url{https://sourceforge.net/projects/bma-for-gretl}
 \end{quote}
 
@@ -39,6 +39,10 @@
 {\small\begin{description}
 	\item[3.2] Some cleanups:
 		\begin{itemize}
+			\item (to doc) Apparatus for setting Prior Inclusion
+				Probabilities.
+			\item Possibility to set up hyperparameter~\textit{a}
+				for beta-binomial model prior manually.
 			\item Verbosity now takes integers $\in [0;2]$.
 			\item Code refactoring.
 			\item (to doc) Making some options over-loadable.

@@ -44,6 +44,10 @@ values for those arguments are:
  scalar Options["verbosity"] = 2
  scalar Options["show_progress"] = show_progress
  scalar Options["do_plot"] = do_plot
+ scalar Options["a"] = 1
+ matrix Options["theta"] = {NA}
+ scalar Options["_gui"] = 0
+ 
 \end{lstlisting}\label{sec:default_option_bundle}
 where \textit{k} stands for the number of independent variables,
 \lstinline!scalar Nrep! takes the following values:
@@ -87,10 +91,23 @@ Meaning of optional arguments is as follows:
 		What is very important the \code{X_list} cannot contain a
 		\texttt{const} (\pkg{gretl}'s internal and automatically
 		generated constant term).
-	\item The \lstinline!int model_prior! is an integer $\in [1,2]$
-		indicating model prior	type (the default is binomial
-		$[\mathtt{model\_prior}=1]$, see Equations~\ref{eq:model_prior_binomial}
-		and \ref{eq:model_prior_binomial-beta}).
+	\item The \lstinline!int model_prior! is an integer $\in [1,3]$
+		indicating model prior type: 1---binomial, 2---beta-binomial
+		(the default is binomial $[\mathtt{model\_prior}=1]$, see
+		Equations~\ref{eq:model_prior_binomial}
+		and \ref{eq:model_prior_binomial-beta}), 3---custom
+		(see the \lstinline!theta! parameter);
+	\item The \lstinline!scalar theta! or \lstinline!matrix theta = {NA}!:\label{opts:theta}
+		column or row vector with individual prior inclusion
+		probabilities for each variable (names of variables are
+		required); if \lstinline!scalar theta! is provided,
+		then the given value is assigned to all variables%
+		\footnote{Note that if the user sets
+			\lstinline!int model_prior! without specifying
+			any \lstinline!theta!, then the default value
+			will be chosen, i.e., \lstinline!scalar theta = 0.5!}.
+	\item The \lstinline!scalar a = 1!: Beta-binomial distribution\label{opts:a}
+		hyperparameter (see Equation~(\ref{eq:model_prior_binomial-beta})).
 	\item The \lstinline!scalar avg_model_size! is the scalar $\geq0$
 		of the prior average model size. Note, if
 		$\mathtt{avg\_model\_size} = \frac{k}{2}$ (the default value)

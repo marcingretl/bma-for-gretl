@@ -110,8 +110,15 @@ $M_n$ is given by
 where $\frac{\Prob(M_l)}{\Prob(M_n)}$ is the prior odds ratio and
 $\frac{p(y \mid M_l)}{p(y \mid M_n)}$ is the Bayes factor. If the
 ratio $\frac{\Prob(M_l \mid y)}{\Prob(M_n \mid y)}$ is larger than 1,
-we can say that the data supports model $M_l$ over model $M_n$. In our
-package, we use two popular model priors.
+we can say that the data supports model $M_l$ over model $M_n$.
+Let's assume that each regressor enters a model independently
+of the others with a prior probability $\theta \in [0, 1]$
+(the prior probability of inclusion). We have two options here:
+either the user provides a $\theta$ vector with individual
+prior inclusion probabilities for each variable manually
+(see \lstinline!theta! on page~\pageref{opts:theta}),
+or we use the theoretical prior model size distribution.
+In our package, we use two popular model priors.
 \begin{itemize}\label{misc:priors}
 	\item Binomial prior:
 	\begin{equation}
@@ -134,8 +141,10 @@ prior we have $\E(\Xi)=K\theta$ and the choice of $\E(\Xi)$
 automatically produces a value for the prior inclusion probability
 $\theta$. If we have the binomial-beta prior, the average model size
 will satisfy $\E(\Xi)=\frac {a}{a+b}K$. Here, we follow
-\cite{Ley_Steel_jae_2009} and fix $a=1$ hence obtaining the value of
-the second hyperparameter as $b=\frac{K-\E(\Xi)}{\E(\Xi)}$.
+\cite{Ley_Steel_jae_2009} and set hyperparameter $a=1$ hence obtaining
+the value of the second hyperparameter as $b=\frac{K-\E(\Xi)}{\E(\Xi)}$.
+Note, that \textit{a} may be modified by user (see \lstinline!scalar a!
+on page~\pageref{opts:a}).
 
 One of the most widely accepted norms of scientific investigation is
 Occam's razor.  Simply speaking, Occam's razor states that the

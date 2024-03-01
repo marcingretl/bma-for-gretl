@@ -1,7 +1,7 @@
-gretl version 2022c-git
-Current session: 2022-08-26 16:33
+gretl version 2024a-git
+Current session: 2024-03-01 21:20
 
-? set verbose off
+BMA 3.2, 2024-03-01 (Marcin Błażejowski, Jacek Kwiatkowski)
 
 Read datafile FLS_41t72.gdt
 periodicity: 1, maxobs: 72
@@ -20,13 +20,11 @@ Listing 43 variables:
  36) Pop_g         37) Brit_Col      38) Outwar_Or     39) Jewish       
  40) Rev_Coup      41) Publ_Edu      42) Area         
 
-BMA 3.1, 2022-08-26 (Marcin Błażejowski, Jacek Kwiatkowski)
-
 BMA setup:            done!
 MC3 setup:            done!
-MC3 overall progress: 100%
+MC3 overall progress: [#########################] 100.0%
 Collecting results:
-           averaging: 100%
+           averaging: [#########################] 100.0%
                       done!
 Summarizing:          done!
 ----------------------------------
@@ -98,7 +96,7 @@ Posterior:
 ----------------------------------
 
 Posterior moments (unconditional and conditional on inclusion):
-                        PIP           Mean       Std.Dev.      Cond.Mean   Cond.Std.Dev
+                        PIP           Mean       Std.Dev.      Cond.Mean  Cond.Std.Dev.
    GDPsh560        0.999246      -1.613570       0.311327      -1.614788       0.308271
 Confuncious        0.989724       5.653177       1.446116       5.711873       1.333304
    Life_Exp        0.938069       0.084486       0.033699       0.090064       0.026613
@@ -227,7 +225,7 @@ High_Enroll        0.045617       0.045490       0.044003       0.043051       0
    Publ_Edu        0.030290       0.030100       0.028330       0.026194       0.023363       0.018031       0.017148       0.013503       0.015852       0.015522       0.015239       0.014454       0.006796       0.005678       0.005789       0.007019       0.004578       0.003971       0.005666       0.002949       0.002953       0.002234       0.002712       0.002311       0.001428       0.001830       0.002632       0.002021       0.001961       0.001382       0.001448       0.001517       0.001479       0.001995       0.001403       0.001202       0.001296       0.001036       0.000727            nan       0.000713
        Area        0.030194       0.029963       0.027586       0.027771       0.022808       0.019297       0.015732       0.014436       0.014411       0.013555       0.012853       0.013604       0.006172       0.006725       0.006368       0.005576       0.004323       0.003500       0.003979       0.003576       0.002693       0.002171       0.003166       0.002212       0.002307       0.001744       0.002601       0.001647       0.002815       0.001175       0.001471       0.001257       0.001359       0.001344       0.001138       0.000987       0.001177       0.001097       0.000806       0.000713            nan
 
-Jointness statistics (Modified Yule's Q Measure (YQM)):
+Jointness statistics (Modified Yule's Q Measure (MYQ)):
                    GDPsh560    Confuncious       Life_Exp      Equip_Inv      SubSahara         Muslim    Rule_of_Law       Yrs_Open        Eco_Org    Protestants     NEquip_Inv         Mining     LatAmerica    PrSc_Enroll         Buddha      Bl_Mkt_Pm       Catholic       Civl_Lib          Hindu     Pr_Exports     Pol_Rights     R_FEX_Dist            Age      War_Dummy        English        Foreign      Lab_Force    Spanish_Col    EthnoL_Frac        std_BMP     French_Col        Abs_Lat       Work_Pop    High_Enroll          Pop_g       Brit_Col      Outwar_Or         Jewish       Rev_Coup       Publ_Edu           Area
    GDPsh560             nan       0.977909       0.877299       0.848032       0.479600       0.291845      -0.007924       0.013099      -0.076729      -0.094558      -0.127490      -0.066036      -0.566719      -0.585744      -0.601489      -0.629242      -0.733781      -0.741114      -0.743856      -0.798569      -0.807147      -0.837225      -0.821503      -0.843474      -0.860417      -0.864970      -0.844232      -0.886959      -0.879122      -0.899009      -0.892923      -0.913110      -0.915764      -0.907438      -0.920941      -0.924937      -0.919460      -0.927086      -0.937200      -0.937824      -0.938063
 Confuncious        0.977909            nan       0.864854       0.830217       0.463587       0.300764      -0.005918       0.004749      -0.059245      -0.091787      -0.106376      -0.057468      -0.550983      -0.584668      -0.581138      -0.607280      -0.725682      -0.719209      -0.730013      -0.805704      -0.786019      -0.816423      -0.803726      -0.834713      -0.840890      -0.846106      -0.824949      -0.869348      -0.859822      -0.879192      -0.873719      -0.894287      -0.900995      -0.887324      -0.903062      -0.906537      -0.900415      -0.908899      -0.917985      -0.918492      -0.918912
@@ -271,6 +269,584 @@ High_Enroll       -0.907438      -0.887324      -0.782860      -0.759165      -0
    Publ_Edu       -0.937824      -0.918492      -0.817870      -0.800269      -0.433951      -0.274890       0.021351      -0.023724       0.082530       0.094857       0.129288       0.063759       0.524965       0.538545       0.554035       0.590058       0.683645       0.689203       0.700450       0.743635       0.752441       0.780019       0.765388       0.787233       0.800593       0.807280       0.789512       0.831144       0.822687       0.840854       0.834686       0.855917       0.858771       0.851862       0.863896       0.866890       0.861461       0.868497       0.877949            nan       0.878730
        Area       -0.938063      -0.918912      -0.821123      -0.792713      -0.436788      -0.267463       0.013318      -0.018069       0.074367       0.083641       0.115664       0.059027       0.521834       0.544290       0.557280       0.582738       0.682556       0.687041       0.692282       0.746831       0.751366       0.779888       0.767720       0.786938       0.804863       0.807044       0.789536       0.829591       0.826780       0.840072       0.834954       0.854907       0.858390       0.849080       0.862870       0.866086       0.861090       0.868928       0.878458       0.878730            nan
 
+Strong substitutes:
+          GDPsh560,Area     -0.93806 
+      GDPsh560,Publ_Edu     -0.93782 
+      GDPsh560,Rev_Coup     -0.93720 
+        GDPsh560,Jewish     -0.92709 
+      GDPsh560,Brit_Col     -0.92494 
+         GDPsh560,Pop_g     -0.92094 
+     GDPsh560,Outwar_Or     -0.91946 
+       Confuncious,Area     -0.91891 
+   Confuncious,Publ_Edu     -0.91849 
+   Confuncious,Rev_Coup     -0.91799 
+      GDPsh560,Work_Pop     -0.91576 
+       GDPsh560,Abs_Lat     -0.91311 
+     Confuncious,Jewish     -0.90890 
+   GDPsh560,High_Enroll     -0.90744 
+   Confuncious,Brit_Col     -0.90654 
+      Confuncious,Pop_g     -0.90306 
+   Confuncious,Work_Pop     -0.90099 
+  Confuncious,Outwar_Or     -0.90042 
+       GDPsh560,std_BMP     -0.89901 
+    Confuncious,Abs_Lat     -0.89429 
+    GDPsh560,French_Col     -0.89292 
+Confuncious,High_Enroll     -0.88732 
+   GDPsh560,Spanish_Col     -0.88696 
+    Confuncious,std_BMP     -0.87919 
+   GDPsh560,EthnoL_Frac     -0.87912 
+ Confuncious,French_Col     -0.87372 
+Confuncious,Spanish_Col     -0.86935 
+       GDPsh560,Foreign     -0.86497 
+       GDPsh560,English     -0.86042 
+Confuncious,EthnoL_Frac     -0.85982 
+    Confuncious,Foreign     -0.84611 
+     GDPsh560,Lab_Force     -0.84423 
+     GDPsh560,War_Dummy     -0.84347 
+    Confuncious,English     -0.84089 
+    GDPsh560,R_FEX_Dist     -0.83723 
+  Confuncious,War_Dummy     -0.83471 
+  Confuncious,Lab_Force     -0.82495 
+           GDPsh560,Age     -0.82150 
+          Life_Exp,Area     -0.82112 
+      Life_Exp,Publ_Edu     -0.81787 
+ Confuncious,R_FEX_Dist     -0.81642 
+      Life_Exp,Rev_Coup     -0.81475 
+    GDPsh560,Pol_Rights     -0.80715 
+ Confuncious,Pr_Exports     -0.80570 
+        Life_Exp,Jewish     -0.80542 
+     Life_Exp,Outwar_Or     -0.80400 
+        Confuncious,Age     -0.80373 
+      Life_Exp,Brit_Col     -0.80333 
+         Life_Exp,Pop_g     -0.80088 
+     Equip_Inv,Publ_Edu     -0.80027 
+    GDPsh560,Pr_Exports     -0.79857 
+       Life_Exp,Abs_Lat     -0.79685 
+         Equip_Inv,Area     -0.79271 
+     Equip_Inv,Rev_Coup     -0.79253 
+      Life_Exp,Work_Pop     -0.79247 
+ Confuncious,Pol_Rights     -0.78602 
+   Life_Exp,High_Enroll     -0.78286 
+       Equip_Inv,Jewish     -0.78194 
+     Equip_Inv,Brit_Col     -0.77841 
+        Equip_Inv,Pop_g     -0.77627 
+       Life_Exp,std_BMP     -0.77444 
+    Equip_Inv,Outwar_Or     -0.77385 
+   Life_Exp,Spanish_Col     -0.77248 
+      Equip_Inv,Abs_Lat     -0.76986 
+     Equip_Inv,Work_Pop     -0.76827 
+    Life_Exp,French_Col     -0.76766 
+      Equip_Inv,std_BMP     -0.76399 
+   Life_Exp,EthnoL_Frac     -0.76057 
+  Equip_Inv,High_Enroll     -0.75917 
+         GDPsh560,Hindu     -0.74386 
+   Equip_Inv,French_Col     -0.74278 
+      GDPsh560,Civl_Lib     -0.74111 
+  Equip_Inv,Spanish_Col     -0.73997 
+       Life_Exp,Foreign     -0.73930 
+       Life_Exp,English     -0.73541 
+      GDPsh560,Catholic     -0.73378 
+  Equip_Inv,EthnoL_Frac     -0.73062 
+      Confuncious,Hindu     -0.73001 
+   Confuncious,Catholic     -0.72568 
+     Life_Exp,War_Dummy     -0.72426 
+      Equip_Inv,Foreign     -0.72368 
+     Life_Exp,Lab_Force     -0.72248 
+    Equip_Inv,Lab_Force     -0.72044 
+   Confuncious,Civl_Lib     -0.71921 
+    Life_Exp,Pol_Rights     -0.71743 
+    Equip_Inv,War_Dummy     -0.71541 
+      Equip_Inv,English     -0.71483 
+    Life_Exp,R_FEX_Dist     -0.71464 
+         Life_Exp,Hindu     -0.69847 
+    Life_Exp,Pr_Exports     -0.69831 
+   Equip_Inv,R_FEX_Dist     -0.69441 
+           Life_Exp,Age     -0.69338 
+   Equip_Inv,Pr_Exports     -0.68786 
+        Equip_Inv,Hindu     -0.68134 
+   Equip_Inv,Pol_Rights     -0.68127 
+          Equip_Inv,Age     -0.67039 
+      Life_Exp,Catholic     -0.66690 
+      Life_Exp,Civl_Lib     -0.65694 
+       Yrs_Open,Eco_Org     -0.65124 
+
+Significant substitutes:
+      Muslim,LatAmerica     -0.64341 
+     GDPsh560,Bl_Mkt_Pm     -0.62924 
+   Rule_of_Law,Yrs_Open     -0.62608 
+     Equip_Inv,Catholic     -0.61719 
+     Equip_Inv,Civl_Lib     -0.60829 
+  Confuncious,Bl_Mkt_Pm     -0.60728 
+        GDPsh560,Buddha     -0.60149 
+   Life_Exp,PrSc_Enroll     -0.59403 
+    Equip_Inv,Bl_Mkt_Pm     -0.59112 
+   GDPsh560,PrSc_Enroll     -0.58574 
+Confuncious,PrSc_Enroll     -0.58467 
+     Confuncious,Buddha     -0.58114 
+   Equip_Inv,LatAmerica     -0.57490 
+    GDPsh560,LatAmerica     -0.56672 
+ Confuncious,LatAmerica     -0.55098 
+   SubSahara,R_FEX_Dist     -0.54494 
+     Life_Exp,Bl_Mkt_Pm     -0.51901 
+     SubSahara,Yrs_Open     -0.51866 
+       Equip_Inv,Buddha     -0.51119 
+  SubSahara,PrSc_Enroll     -0.49540 
+    Life_Exp,LatAmerica     -0.49131 
+        Life_Exp,Buddha     -0.48309 
+      SubSahara,Foreign     -0.48074 
+     SubSahara,Civl_Lib     -0.47009 
+    SubSahara,Outwar_Or     -0.46767 
+     SubSahara,Work_Pop     -0.46505 
+      SubSahara,std_BMP     -0.45003 
+     SubSahara,Brit_Col     -0.44219 
+       SubSahara,Jewish     -0.43699 
+         SubSahara,Area     -0.43679 
+     SubSahara,Rev_Coup     -0.43651 
+      SubSahara,Abs_Lat     -0.43511 
+     SubSahara,Publ_Edu     -0.43395 
+  SubSahara,Spanish_Col     -0.42908 
+  Equip_Inv,PrSc_Enroll     -0.42801 
+    SubSahara,Lab_Force     -0.42681 
+   SubSahara,Pol_Rights     -0.42328 
+        SubSahara,Pop_g     -0.42279 
+   SubSahara,Pr_Exports     -0.41838 
+  SubSahara,High_Enroll     -0.41590 
+   SubSahara,French_Col     -0.41223 
+           Muslim,Hindu     -0.39516 
+      SubSahara,English     -0.37886 
+          SubSahara,Age     -0.37520 
+  SubSahara,EthnoL_Frac     -0.35968 
+        Muslim,Catholic     -0.34725 
+     SubSahara,Catholic     -0.34510 
+    SubSahara,War_Dummy     -0.32971 
+       SubSahara,Buddha     -0.30723 
+       Muslim,War_Dummy     -0.30038 
+
+Significant complements:
+     Confuncious,Muslim      0.30076 
+    LatAmerica,Catholic      0.30319 
+ Rule_of_Law,NEquip_Inv      0.30364 
+       Equip_Inv,Muslim      0.32545 
+    Equip_Inv,SubSahara      0.33127 
+        Life_Exp,Muslim      0.33393 
+    LatAmerica,Civl_Lib      0.34440 
+        Muslim,Yrs_Open      0.36461 
+   PrSc_Enroll,Catholic      0.36482 
+      PrSc_Enroll,Hindu      0.37619 
+  LatAmerica,Pr_Exports      0.38324 
+           Buddha,Hindu      0.38339 
+      SubSahara,Eco_Org      0.38856 
+     Life_Exp,SubSahara      0.39594 
+  LatAmerica,R_FEX_Dist      0.40648 
+     Bl_Mkt_Pm,Catholic      0.40659 
+       Buddha,Bl_Mkt_Pm      0.40901 
+  LatAmerica,Pol_Rights      0.41261 
+        PrSc_Enroll,Age      0.41981 
+  PrSc_Enroll,Bl_Mkt_Pm      0.42712 
+        Buddha,Civl_Lib      0.43436 
+             Buddha,Age      0.44711 
+        Bl_Mkt_Pm,Hindu      0.45321 
+  PrSc_Enroll,War_Dummy      0.45859 
+  Confuncious,SubSahara      0.46359 
+     Bl_Mkt_Pm,Civl_Lib      0.46385 
+      Buddha,Pr_Exports      0.46940 
+ LatAmerica,EthnoL_Frac      0.46960 
+   LatAmerica,Bl_Mkt_Pm      0.47124 
+        Buddha,Catholic      0.47147 
+      Buddha,R_FEX_Dist      0.47186 
+   Bl_Mkt_Pm,Pr_Exports      0.47243 
+ PrSc_Enroll,Pol_Rights      0.47290 
+     LatAmerica,Foreign      0.47361 
+   LatAmerica,Lab_Force      0.47437 
+ PrSc_Enroll,R_FEX_Dist      0.47571 
+     LatAmerica,English      0.47635 
+     GDPsh560,SubSahara      0.47960 
+  SubSahara,Rule_of_Law      0.48010 
+       Buddha,War_Dummy      0.48050 
+   Bl_Mkt_Pm,R_FEX_Dist      0.48069 
+    PrSc_Enroll,English      0.48456 
+         LatAmerica,Age      0.48658 
+     LatAmerica,std_BMP      0.48690 
+    PrSc_Enroll,Foreign      0.48699 
+   Bl_Mkt_Pm,Pol_Rights      0.48766 
+         Buddha,English      0.48877 
+      Buddha,Pol_Rights      0.49002 
+  LatAmerica,French_Col      0.49134 
+     Eco_Org,NEquip_Inv      0.49404 
+ PrSc_Enroll,French_Col      0.49528 
+  PrSc_Enroll,Lab_Force      0.49580 
+    Bl_Mkt_Pm,War_Dummy      0.49888 
+       Buddha,Lab_Force      0.49993 
+   LatAmerica,Outwar_Or      0.50115 
+    LatAmerica,Work_Pop      0.50363 
+     LatAmerica,Abs_Lat      0.50468 
+    PrSc_Enroll,std_BMP      0.50575 
+     Buddha,EthnoL_Frac      0.50920 
+      Catholic,Civl_Lib      0.50968 
+      Bl_Mkt_Pm,Foreign      0.51064 
+          Bl_Mkt_Pm,Age      0.51201 
+    LatAmerica,Brit_Col      0.51481 
+       LatAmerica,Pop_g      0.51558 
+       LatAmerica,Hindu      0.51582 
+   LatAmerica,War_Dummy      0.51650 
+     Buddha,Spanish_Col      0.51726 
+    PrSc_Enroll,Abs_Lat      0.51764 
+ LatAmerica,High_Enroll      0.51964 
+ LatAmerica,Spanish_Col      0.52019 
+   PrSc_Enroll,Work_Pop      0.52086 
+      Buddha,French_Col      0.52161 
+        LatAmerica,Area      0.52183 
+    LatAmerica,Rev_Coup      0.52222 
+PrSc_Enroll,Spanish_Col      0.52255 
+      LatAmerica,Jewish      0.52345 
+    LatAmerica,Publ_Edu      0.52496 
+    Bl_Mkt_Pm,Lab_Force      0.52667 
+      PrSc_Enroll,Pop_g      0.52677 
+         Buddha,Foreign      0.52682 
+PrSc_Enroll,EthnoL_Frac      0.52980 
+     Buddha,High_Enroll      0.53025 
+         Civl_Lib,Hindu      0.53134 
+   Bl_Mkt_Pm,French_Col      0.53240 
+PrSc_Enroll,High_Enroll      0.53277 
+     PrSc_Enroll,Jewish      0.53309 
+      Bl_Mkt_Pm,std_BMP      0.53390 
+    Civl_Lib,Pol_Rights      0.53393 
+   PrSc_Enroll,Brit_Col      0.53471 
+           Buddha,Pop_g      0.53516 
+      Bl_Mkt_Pm,English      0.53561 
+         Buddha,Abs_Lat      0.53580 
+   PrSc_Enroll,Rev_Coup      0.53663 
+   PrSc_Enroll,Publ_Edu      0.53855 
+  Bl_Mkt_Pm,Spanish_Col      0.54136 
+          Buddha,Jewish      0.54395 
+       PrSc_Enroll,Area      0.54429 
+         Buddha,std_BMP      0.54481 
+        Buddha,Work_Pop      0.54708 
+  PrSc_Enroll,Outwar_Or      0.54787 
+        Buddha,Brit_Col      0.54948 
+        Buddha,Publ_Edu      0.55404 
+ PrSc_Enroll,Pr_Exports      0.55501 
+     Bl_Mkt_Pm,Work_Pop      0.55699 
+            Buddha,Area      0.55728 
+        Buddha,Rev_Coup      0.55763 
+    Civl_Lib,Pr_Exports      0.55908 
+   PrSc_Enroll,Civl_Lib      0.55979 
+      Bl_Mkt_Pm,Abs_Lat      0.56337 
+       Hindu,Pr_Exports      0.56355 
+       Buddha,Outwar_Or      0.56375 
+    Bl_Mkt_Pm,Outwar_Or      0.56491 
+           Catholic,Age      0.56822 
+  Bl_Mkt_Pm,EthnoL_Frac      0.57151 
+        Bl_Mkt_Pm,Pop_g      0.57265 
+       Bl_Mkt_Pm,Jewish      0.57327 
+    Rule_of_Law,Eco_Org      0.57332 
+  Bl_Mkt_Pm,High_Enroll      0.57594 
+    Catholic,Pr_Exports      0.57867 
+              Hindu,Age      0.57872 
+     Bl_Mkt_Pm,Brit_Col      0.58075 
+     Bl_Mkt_Pm,Rev_Coup      0.58238 
+         Bl_Mkt_Pm,Area      0.58274 
+     Bl_Mkt_Pm,Publ_Edu      0.59006 
+    Catholic,R_FEX_Dist      0.59050 
+       Hindu,R_FEX_Dist      0.59118 
+           Civl_Lib,Age      0.59137 
+    Catholic,Pol_Rights      0.59809 
+       Catholic,Foreign      0.60050 
+       Catholic,English      0.60159 
+     Catholic,War_Dummy      0.60526 
+     Civl_Lib,War_Dummy      0.61097 
+         Catholic,Hindu      0.61431 
+     Civl_Lib,Lab_Force      0.61504 
+  Pr_Exports,Pol_Rights      0.61511 
+          Hindu,Foreign      0.61826 
+       Hindu,Pol_Rights      0.62376 
+   Catholic,Spanish_Col      0.62501 
+        Hindu,War_Dummy      0.62713 
+          Hindu,English      0.62798 
+     Catholic,Lab_Force      0.63009 
+       Civl_Lib,English      0.63332 
+   Catholic,EthnoL_Frac      0.63433 
+    Civl_Lib,R_FEX_Dist      0.63736 
+         Pr_Exports,Age      0.64116 
+    Catholic,French_Col      0.64162 
+          Hindu,std_BMP      0.64537 
+   Pr_Exports,Lab_Force      0.64804 
+   Catholic,High_Enroll      0.64947 
+       Catholic,std_BMP      0.64980 
+
+Strong complements:
+       Civl_Lib,std_BMP      0.65030 
+       Catholic,Abs_Lat      0.65275 
+         Pol_Rights,Age      0.65317 
+    Civl_Lib,French_Col      0.65409 
+       Hindu,French_Col      0.65482 
+   Civl_Lib,Spanish_Col      0.65594 
+  Pol_Rights,R_FEX_Dist      0.65602 
+      Catholic,Work_Pop      0.65666 
+      Hindu,Spanish_Col      0.65779 
+   Civl_Lib,EthnoL_Frac      0.65940 
+       Civl_Lib,Foreign      0.66138 
+  Pr_Exports,R_FEX_Dist      0.66148 
+       Civl_Lib,Abs_Lat      0.66423 
+         Catholic,Pop_g      0.66471 
+      Civl_Lib,Work_Pop      0.66549 
+   Pol_Rights,Lab_Force      0.66630 
+   Pr_Exports,War_Dummy      0.66709 
+          Hindu,Abs_Lat      0.66718 
+     Pr_Exports,English      0.66817 
+         Hindu,Work_Pop      0.66841 
+         Civl_Lib,Pop_g      0.66942 
+      Catholic,Brit_Col      0.66942 
+        Catholic,Jewish      0.67032 
+     Pr_Exports,Foreign      0.67139 
+         R_FEX_Dist,Age      0.67139 
+   Civl_Lib,High_Enroll      0.67203 
+          Age,Lab_Force      0.67292 
+   Pol_Rights,War_Dummy      0.67367 
+        Hindu,Outwar_Or      0.67421 
+     Catholic,Outwar_Or      0.67476 
+            Hindu,Pop_g      0.67526 
+     Civl_Lib,Outwar_Or      0.67620 
+         Hindu,Brit_Col      0.67819 
+        Civl_Lib,Jewish      0.67862 
+           Hindu,Jewish      0.67926 
+      Catholic,Rev_Coup      0.67951 
+      Civl_Lib,Brit_Col      0.68185 
+          Catholic,Area      0.68256 
+      Catholic,Publ_Edu      0.68365 
+      Hindu,EthnoL_Frac      0.68578 
+          Civl_Lib,Area      0.68704 
+     Pol_Rights,English      0.68706 
+      Civl_Lib,Rev_Coup      0.68834 
+ Pr_Exports,EthnoL_Frac      0.68913 
+      Civl_Lib,Publ_Edu      0.68920 
+   R_FEX_Dist,War_Dummy      0.69016 
+         Hindu,Rev_Coup      0.69195 
+             Hindu,Area      0.69228 
+          Age,War_Dummy      0.69386 
+  Pr_Exports,French_Col      0.69667 
+         Hindu,Publ_Edu      0.70045 
+   R_FEX_Dist,Lab_Force      0.70051 
+ Pol_Rights,EthnoL_Frac      0.70195 
+      Hindu,High_Enroll      0.70359 
+            Age,Foreign      0.70364 
+     R_FEX_Dist,English      0.70734 
+     Pr_Exports,std_BMP      0.70782 
+        Age,EthnoL_Frac      0.70842 
+ Pr_Exports,High_Enroll      0.70852 
+ Pr_Exports,Spanish_Col      0.71014 
+     Pol_Rights,Foreign      0.71135 
+        Hindu,Lab_Force      0.71247 
+     Pol_Rights,std_BMP      0.71328 
+    War_Dummy,Lab_Force      0.71387 
+ Pol_Rights,Spanish_Col      0.71401 
+      War_Dummy,English      0.71492 
+  Pol_Rights,French_Col      0.71569 
+      War_Dummy,Foreign      0.71702 
+     Life_Exp,Equip_Inv      0.71909 
+     Pr_Exports,Abs_Lat      0.71958 
+ Pol_Rights,High_Enroll      0.72175 
+         Age,French_Col      0.72223 
+ R_FEX_Dist,EthnoL_Frac      0.72270 
+            Age,English      0.72375 
+        Age,Spanish_Col      0.72396 
+      English,Lab_Force      0.72670 
+      Foreign,Lab_Force      0.72677 
+     Pol_Rights,Abs_Lat      0.72713 
+        English,Foreign      0.72806 
+    Pr_Exports,Work_Pop      0.72915 
+     R_FEX_Dist,Foreign      0.73009 
+       Pr_Exports,Pop_g      0.73073 
+  War_Dummy,EthnoL_Frac      0.73134 
+    Pol_Rights,Work_Pop      0.73187 
+    Pr_Exports,Brit_Col      0.73213 
+            Age,std_BMP      0.73282 
+ R_FEX_Dist,Spanish_Col      0.73378 
+       Pol_Rights,Pop_g      0.73546 
+   Pol_Rights,Outwar_Or      0.73549 
+      Pr_Exports,Jewish      0.73908 
+   Pr_Exports,Outwar_Or      0.73976 
+  War_Dummy,Spanish_Col      0.73992 
+      Pol_Rights,Jewish      0.74092 
+     R_FEX_Dist,std_BMP      0.74156 
+  R_FEX_Dist,French_Col      0.74167 
+   War_Dummy,French_Col      0.74187 
+    Pr_Exports,Rev_Coup      0.74222 
+    Pr_Exports,Publ_Edu      0.74363 
+          Age,Outwar_Or      0.74364 
+    Pol_Rights,Brit_Col      0.74484 
+        Age,High_Enroll      0.74506 
+  Lab_Force,Spanish_Col      0.74512 
+            Age,Abs_Lat      0.74557 
+        Pr_Exports,Area      0.74683 
+    Foreign,EthnoL_Frac      0.74965 
+    Pol_Rights,Rev_Coup      0.75061 
+           Age,Work_Pop      0.75067 
+      War_Dummy,std_BMP      0.75091 
+        Pol_Rights,Area      0.75137 
+              Age,Pop_g      0.75137 
+      Lab_Force,std_BMP      0.75217 
+    Pol_Rights,Publ_Edu      0.75244 
+    English,EthnoL_Frac      0.75439 
+  Lab_Force,EthnoL_Frac      0.75456 
+ R_FEX_Dist,High_Enroll      0.75471 
+    English,Spanish_Col      0.75476 
+     R_FEX_Dist,Abs_Lat      0.75602 
+   Lab_Force,French_Col      0.75682 
+    Foreign,Spanish_Col      0.75695 
+             Age,Jewish      0.75722 
+           Age,Brit_Col      0.75739 
+  War_Dummy,High_Enroll      0.75783 
+   R_FEX_Dist,Outwar_Or      0.76363 
+     English,French_Col      0.76417 
+    R_FEX_Dist,Work_Pop      0.76419 
+           Age,Rev_Coup      0.76437 
+      War_Dummy,Abs_Lat      0.76440 
+       R_FEX_Dist,Pop_g      0.76462 
+     War_Dummy,Work_Pop      0.76476 
+      Lab_Force,Abs_Lat      0.76490 
+           Age,Publ_Edu      0.76539 
+     Foreign,French_Col      0.76731 
+        English,std_BMP      0.76759 
+               Age,Area      0.76772 
+     Lab_Force,Work_Pop      0.76844 
+        War_Dummy,Pop_g      0.76909 
+      R_FEX_Dist,Jewish      0.77021 
+    War_Dummy,Outwar_Or      0.77023 
+        Lab_Force,Pop_g      0.77195 
+        Foreign,std_BMP      0.77229 
+     War_Dummy,Brit_Col      0.77259 
+    Lab_Force,Outwar_Or      0.77298 
+    English,High_Enroll      0.77312 
+    R_FEX_Dist,Brit_Col      0.77347 
+Spanish_Col,EthnoL_Frac      0.77532 
+    Foreign,High_Enroll      0.77567 
+       Lab_Force,Jewish      0.77588 
+       War_Dummy,Jewish      0.77731 
+    R_FEX_Dist,Rev_Coup      0.77948 
+     Lab_Force,Brit_Col      0.77963 
+        R_FEX_Dist,Area      0.77989 
+        English,Abs_Lat      0.77991 
+    R_FEX_Dist,Publ_Edu      0.78002 
+    EthnoL_Frac,std_BMP      0.78299 
+      English,Outwar_Or      0.78306 
+       Foreign,Work_Pop      0.78357 
+       English,Work_Pop      0.78396 
+        Foreign,Abs_Lat      0.78429 
+ EthnoL_Frac,French_Col      0.78496 
+     War_Dummy,Rev_Coup      0.78681 
+         War_Dummy,Area      0.78694 
+     War_Dummy,Publ_Edu      0.78723 
+     Lab_Force,Rev_Coup      0.78792 
+          English,Pop_g      0.78913 
+     Lab_Force,Publ_Edu      0.78951 
+         Lab_Force,Area      0.78954 
+       English,Brit_Col      0.78977 
+    Spanish_Col,std_BMP      0.79049 
+      Foreign,Outwar_Or      0.79076 
+          Foreign,Pop_g      0.79088 
+         English,Jewish      0.79344 
+       Foreign,Brit_Col      0.79385 
+     std_BMP,French_Col      0.79582 
+    EthnoL_Frac,Abs_Lat      0.79592 
+         Foreign,Jewish      0.79732 
+   EthnoL_Frac,Work_Pop      0.79766 
+       English,Publ_Edu      0.80059 
+ Spanish_Col,French_Col      0.80141 
+      EthnoL_Frac,Pop_g      0.80201 
+  Lab_Force,High_Enroll      0.80247 
+       English,Rev_Coup      0.80308 
+    Spanish_Col,Abs_Lat      0.80358 
+           English,Area      0.80486 
+       Foreign,Rev_Coup      0.80700 
+           Foreign,Area      0.80704 
+   Spanish_Col,Work_Pop      0.80717 
+       Foreign,Publ_Edu      0.80728 
+Spanish_Col,High_Enroll      0.80749 
+  EthnoL_Frac,Outwar_Or      0.80760 
+ French_Col,High_Enroll      0.80968 
+     French_Col,Abs_Lat      0.81026 
+    std_BMP,High_Enroll      0.81122 
+   EthnoL_Frac,Brit_Col      0.81218 
+     EthnoL_Frac,Jewish      0.81267 
+      Spanish_Col,Pop_g      0.81270 
+  Spanish_Col,Outwar_Or      0.81283 
+    French_Col,Work_Pop      0.81402 
+   Spanish_Col,Brit_Col      0.81671 
+   French_Col,Outwar_Or      0.81745 
+        std_BMP,Abs_Lat      0.81791 
+     Spanish_Col,Jewish      0.81955 
+       French_Col,Pop_g      0.81956 
+   EthnoL_Frac,Rev_Coup      0.82129 
+          std_BMP,Pop_g      0.82268 
+   EthnoL_Frac,Publ_Edu      0.82269 
+EthnoL_Frac,High_Enroll      0.82272 
+       std_BMP,Work_Pop      0.82275 
+    French_Col,Brit_Col      0.82337 
+      French_Col,Jewish      0.82429 
+      std_BMP,Outwar_Or      0.82446 
+    Abs_Lat,High_Enroll      0.82550 
+       EthnoL_Frac,Area      0.82678 
+       std_BMP,Brit_Col      0.82792 
+   Work_Pop,High_Enroll      0.82801 
+   Spanish_Col,Rev_Coup      0.82852 
+       Spanish_Col,Area      0.82959 
+  Confuncious,Equip_Inv      0.83022 
+         std_BMP,Jewish      0.83110 
+   Spanish_Col,Publ_Edu      0.83114 
+  High_Enroll,Outwar_Or      0.83268 
+      High_Enroll,Pop_g      0.83461 
+    French_Col,Publ_Edu      0.83469 
+        French_Col,Area      0.83495 
+       Abs_Lat,Work_Pop      0.83578 
+    French_Col,Rev_Coup      0.83594 
+      Abs_Lat,Outwar_Or      0.83665 
+     High_Enroll,Jewish      0.83751 
+   High_Enroll,Brit_Col      0.83900 
+         Work_Pop,Pop_g      0.83937 
+       std_BMP,Rev_Coup      0.83991 
+           std_BMP,Area      0.84007 
+       std_BMP,Publ_Edu      0.84085 
+     Work_Pop,Outwar_Or      0.84113 
+          Abs_Lat,Pop_g      0.84135 
+       Abs_Lat,Brit_Col      0.84208 
+        Pop_g,Outwar_Or      0.84267 
+         Abs_Lat,Jewish      0.84511 
+        Work_Pop,Jewish      0.84683 
+      Work_Pop,Brit_Col      0.84685 
+     GDPsh560,Equip_Inv      0.84803 
+   High_Enroll,Rev_Coup      0.84889 
+       High_Enroll,Area      0.84908 
+     Brit_Col,Outwar_Or      0.84923 
+       Outwar_Or,Jewish      0.85161 
+   High_Enroll,Publ_Edu      0.85186 
+         Pop_g,Brit_Col      0.85203 
+           Pop_g,Jewish      0.85372 
+           Abs_Lat,Area      0.85491 
+       Abs_Lat,Rev_Coup      0.85523 
+       Abs_Lat,Publ_Edu      0.85592 
+        Brit_Col,Jewish      0.85600 
+      Work_Pop,Rev_Coup      0.85770 
+          Work_Pop,Area      0.85839 
+      Work_Pop,Publ_Edu      0.85877 
+     Outwar_Or,Rev_Coup      0.86031 
+         Outwar_Or,Area      0.86109 
+     Outwar_Or,Publ_Edu      0.86146 
+         Pop_g,Rev_Coup      0.86221 
+             Pop_g,Area      0.86287 
+         Pop_g,Publ_Edu      0.86390 
+   Confuncious,Life_Exp      0.86485 
+          Brit_Col,Area      0.86609 
+      Brit_Col,Rev_Coup      0.86679 
+      Brit_Col,Publ_Edu      0.86689 
+        Jewish,Rev_Coup      0.86828 
+        Jewish,Publ_Edu      0.86850 
+            Jewish,Area      0.86893 
+      GDPsh560,Life_Exp      0.87730 
+      Rev_Coup,Publ_Edu      0.87795 
+          Rev_Coup,Area      0.87846 
+          Publ_Edu,Area      0.87873 
+   GDPsh560,Confuncious      0.97791 
 
 Best models estimates:
 ----------------------------------
@@ -290,7 +866,6 @@ Model: 1, posterior probability: 0.008712
   Protestants   -1.10245      0.389359     -2.831   0.0046    ***
   NEquip_Inv     6.35474      1.81087       3.509   0.0004    ***
 
-
 ----------------------------------
 
 Model: 2, posterior probability: 0.007354
@@ -307,7 +882,6 @@ Model: 2, posterior probability: 0.007354
   Eco_Org        0.286987     0.0781177     3.674   0.0002    ***
   NEquip_Inv     6.02831      1.90788       3.160   0.0016    ***
 
-
 ----------------------------------
 
 Model: 3, posterior probability: 0.004743
@@ -323,7 +897,6 @@ Model: 3, posterior probability: 0.004743
   Yrs_Open        1.56899     0.386341      4.061   4.88e-05  ***
   Mining          4.18382     1.41127       2.965   0.0030    ***
 
-
 ----------------------------------
 
 Model: 4, posterior probability: 0.003518
@@ -338,7 +911,6 @@ Model: 4, posterior probability: 0.003518
   Yrs_Open        1.75789     0.400894      4.385   1.16e-05  ***
   Protestants    -1.36281     0.420327     -3.242   0.0012    ***
 
-
 ----------------------------------
 
 Model: 5, posterior probability: 0.003142
@@ -352,7 +924,6 @@ Model: 5, posterior probability: 0.003142
   SubSahara     -1.04512      0.325245     -3.213   0.0013    ***
   Muslim         1.10166      0.371122      2.968   0.0030    ***
   Yrs_Open       1.53182      0.409662      3.739   0.0002    ***
-
 
 ----------------------------------
 
@@ -371,7 +942,6 @@ Model: 6, posterior probability: 0.002771
   NEquip_Inv     5.77966      1.84045       3.140   0.0017    ***
   Buddha         1.16803      0.499211      2.340   0.0193    **
 
-
 ----------------------------------
 
 Model: 7, posterior probability: 0.002755
@@ -387,7 +957,6 @@ Model: 7, posterior probability: 0.002755
   Eco_Org        0.311721     0.0794841     3.922   8.79e-05  ***
   Protestants   -1.19736      0.415542     -2.881   0.0040    ***
   NEquip_Inv     6.34584      1.93830       3.274   0.0011    ***
-
 
 ----------------------------------
 
@@ -406,7 +975,6 @@ Model: 8, posterior probability: 0.002729
   NEquip_Inv     5.70706      1.85537       3.076   0.0021    ***
   Catholic      -0.704495     0.255433     -2.758   0.0058    ***
 
-
 ----------------------------------
 
 Model: 9, posterior probability: 0.002709
@@ -421,7 +989,6 @@ Model: 9, posterior probability: 0.002709
   Muslim         1.06246      0.352824      3.011   0.0026    ***
   Rule_of_Law    1.70876      0.448464      3.810   0.0001    ***
   Eco_Org        0.255325     0.0828129     3.083   0.0020    ***
-
 
 ----------------------------------
 
@@ -441,7 +1008,6 @@ Model: 10, posterior probability: 0.002312
   Catholic      -0.847947     0.248500     -3.412   0.0006    ***
   Hindu         -2.31332      0.848544     -2.726   0.0064    ***
 
-
 ----------------------------------
 
 Model: 11, posterior probability: 0.002202
@@ -456,7 +1022,6 @@ Model: 11, posterior probability: 0.002202
   Rule_of_Law    1.63195      0.450094      3.626   0.0003    ***
   Eco_Org        0.291939     0.0837517     3.486   0.0005    ***
   NEquip_Inv     5.98857      2.04583       2.927   0.0034    ***
-
 
 ----------------------------------
 
@@ -473,7 +1038,6 @@ Model: 12, posterior probability: 0.002040
   Protestants    -1.42754     0.402557     -3.546   0.0004    ***
   Mining          3.63721     1.41410       2.572   0.0101    **
 
-
 ----------------------------------
 
 Model: 13, posterior probability: 0.002024
@@ -487,7 +1051,6 @@ Model: 13, posterior probability: 0.002024
   Muslim         1.72566      0.383142      4.504   6.67e-06  ***
   Yrs_Open       1.72797      0.404098      4.276   1.90e-05  ***
   PrSc_Enroll    2.31457      0.754111      3.069   0.0021    ***
-
 
 ----------------------------------
 
@@ -507,7 +1070,6 @@ Model: 14, posterior probability: 0.001994
   NEquip_Inv     6.11011      1.76011       3.471   0.0005    ***
   Buddha         1.00926      0.480007      2.103   0.0355    **
 
-
 ----------------------------------
 
 Model: 15, posterior probability: 0.001969
@@ -520,7 +1082,6 @@ Model: 15, posterior probability: 0.001969
   Equip_Inv     24.2920       4.10122       5.923   3.16e-09 ***
   SubSahara     -1.25528      0.336834     -3.727   0.0002   ***
   Yrs_Open       1.49221      0.434451      3.435   0.0006   ***
-
 
 ----------------------------------
 
@@ -540,7 +1101,6 @@ Model: 16, posterior probability: 0.001892
   NEquip_Inv     5.78217      1.77769       3.253   0.0011    ***
   Mining         2.61120      1.24573       2.096   0.0361    **
 
-
 ----------------------------------
 
 Model: 17, posterior probability: 0.001834
@@ -557,7 +1117,6 @@ Model: 17, posterior probability: 0.001834
   Protestants    -0.972011    0.418101     -2.325   0.0201    **
   Mining          4.17714     1.35976       3.072   0.0021    ***
 
-
 ----------------------------------
 
 Model: 18, posterior probability: 0.001736
@@ -573,7 +1132,6 @@ Model: 18, posterior probability: 0.001736
   Protestants   -1.43237      0.404455     -3.541   0.0004    ***
   NEquip_Inv     4.99588      2.04338       2.445   0.0145    **
 
-
 ----------------------------------
 
 Model: 19, posterior probability: 0.001731
@@ -588,7 +1146,6 @@ Model: 19, posterior probability: 0.001731
   Muslim         1.11254      0.355434      3.130   0.0017    ***
   Rule_of_Law    1.19800      0.476267      2.515   0.0119    **
   Yrs_Open       1.19795      0.414160      2.892   0.0038    ***
-
 
 ----------------------------------
 
@@ -610,5 +1167,4 @@ Model: 20, posterior probability: 0.001692
 
 ----------------------------------
 
-
-Total execution time: 198.20 sec.
+Total execution time: 101.36 sec.

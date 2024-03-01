@@ -1,11 +1,10 @@
-gretl version 2022c-git
-Current session: 2022-08-26 16:42
+gretl version 2024a-git
+Current session: 2024-03-01 21:11
 
 #######################################################
 #   https://sourceforge.net/projects/bma-for-gretl/   #
 #######################################################
 # Usage:
-? set verbose off
 
 Read datafile /usr/local/share/gretl/data/greene/greene9_1.gdt
 periodicity: 1, maxobs: 25
@@ -14,13 +13,13 @@ observations range: 1 to 25
 Listing 5 variables:
   0) const      1) valadd     2) capital    3) labor      4) nfirm    
 
-BMA 3.1, 2022-08-26 (Marcin Błażejowski, Jacek Kwiatkowski)
+BMA 3.2, 2024-03-01 (Marcin Błażejowski, Jacek Kwiatkowski)
 
 BMA setup:            done!
 MC3 setup:            done!
-MC3 overall progress: 100%
+MC3 overall progress: [#########################] 100.0%
 Collecting results:
-           averaging: 100%
+           averaging: [#########################] 100.0%
                       done!
 Summarizing:          done!
 ----------------------------------
@@ -61,7 +60,7 @@ Posterior:
 ----------------------------------
 
 Posterior moments (unconditional and conditional on inclusion):
-                    PIP           Mean       Std.Dev.      Cond.Mean   Cond.Std.Dev
+                    PIP           Mean       Std.Dev.      Cond.Mean  Cond.Std.Dev.
   labor        0.929556       5.124192       2.040294       5.512518       1.528925
 capital        0.788222       2.872220       2.173667       3.643921       1.783890
   nfirm        0.267000       0.102667       0.366913       0.384520       0.629156
@@ -84,7 +83,6 @@ Total probability of the models in ranking (numerical): 0.943444
 Correlation coefficient between the analytical
 and numerical probabilities of the above models: 0.999486
 
-
 Best models estimates:
 ----------------------------------
 
@@ -95,7 +93,6 @@ Model: 1, posterior probability: 0.577778
   capital       3.09267     1.21568      2.544   0.0110   **
   labor         5.17195     0.897734     5.761   8.36e-09 ***
 
-
 ----------------------------------
 
 Model: 2, posterior probability: 0.155222
@@ -103,7 +100,6 @@ Model: 2, posterior probability: 0.155222
   ------------------------------------------------------
   const       684.192      49.6058      13.79   2.82e-43 ***
   labor         7.26954     0.401935    18.09   4.08e-73 ***
-
 
 ----------------------------------
 
@@ -115,7 +111,6 @@ Model: 3, posterior probability: 0.140000
   labor        3.98697      1.78495      2.234    0.0255   **
   nfirm        0.318078     0.415853     0.7649   0.4443  
 
-
 ----------------------------------
 
 Model: 4, posterior probability: 0.070444
@@ -126,5 +121,4 @@ Model: 4, posterior probability: 0.070444
   nfirm         1.12428     0.227844     4.934   8.04e-07 ***
 
 ----------------------------------
-
 
