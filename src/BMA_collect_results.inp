@@ -45,7 +45,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
 
     # We set the number of visited models
     M.post_n_models = nelem(known_models)
-    known_models = null
+    known_models = defbundle()
 
     # We select objects only for accepted models
     idx = selifr(seq(1, M.Nrep+1)', models_counter .> 0)
@@ -70,7 +70,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
     models_estimates_rank = models_estimates[models_probs[,3]]
 
     # We restore estimates for models in ranking
-    loop i=1..M.Nrank --quiet
+    loop i=1..M.Nrank
         M.mod_rank[i] = models_structure_rank[i]
         if sum(M.mod_rank[i]) == 0
             M.mod_rank_estimates[i] = models_estimates_rank[i]
@@ -86,7 +86,7 @@ function void BMA_collect_results (bundle *M, bundle *known_models,
         percentage = M.progress
         flush
     endif
-    loop i=1..nelem(models_counter) --quiet
+    loop i=1..nelem(models_counter)
         weight = models_counter[i]
         mod_struct = models_structure[i]
 

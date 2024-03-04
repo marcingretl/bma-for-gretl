@@ -25,17 +25,13 @@ function matrix BMA_jointness_measure (bundle *M)
    #
    Returns: matrix with computed jointness measure
     */
-    scalar a
-    scalar b
-    scalar c
-    scalar d
-    scalar N
+    scalar a, b, c, d, N
     scalar loghuge = 999 # proxy for infty
     matrix var_prob = M.Post_Results[,1]
     matrix jointness_measure = zeros(rows(M.jointness_m), cols(M.jointness_m))
 
-    loop i=1..M.k --quiet
-        loop j=i+1..M.k --quiet
+    loop i=1..M.k
+        loop j=i+1..M.k
             # We compute a,b,c,d
             a = M.jointness_m[i,j] # p(i & j)
             b = var_prob[i] - a	   # p(i & ~j)

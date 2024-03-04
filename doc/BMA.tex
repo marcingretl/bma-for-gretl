@@ -21,6 +21,7 @@
 \Plainkeywords{Bayesian model averaging, jointness measures, gretl, Hansl}
 
 \newcommand{\gretlver}{2024a-git}
+\newcommand{\machine}{Intel Core i7-8550U 1.80GHz, 16~GB~RAM}
 \newcommand{\compiler}{Debian~Clang~17.0.6~(5)}
 \newcommand{\blas}{OpenBLAS~0.3.26}
 
@@ -39,13 +40,13 @@
 {\small\begin{description}
 	\item[3.2] Some cleanups:
 		\begin{itemize}
-			\item (to doc) Apparatus for setting Prior Inclusion
+			\item Apparatus for setting Prior Inclusion
 				Probabilities.
 			\item Possibility to set up hyperparameter~\textit{a}
 				for beta-binomial model prior manually.
 			\item Verbosity now takes integers $\in [0;2]$.
 			\item Code refactoring.
-			\item (to doc) Making some options over-loadable.
+			\item Making some options over-loadable.
 			\item New progress bar.
 			\item Few typos corrected.
 			\item Modify call to BMA\_jointness\_measure() according
@@ -58,14 +59,14 @@
 		\begin{itemize}
 			\item Fix edge-case bug when empty model is accepted
 				and appears in ranking.
-			\item (to doc) Change step to 1\% for new progress
+			\item Change step to 1\% for new progress
 				printing version.
-			\item (to doc) Add printing execution status of consecutive
+			\item Add printing execution status of consecutive
 				BMA and package stages.
 			\item Needs \lstinline!$version! \footnotesize{\texttt{>= 20222}}
 				(which is basically 2022b).
 			\item Add plotting option in non-GUI mode.
-			\item (to doc) New plot for predictive results.
+			\item New plot for predictive results.
 			\item Force only integers on X axis in Distribution
 				and CDF of Model Size plots.
 			\item Fix bug in calculating prior model probability

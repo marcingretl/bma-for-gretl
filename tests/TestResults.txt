@@ -8,10 +8,8 @@ results_b = BMA(valadd, greene, _(g_type=3, Npredict=3, do_joint=2, Nrep=10000))
 
 
 Results:
-gretl version 2022b-git
-Current session: 2022-03-04 08:52
-
-? set verbose off
+gretl version 2024a-git
+Current session: 2024-03-03 14:49
 
 Read datafile /usr/local/share/gretl/data/greene/greene9_1.gdt
 periodicity: 1, maxobs: 25
@@ -20,16 +18,26 @@ observations range: 1 to 25
 Listing 5 variables:
   0) const      1) valadd     2) capital    3) labor      4) nfirm    
 
-BMA 2.3, 2022-03-04 (Marcin Błażejowski, Jacek Kwiatkowski)
+BMA 3.2, 2024-03-01 (Marcin Błażejowski, Jacek Kwiatkowski)
 
-Overall progress: 10%..20%..30%..40%..50%..60%..70%..80%..90%..100%..
+BMA setup:            done!
+MC3 setup:            done!
+MC3 overall progress: [#########################] 100.0%
+Collecting results:
+           averaging: [#########################] 100.0%
+                      done!
+Summarizing:          done!
 ----------------------------------
-Prior: Binomial
+Model prior: Binomial
 Prior average model size: 1.500000
 Significance level for the initial model: 0.600000
 g-prior: Risk Inflation Criterion (g-RIC)
 Total number of iterations: 10000
 Number of burn-in draws: 1000
+Total number of possible models: 8
+Number of models visited: 8
+Number of models accepted: 6
+----------------------------------
 
 The initial model:
 
@@ -47,85 +55,98 @@ SSR = 254851, R-squared = 0.988273
 
 ----------------------------------
 
-Posterior average model size: 1.828111
+Prior:
+	average model size: 1.500000
+	standard deviation: 0.866025
+Posterior:
+	average model size: 1.829222
+	standard deviation: 0.600603
+
+----------------------------------
 
 Posterior moments (unconditional and conditional on inclusion):
-                    PIP           Mean       Std.Dev.      Cond.Mean   Cond.Std.Dev
-  labor        0.811444       4.626500       2.824756       5.701562       1.924542
-capital        0.619444       2.683791       2.924850       4.332577       2.582026
-  nfirm        0.397222       0.190064       0.526514       0.478483       0.748254
+                    PIP           Mean       Std.Dev.      Cond.Mean  Cond.Std.Dev.
+  labor        0.810778       4.620261       2.825932       5.698554       1.924827
+capital        0.620556       2.690157       2.925510       4.335078       2.580888
+  nfirm        0.397889       0.191058       0.526800       0.480179       0.747426
 
 ----------------------------------
 
 Posterior probability of models:
+Best 5	 models account for 0.9937 of mass
+Best 6	 models account for 1.0000 of mass
+
+Best models ranking:
 Model 1:	0.321778
-Model 2:	0.274667
-Model 3:	0.182222
-Model 4:	0.105889
-Total probability of the models in ranking (numerical): 0.884556
+Model 2:	0.274000
+Model 3:	0.182889
+Model 4:	0.109556
+Total probability of the models in ranking (numerical): 0.888222
 
 Correlation coefficient between the analytical
-and numerical probabilities of the above models: 0.967244
+and numerical probabilities of the above models: 0.974030
 
 ----------------------------------
 
 Predictive results:
             valadd           Mean       Std.Dev.
-WA      636.948000     610.623312     379.371064
-WV       22.700000     112.750976     384.288544
-WI      349.711000     417.359124     378.746251
+WA      636.948000     610.535070     378.941495
+WV       22.700000     112.836930     383.870324
+WI      349.711000     417.397335     378.315828
 
 ----------------------------------
 
 Posterior joint probability of variables:
                 capital          labor          nfirm
-capital        0.000000       0.430889       0.291333
-  labor        0.000000       0.000000       0.215000
-  nfirm        0.000000       0.000000       0.000000
+capital             nan       0.431333       0.292444
+  labor        0.431333            nan       0.215000
+  nfirm        0.292444       0.215000            nan
 
 Jointness statistics (Doppelhofer-Weeks Measure (DW2)):
                 capital          labor          nfirm
-capital        0.000000    -999.000000       0.834284
-  labor        0.000000       0.000000      -4.379748
-  nfirm        0.000000       0.000000       0.000000
+capital             nan    -999.000000       0.839866
+  labor     -999.000000            nan      -4.382282
+  nfirm        0.839866      -4.382282            nan
 
 Strong substitutes:
 capital,labor         -inf 
-  labor,nfirm      -4.3797 
+  labor,nfirm      -4.3823 
 
-
+Best models estimates:
 ----------------------------------
 
 Model: 1, posterior probability: 0.321778
-             coefficient   std. error     z     p-value
-  -----------------------------------------------------
-  capital      2.90426      1.85048     1.569   0.1165 
-  labor        4.84961      1.37819     3.519   0.0004  ***
-
-
-----------------------------------
-
-Model: 2, posterior probability: 0.274667
              coefficient   std. error     z     p-value 
   ------------------------------------------------------
-  labor        6.83464      0.580200    11.78   4.96e-32 ***
-
+  const       686.440       70.5347     9.732   2.20e-22 ***
+  capital       2.90426      1.84829    1.571   0.1161  
+  labor         4.84961      1.37656    3.523   0.0004   ***
 
 ----------------------------------
 
-Model: 3, posterior probability: 0.182222
+Model: 2, posterior probability: 0.274000
+             coefficient   std. error     z      p-value 
+  -------------------------------------------------------
+  const       686.440      74.7619       9.182   4.24e-20 ***
+  labor         6.83464     0.579590    11.79    4.28e-32 ***
+
+----------------------------------
+
+Model: 3, posterior probability: 0.182889
              coefficient   std. error     z     p-value 
   ------------------------------------------------------
-  capital      7.01347      0.962142    7.289   3.11e-13 ***
-  nfirm        1.05205      0.330875    3.180   0.0015   ***
-
+  const       686.440      73.1539      9.384   6.38e-21 ***
+  capital       7.01347     0.961085    7.297   2.93e-13 ***
+  nfirm         1.05205     0.330512    3.183   0.0015   ***
 
 ----------------------------------
 
-Model: 4, posterior probability: 0.105889
-             coefficient   std. error      z      p-value 
-  --------------------------------------------------------
-  labor        7.45095      1.03505      7.199    6.08e-13 ***
-  nfirm       -0.341692     0.477929    -0.7149   0.4746  
+Model: 4, posterior probability: 0.109556
+             coefficient   std. error     z      p-value 
+  -------------------------------------------------------
+  const      686.440       70.1018      9.792    1.22e-22 ***
+  capital      3.80361      2.57649     1.476    0.1399  
+  labor        3.66398      2.74670     1.334    0.1822  
+  nfirm        0.316537     0.635870    0.4978   0.6186  
 
 ----------------------------------

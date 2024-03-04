@@ -26,11 +26,12 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     */
     string err = ""
     string separator = ", "
+    scalar model_prior_tmp = 1
     scalar err2
     bundle Options, Overloadable
     scalar arg_val
     string arg_name
-    strings Integers = defarray("model_prior", "Nrank", "g_type", "do_joint", "Npredict", "Nrep", "burn", "verbosity")
+    strings Integers = defarray("Nrank", "Npredict", "Nrep", "burn", "verbosity")
     strings Booleans = defarray("show_progress", "do_plot")
     strings Scalars = defarray("avg_model_size", "alpha", "a")
     strings ModelPriorTypes = defarray("Binomial", "Beta-Binomial", "custom")
@@ -44,29 +45,23 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
 
     # We look for overloaded parameters and convert them into integers
     OverloadableKeys = getkeys(Overloadable)
-    loop i=1..nelem(OverloadableKeys) --quiet
+    loop i=1..nelem(OverloadableKeys)
         arg_name = OverloadableKeys[i]
-        if inbundle(UserOpts, arg_name)
-            if typeof(UserOpts[arg_name]) == 4
-                parameter_value = strsub(tolower(UserOpts[arg_name]), " ", "")
-                if arg_name == "model_prior"
-                    parameter_value = strsub(parameter_value, "-", "")
-                endif
-                if inbundle(Overloadable[arg_name], parameter_value)
-                    UserOpts[arg_name] = Overloadable[arg_name][parameter_value]
-                else
-                    err = sprintf("Unknown '%s' value for parameter %s.\n", UserOpts[arg_name], arg_name)
-                    err += sprintf(" Valid options are: %s", Overloadable[arg_name].valid)
-                    return err
-                endif
-            elif typeof(UserOpts[arg_name]) == 1 && arg_name == "model_type"
-                if UserOpts[arg_name] <= nelem(ModelTypes)
-                    UserOpts[arg_name] = ModelTypes[UserOpts[arg_name]]
-                else
-                    err = sprintf("Model type value (model_type=%d) is out of bounds (must be <= %d)", UserOpts[arg_name], nelem(ModelTypes))
-                    return err
-                endif
+        if typestr(inbundle(UserOpts, arg_name)) == "string"
+            parameter_value = strsub(tolower(UserOpts[arg_name]), " ", "")
+            if arg_name == "model_prior"
+                parameter_value = strsub(parameter_value, "-", "")
             endif
+            if inbundle(Overloadable[arg_name], parameter_value)
+                UserOpts[arg_name] = Overloadable[arg_name][parameter_value]
+            else
+                err = sprintf("Unknown '%s' value for parameter %s.\n", UserOpts[arg_name], arg_name)
+                err += sprintf(" Valid options are: %s", Overloadable[arg_name].valid)
+                return err
+            endif
+        elif inbundle(UserOpts, arg_name) > 1
+            err = sprintf("'%s' should either scalar or string, is %s", arg_name , typestr(inbundle(UserOpts, arg_name)))
+            return err
         endif
     endloop
 
@@ -101,7 +96,7 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     endif
 
     # Template bundle with default values
-    scalar Options["model_prior"] = 1
+    scalar Options["model_prior"] = model_prior_tmp
     scalar Options["avg_model_size"] = k/2
     scalar Options["alpha"] = 0.6
     scalar Options["Nrank"] = xmin(2^(k-1), 40)
@@ -121,14 +116,14 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     err2 = bcheck(&Options, UserOpts)
     if err2
         err = sprintf("Valid options are:\n")
-        loop i=1..nelem(getkeys(Options)) --quiet
+        loop i=1..nelem(getkeys(Options))
             err += sprintf("\t%s\n", getkeys(Options)[i])
         endloop
         err += sprintf(" Look at the PDF documentation for expected types of arguments.")
     endif
 
     # We check integers
-    loop i=1..nelem(Integers) --quiet
+    loop i=1..nelem(Integers)
         arg_name = Integers[i]
         arg_val = Options[arg_name]
         if arg_val != int(arg_val)
@@ -137,7 +132,7 @@ function string BMA_bcheck (bundle UserOpts, bundle *M, scalar k)
     endloop
 
     # We check booleans
-    loop i=1..nelem(Booleans) --quiet
+    loop i=1..nelem(Booleans)
         arg_name = Booleans[i]
         arg_val = Options[arg_name]
         if arg_val != int(arg_val) || arg_val < 0 || arg_val > 1

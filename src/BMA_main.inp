@@ -36,7 +36,7 @@ function void BMA_main (bundle *M)
     if M.Npredict
         matrices models_forecasts = array(M.Nrep+1)
     else
-        matrices models_forecasts = null
+        matrices models_forecasts = array(0)
     endif
     # Sample setting for prediction
     if M.Npredict
@@ -78,7 +78,7 @@ function void BMA_main (bundle *M)
             BMA_print_status("MC3")
         endif
     endif
-    loop rep=1..M.Nrep --quiet
+    loop rep=1..M.Nrep
         # Now we draw the number of candidate variable
         scalar potential_var = randint(0, M.k)
 

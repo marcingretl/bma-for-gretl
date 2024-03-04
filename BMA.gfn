@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="BMA" minver="2022b" lives-in-subdir="true">
+<gretl-function-package name="BMA" minver="2022c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
 <version>3.2</version>
-<date>2024-03-01</date>
+<date>2024-03-04</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -154,11 +154,7 @@ printf &quot;\n&quot;
 print &quot;----------------------------------&quot;
 printf &quot;\n&quot;
 print &quot;Posterior moments (unconditional and conditional on inclusion):&quot;
-if $version &lt; 20170
-  printf &quot;%15f&quot;, M.Post_Results
-else
-  printf &quot;%15f&quot;, mreverse(msortby(M.Post_Results, 1))
-endif
+printf &quot;%15f&quot;, mreverse(msortby(M.Post_Results, 1))
 if M.prior_name == &quot;custom&quot;
   printf &quot;\n&quot;
   print &quot;Inclusion Probabilities&quot;
@@ -168,7 +164,7 @@ printf &quot;\n&quot;
 print &quot;----------------------------------&quot;
 printf &quot;\n&quot;
 print &quot;Posterior probability of models:&quot;
-loop i=1..rows(M.models_probs_percents) --quiet
+loop i=1..rows(M.models_probs_percents)
   if i &lt;= 4
     printf &quot;Best %d\t models account for %.4f of mass\n&quot;, M.models_probs_percents[i,1], M.models_probs_percents[i,2]
   elif i == rows(M.models_probs_percents)
@@ -178,7 +174,7 @@ loop i=1..rows(M.models_probs_percents) --quiet
   endif
 endloop
 printf &quot;\nBest models ranking:\n&quot;
-loop i=1..M.Nrank --quiet
+loop i=1..M.Nrank
   printf &quot;Model %d:\t%f\n&quot;, i, M.Numerical_Likelihood[i]
 endloop
 printf &quot;Total probability of the models in ranking (numerical): %f\n&quot;, sumc(M.Numerical_Likelihood)
@@ -218,8 +214,8 @@ if M.do_joint &amp;&amp; nelem(M.jointness_m)
     scalar strong_sub_th = M.do_joint == 7 ? -0.65 : -2
     scalar strong_com_th = M.do_joint == 7 ? 0.65 : 2
     scalar significant_relation = M.do_joint == 7 ? 0.3 : 1
-    loop i=1..M.k --quiet
-      loop j=i+1..M.k --quiet
+    loop i=1..M.k
+      loop j=i+1..M.k
         if abs(jointess_measure[i,j]) &gt; significant_relation
           pair += 1
           pairs[pair,1] = jointess_measure[i,j]
@@ -265,9 +261,9 @@ if M.verbosity == 2
   matrix coeffmat
   strings Xnames # names of X-es
   printf &quot;\n\nBest models estimates:&quot;
-  loop i=1..M.Nrank --quiet
+  loop i=1..M.Nrank
     if M.mod_nume_prob[i]
-      Xnames = null
+      Xnames = array(0)
       printf &quot;\n&quot;
       print &quot;----------------------------------&quot;
       printf &quot;\nModel: %d, posterior probability: %f&quot;, i, M.Numerical_Likelihood[i]
@@ -601,7 +597,7 @@ if MODEL.Npredict
     output = output ~ &quot;-predict.plt&quot;
   endif
   xtics = &quot;(&quot;
-  loop i=1..MODEL.Npredict --quiet
+  loop i=1..MODEL.Npredict
     xtics += sprintf(&quot;\&quot;%s\&quot; %d&quot;, rnameget(MODEL.prediction)[i], i)
     if i == MODEL.Npredict
       xtics += sprintf(&quot;)&quot;)
@@ -715,10 +711,10 @@ elif M.alpha == 1	# Trully random model
     if M.k_new == max_k # All variables in the starting model, nothing to draw
       last = X_list2
     else
-      loop for i=1..M.k_new --quiet
+      loop i=1..M.k_new
         scalar accept = 0
         #set loop_maxiter 99999 # This should be set if we cannot construct random list
-        loop while accept == 0 --quiet
+        loop while accept == 0
           cand = transp(M.var_numbers2)[1, randint(1, max_k)]
           if inlist(last, cand) == 0
             last += cand
@@ -729,8 +725,8 @@ elif M.alpha == 1	# Trully random model
       # We have to sort variables in created list
       matrix last_mat = zeros(2,M.k_new)
       last_mat[1,] = last
-      loop for i=1..M.k_new --quiet
-        loop for j=1..max_k --quiet
+      loop i=1..M.k_new
+        loop j=1..max_k
           if last_mat[1,i] == transp(M.var_numbers2)[1,j]
             last_mat[2,i] = transp(M.var_numbers2)[2,j]
             break
@@ -755,8 +751,8 @@ matrix M.StartModel = last
 # If we have at least 1 variables, we construct starting model
 if M.k_new
   # Setting 1 for variables in current draw
-  loop i=1..cols(M.StartModel) --quiet
-    loop j=1..M.k --quiet
+  loop i=1..cols(M.StartModel)
+    loop j=1..M.k
       if M.var_numbers2[1,j] == M.StartModel[i]
         M.mod_struct_new[M.var_numbers2[2,j]-1] = 1
         break
@@ -811,17 +807,13 @@ Paul Hofmarcher, Jesus Crespo Cuaresma, Bettina Grün, Stefan Humer, Mathias Mos
 #
 Returns: matrix with computed jointness measure
 */
-scalar a
-scalar b
-scalar c
-scalar d
-scalar N
+scalar a, b, c, d, N
 scalar loghuge = 999 # proxy for infty
 matrix var_prob = M.Post_Results[,1]
 matrix jointness_measure = zeros(rows(M.jointness_m), cols(M.jointness_m))
 
-loop i=1..M.k --quiet
-  loop j=i+1..M.k --quiet
+loop i=1..M.k
+  loop j=i+1..M.k
     # We compute a,b,c,d
     a = M.jointness_m[i,j] # p(i &amp; j)
     b = var_prob[i] - a	   # p(i &amp; ~j)
@@ -902,11 +894,11 @@ jointness_m	- matrix with counts for every pair
 matrix pairs_related = pairs[shift + 1 : shift + n_pairs, ]
 shift += n_pairs
 string pair_names = &quot;&quot;
-loop i=1..n_pairs --quiet
+loop i=1..n_pairs
   pair_names += &quot; &quot; ~ cnameget(jointness_m, pairs_related[i,2]) ~ &quot;,&quot; ~ cnameget(jointness_m, pairs_related[i,3])
 endloop
 matrix pairs_related = pairs_related[,1]
-loop i=1..nelem(pairs_related) --quiet
+loop i=1..nelem(pairs_related)
   if ok(pairs_related[i]) &amp;&amp; abs(pairs_related[i]) == 999
     pairs_related[i] = sgn(pairs_related[1]) * 1/0
   endif
@@ -969,7 +961,7 @@ M.mod_sizes[,2] = M.mod_sizes[,2] / NORM
 M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
 M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
 M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
-loop i=1..rows(M.mod_sizes) --quiet
+loop i=1..rows(M.mod_sizes)
   k = M.mod_sizes[i,1]
   M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
 endloop
@@ -998,7 +990,7 @@ percents1 = { 5; 25; 50; 75; 100 }
 percents1 = selifr(percents1, percents1 .&lt; M.post_n_models_accepted)
 percents1 = percents1 ~ zeros(nelem(percents1))
 if rows(percents1) &gt; 0
-  loop i=1..rows(percents1) --quiet
+  loop i=1..rows(percents1)
     percents1[i,2] = M.models_probs_cum[percents1[i,1]]
   endloop
   percents1 = selifr(percents1, percents1[,2] .&gt; 0)
@@ -1014,7 +1006,7 @@ else
 endif
 percents2 = zeros(nelem(percents2)) ~ percents2
 nr = 1
-loop i=tmps..M.post_n_models_accepted-1 --quiet
+loop i=tmps..M.post_n_models_accepted-1
   if 100*M.models_probs_cum[i] &gt;= percents2[nr,2]
     percents2[nr,1] = i
     percents2[nr++,2] = M.models_probs_cum[i]
@@ -1163,7 +1155,7 @@ matrix mod_struct_draw
 if M.Npredict
   matrices models_forecasts = array(M.Nrep+1)
 else
-  matrices models_forecasts = null
+  matrices models_forecasts = array(0)
 endif
 # Sample setting for prediction
 if M.Npredict
@@ -1205,7 +1197,7 @@ if M.verbosity
     BMA_print_status(&quot;MC3&quot;)
   endif
 endif
-loop rep=1..M.Nrep --quiet
+loop rep=1..M.Nrep
   # Now we draw the number of candidate variable
   scalar potential_var = randint(0, M.k)
 
@@ -1386,13 +1378,13 @@ if M.prior_name == &quot;Binomial&quot;
   M.a = log(M.avg_model_size/M.k)
   M.b = log(1 - M.avg_model_size/M.k)
   tmp = M.avg_model_size/M.k
-  loop i=0..M.k --quiet
+  loop i=0..M.k
     M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i))
   endloop
 elif M.prior_name == &quot;Beta-Binomial&quot;
   #scalar M.b = (M.k - M.avg_model_size)/M.avg_model_size
   M.b = M.a*(M.k/M.avg_model_size - 1)
-  loop i=0..M.k --quiet
+  loop i=0..M.k
     M.model_prior_log[i+1] = log((gammafun(i+M.a) * gammafun(M.k-i+M.b) / gammafun(M.a+M.k+M.b)) / (gammafun(M.a) * gammafun(M.b) / gammafun(M.a+M.b)))
   endloop
 elif M.prior_name == &quot;custom&quot;
@@ -1408,8 +1400,8 @@ elif M.prior_name == &quot;custom&quot;
     if !nelem(thata_names)
       return &quot;Prior Inclusion Probabilities (theta) does not have variables names&quot;
     endif
-    loop foreach x X_list --quiet
-      loop i=1..nelem(thata_names) --quiet
+    loop foreach x X_list
+      loop i=1..nelem(thata_names)
         if thata_names[i] == &quot;$x&quot;
           theta_tmp[inlist(X_list, &quot;$x&quot;)] = M.theta[i]
           break
@@ -1492,7 +1484,7 @@ string bar, sign
 x = ceil(100*iter/N)
 x4 = int(x/4)
 bar = &quot;[&quot;
-loop j=1..25 --quiet
+loop j=1..25
   if j &lt;= x4
     sign = &quot;#&quot;
   else
@@ -1522,11 +1514,12 @@ k - number of independent variables
 */
 string err = &quot;&quot;
 string separator = &quot;, &quot;
+scalar model_prior_tmp = 1
 scalar err2
 bundle Options, Overloadable
 scalar arg_val
 string arg_name
-strings Integers = defarray(&quot;model_prior&quot;, &quot;Nrank&quot;, &quot;g_type&quot;, &quot;do_joint&quot;, &quot;Npredict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
+strings Integers = defarray(&quot;Nrank&quot;, &quot;Npredict&quot;, &quot;Nrep&quot;, &quot;burn&quot;, &quot;verbosity&quot;)
 strings Booleans = defarray(&quot;show_progress&quot;, &quot;do_plot&quot;)
 strings Scalars = defarray(&quot;avg_model_size&quot;, &quot;alpha&quot;, &quot;a&quot;)
 strings ModelPriorTypes = defarray(&quot;Binomial&quot;, &quot;Beta-Binomial&quot;, &quot;custom&quot;)
@@ -1539,29 +1532,23 @@ Overloadable[&quot;g_type&quot;] = _(benchmark=1, uip=2, ric=3, hqc=4, rootuip=5
 
 # We look for overloaded parameters and convert them into integers
 OverloadableKeys = getkeys(Overloadable)
-loop i=1..nelem(OverloadableKeys) --quiet
+loop i=1..nelem(OverloadableKeys)
   arg_name = OverloadableKeys[i]
-  if inbundle(UserOpts, arg_name)
-    if typeof(UserOpts[arg_name]) == 4
-      parameter_value = strsub(tolower(UserOpts[arg_name]), &quot; &quot;, &quot;&quot;)
-      if arg_name == &quot;model_prior&quot;
-        parameter_value = strsub(parameter_value, &quot;-&quot;, &quot;&quot;)
-      endif
-      if inbundle(Overloadable[arg_name], parameter_value)
-        UserOpts[arg_name] = Overloadable[arg_name][parameter_value]
-      else
-        err = sprintf(&quot;Unknown '%s' value for parameter %s.\n&quot;, UserOpts[arg_name], arg_name)
-        err += sprintf(&quot; Valid options are: %s&quot;, Overloadable[arg_name].valid)
-        return err
-      endif
-    elif typeof(UserOpts[arg_name]) == 1 &amp;&amp; arg_name == &quot;model_type&quot;
-      if UserOpts[arg_name] &lt;= nelem(ModelTypes)
-        UserOpts[arg_name] = ModelTypes[UserOpts[arg_name]]
-      else
-        err = sprintf(&quot;Model type value (model_type=%d) is out of bounds (must be &lt;= %d)&quot;, UserOpts[arg_name], nelem(ModelTypes))
-        return err
-      endif
+  if typestr(inbundle(UserOpts, arg_name)) == &quot;string&quot;
+    parameter_value = strsub(tolower(UserOpts[arg_name]), &quot; &quot;, &quot;&quot;)
+    if arg_name == &quot;model_prior&quot;
+      parameter_value = strsub(parameter_value, &quot;-&quot;, &quot;&quot;)
     endif
+    if inbundle(Overloadable[arg_name], parameter_value)
+      UserOpts[arg_name] = Overloadable[arg_name][parameter_value]
+    else
+      err = sprintf(&quot;Unknown '%s' value for parameter %s.\n&quot;, UserOpts[arg_name], arg_name)
+      err += sprintf(&quot; Valid options are: %s&quot;, Overloadable[arg_name].valid)
+      return err
+    endif
+  elif inbundle(UserOpts, arg_name) &gt; 1
+    err = sprintf(&quot;'%s' should either scalar or string, is %s&quot;, arg_name , typestr(inbundle(UserOpts, arg_name)))
+    return err
   endif
 endloop
 
@@ -1596,7 +1583,7 @@ elif inbundle(UserOpts, &quot;theta&quot;) &amp;&amp; typeof(UserOpts[&quot;thet
 endif
 
 # Template bundle with default values
-scalar Options[&quot;model_prior&quot;] = 1
+scalar Options[&quot;model_prior&quot;] = model_prior_tmp
 scalar Options[&quot;avg_model_size&quot;] = k/2
 scalar Options[&quot;alpha&quot;] = 0.6
 scalar Options[&quot;Nrank&quot;] = xmin(2^(k-1), 40)
@@ -1616,14 +1603,14 @@ scalar Options[&quot;_gui&quot;] = 0
 err2 = bcheck(&amp;Options, UserOpts)
 if err2
   err = sprintf(&quot;Valid options are:\n&quot;)
-  loop i=1..nelem(getkeys(Options)) --quiet
+  loop i=1..nelem(getkeys(Options))
     err += sprintf(&quot;\t%s\n&quot;, getkeys(Options)[i])
   endloop
   err += sprintf(&quot; Look at the PDF documentation for expected types of arguments.&quot;)
 endif
 
 # We check integers
-loop i=1..nelem(Integers) --quiet
+loop i=1..nelem(Integers)
   arg_name = Integers[i]
   arg_val = Options[arg_name]
   if arg_val != int(arg_val)
@@ -1632,7 +1619,7 @@ loop i=1..nelem(Integers) --quiet
 endloop
 
 # We check booleans
-loop i=1..nelem(Booleans) --quiet
+loop i=1..nelem(Booleans)
   arg_name = Booleans[i]
   arg_val = Options[arg_name]
   if arg_val != int(arg_val) || arg_val &lt; 0 || arg_val &gt; 1
@@ -1714,7 +1701,7 @@ endif
 
 # We set the number of visited models
 M.post_n_models = nelem(known_models)
-known_models = null
+known_models = defbundle()
 
 # We select objects only for accepted models
 idx = selifr(seq(1, M.Nrep+1)', models_counter .&gt; 0)
@@ -1739,7 +1726,7 @@ models_structure_rank = models_structure[models_probs[,3]]
 models_estimates_rank = models_estimates[models_probs[,3]]
 
 # We restore estimates for models in ranking
-loop i=1..M.Nrank --quiet
+loop i=1..M.Nrank
   M.mod_rank[i] = models_structure_rank[i]
   if sum(M.mod_rank[i]) == 0
     M.mod_rank_estimates[i] = models_estimates_rank[i]
@@ -1755,7 +1742,7 @@ if M.show_progress &amp;&amp; M.verbosity
   percentage = M.progress
   flush
 endif
-loop i=1..nelem(models_counter) --quiet
+loop i=1..nelem(models_counter)
   weight = models_counter[i]
   mod_struct = models_structure[i]
 
@@ -1896,7 +1883,7 @@ if MODE == &quot;inclusions&quot;
   height = xmax(int(M.k/41*768), 480)
   width = xmin(xmax(int(M.Nrank/20*1024), 640), 1024)
   m = zeros(M.Nrank, M.k)
-  loop i=1..M.Nrank --quiet
+  loop i=1..M.Nrank
     m[i,] = M.mod_rank[i]
   endloop
   m = mreverse(m')
@@ -1927,7 +1914,7 @@ ncols = cols(m)
 
 # We set tics
 ytics = &quot;(&quot;
-loop i=1..M.k --quiet
+loop i=1..M.k
   ytics += sprintf(&quot;\&quot;%s\&quot; %d&quot;, M.all_names_sp_new[i], M.k-i)
   if i == M.k
     ytics += sprintf(&quot;)&quot;)
@@ -1937,7 +1924,7 @@ loop i=1..M.k --quiet
 endloop
 xtics = &quot;(&quot;
 if MODE == &quot;inclusions&quot;
-  loop i=1..M.Nrank --quiet
+  loop i=1..M.Nrank
     xtics += sprintf(&quot;\&quot;%.d\&quot; %d&quot;, i, i-1)
     if i == M.Nrank
       xtics += sprintf(&quot;)&quot;)
@@ -1946,7 +1933,7 @@ if MODE == &quot;inclusions&quot;
     endif
   endloop
 else
-  loop i=1..M.k --quiet
+  loop i=1..M.k
     xtics += sprintf(&quot;\&quot;%s\&quot; %d&quot;, M.all_names_sp_new[i], i-1)
     if i == M.k
       xtics += sprintf(&quot;)&quot;)
@@ -1957,8 +1944,8 @@ else
 endif
 
 # We need to cast given matrix to its string representation
-loop i=1..nrows --quiet
-  loop j=1..ncols --quiet
+loop i=1..nrows
+  loop j=1..ncols
     if MODE == &quot;inclusions&quot;
       grid += sprintf(&quot;%d&quot;, m[i,j])
     else
@@ -2039,12 +2026,12 @@ spacesp	- number of post spaces
 string pSPACE = &quot;&quot;
 string SPACEp = &quot;&quot;
 if pspaces
-  loop i=1..pspaces --quiet
+  loop i=1..pspaces
     pSPACE += sprintf(&quot;%s&quot;, &quot; &quot;)
   endloop
 endif
 if spacesp
-  loop i=1..spacesp --quiet
+  loop i=1..spacesp
     SPACEp += sprintf(&quot;%s&quot;, &quot; &quot;)
   endloop
 endif

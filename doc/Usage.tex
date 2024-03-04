@@ -107,6 +107,25 @@ on-the-fly:
   a=1, Nrank=4, g_type=1, do_joint=0, Npredict=0, Nrep=1000, \
   burn=10, verbosity=2, show_progress=1, do_plot=1))
 \end{lstlisting}
+
+Since some of parameters are over-loadable, we can call
+the BMA as:
+\begin{lstlisting}
+ bundle opts = defbundle("model_prior", "binomial", \
+  "avg_model_size", 1.5, "a", 1, "alpha", 0.6, "Nrank", 4, \
+  "g_type", "benchmark", "do_joint", "none", "Npredict", 0, \
+  "Nrep", 1000, "burn", 10, "verbosity", 2, "show_progress", 1, \
+  "do_plot", 1)
+
+ BMA(valadd, greene, opts)
+\end{lstlisting}
+or using on-the-fly syntax:
+\begin{lstlisting}
+ BMA(valadd, greene, _(model_prior="binomial", avg_model_size=1.5, \
+  alpha=0.6, a=1, Nrank=4, g_type="benchmark", do_joint="none", \
+  Npredict=0, Nrep=1000, burn=10, verbosity=2, show_progress=1, do_plot=1))
+\end{lstlisting}
+
 The above example consists of three blocks.
 
 The first block defines just the opening of the so-called \code{greene9_1}
@@ -144,7 +163,7 @@ we get if we set Prior Inclusion Probabilities for all
 variables to $\frac{1}{3}$:
 %
 \begin{lstlisting}
-	BMA(valadd, greene, _(model_prior=3, theta=1/3))
+ BMA(valadd, greene, _(model_prior=3, theta=1/3))
 \end{lstlisting}
 %
 Apart from the binomial model prior, we can use the
@@ -196,11 +215,6 @@ we can use the BMA\_OldStyle function to run the old style script.
 \end{lstlisting}
 
 \subsubsection{Outputs}\label{sec:outputs}
-If you select the appropriate entries in the GUI \pkg{BMA} window, our
-package returns: PIP, Mean, Std.Dev., Cond.Mean, Cond.Std.Dev.
-Furthermore, the package also returns the predictive results of the
-dependent variable (Mean and Std.Dev.).
-
 Let us consider the data used in \cite{FernandezLeySteel2001b}
 (denoted FLS hereafter). This data comprises the information about 72
 countries and 41 potential growth determinants for the period 1960 to
@@ -209,9 +223,9 @@ countries and 41 potential growth determinants for the period 1960 to
 	Applied Econometrics} online data archive
 	(\url{http://qed.econ.queensu.ca/jae/2001-v16.5/fernandez-ley-steel/}).
 	The reported chain (3000000 replications with 33\% burn-in draws)
-	took about 241 seconds of CPU time on a PC with old AMD Phenom II X6
-	1100T CPU, 6.0~Gb of RAM running under Debian GNU/Linux. We used
-	\pkg{gretl}~{\gretlver} compiled with {\compiler} and linked 	against \blas.
+	took about 208 seconds of CPU time on a PC with {\machine} running
+	under Debian GNU/Linux. We used
+	\pkg{gretl}~{\gretlver} compiled with {\compiler} and linked against \blas.
 	The seed for RNG was set to 1000000. The dependent variable is
 	the growth rate from 1960--1992.}.
 The initial estimation sample consists of indices $i=1,\ldots,69$ and
@@ -331,23 +345,23 @@ GDPsh560,Equip_Inv     2.2350
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.99\columnwidth, keepaspectratio]{predictive_results}
+	\includegraphics[width=.8\columnwidth, keepaspectratio]{predictive_results}
 	\caption{Graphs with posterior results-predictive results.}
 	\label{fig:Resulting_graphs-predictive_results}
 \end{figure}\raggedbottom
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.99\columnwidth, keepaspectratio]{variables_inclusions_heatmap}
-	\includegraphics[width=.99\columnwidth, keepaspectratio]{jointness_heatmap}
+	\includegraphics[width=.8\columnwidth, keepaspectratio]{variables_inclusions_heatmap}
+	\includegraphics[width=.8\columnwidth, keepaspectratio]{jointness_heatmap}
 	\caption{Graphs with posterior results-heatmaps.}
 	\label{fig:Resulting_graphs-heatmaps}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.99\columnwidth, keepaspectratio]{model_size_distribution}
-	\includegraphics[width=.99\columnwidth, keepaspectratio]{model_size_cdf}
+	\includegraphics[width=.8\columnwidth, keepaspectratio]{model_size_distribution}
+	\includegraphics[width=.8\columnwidth, keepaspectratio]{model_size_cdf}
 	\caption{Graphs with posterior results-model size.}
 	\label{fig:Resulting_graphs-model_size}
 \end{figure}

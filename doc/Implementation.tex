@@ -82,7 +82,12 @@ and \lstinline!scalar do_plot! takes the following values:
 	\right.
 	\label{eq:do_plot_setup}
 \end{equation}
-Meaning of optional arguments is as follows:
+Meaning of optional arguments is as follows%
+	\footnote{Some of the abovementioned parameters are
+		over-loadable, which means that their value may be
+		passed either as an integer or as a string (case-insensitive).
+		These parameters are: \code{model\_prior},
+		\code{do\_joint}, and \code{g\_type}.}:
 \begin{itemize}
 	\item The \lstinline!series Y! is just a series of dependent variable.
 	\item The \lstinline!list X_list! is a \pkg{gretl}'s
@@ -93,7 +98,8 @@ Meaning of optional arguments is as follows:
 		generated constant term).
 	\item The \lstinline!int model_prior! is an integer $\in [1,3]$
 		indicating model prior type: 1---binomial, 2---beta-binomial
-		(the default is binomial $[\mathtt{model\_prior}=1]$, see
+		(the default is binomial [$\mathtt{model\_prior}=1$ or
+		\texttt{model\_prior = "binomial"}], see
 		Equations~\ref{eq:model_prior_binomial}
 		and \ref{eq:model_prior_binomial-beta}), 3---custom
 		(see the \lstinline!theta! parameter);
@@ -122,15 +128,20 @@ Meaning of optional arguments is as follows:
 	\item The \lstinline!int Nrank! is an integer $\geq 2$ defining
 		the number of the top ranked models. The default value is 
 		$\min\{2^{k-1}; 40\}$.
-	\item The \lstinline!int g_type! is an integer $\in [1,5]$
-		indicating the type of g-prior to be used (the default value
-		is 1: ``Benchmark prior''), see Equations~\ref{eq:g-UIP},
-		\ref{eq:g-RIC}, \ref{eq:Benchmark_Prior}, \ref{eq:g-HQ}
-		and~\ref{eq:root-g-UIP}.
-	\item The \lstinline!int do_joint! is an integer $\in [1,7]$
-		which indicates whether we do jointness analysis and if so,
-		which measure to use. The default value is 0: ``None'',
-		see Section~\ref{sec:jointness_measures}.
+	\item The \lstinline!int g_type = 1! type of g-prior to be used,
+		possible values are: 1---benchmark (Benchmark prior),
+		2---uip (Unit information prior), 3---ric (Risk inflation
+		criterion), 4---hqc (Hannan and Quinn criterion),
+		5---rootuip (Root of g-UIP),
+		see Equations~\ref{eq:g-UIP}--\ref{eq:root-g-UIP}.
+	\item The \lstinline!int do_joint = 0! the type of
+		jointness analysis; possible values are: 0---none,
+		1---dw1 (Doppelhofer-Weeks Measure 1),
+		2---dw2 (Doppelhofer-Weeks Measure 2),
+		3---ls1 (Ley-Steel Measure 1), 4---ls2 (Ley-Steel Measure 2),
+		5---sm (Strachan Measure), 6---yq (Yule's Q Measure),
+		7---myq (Modified Yule's Q Measure)
+		(see Section~\ref{sec:jointness_measures}).
 	\item The \lstinline!int Npredict! is an integer $\geq 0$
 		which sets the number of out-of-sample forecasts.
 		The default value is 0.

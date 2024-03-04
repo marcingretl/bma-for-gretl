@@ -16,5 +16,5 @@ matrix ModelPriors = { 1 ; 2 }
 loop i=1..nelem(ModelPriors) --quiet
     sufix = sprintf("%d", ModelPriors[i])
     set seed 1000000
-    BMA_model_prior_@sufix = BMA(m, UKM1_GUM, _(g_type=3, model_prior=ModelPriors[i], Npredict=16))
+    BMA_model_prior_@sufix = BMA(m, UKM1_GUM, _(g_type="ric", model_prior=ModelPriors[i], Npredict=16))
 endloop

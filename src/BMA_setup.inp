@@ -140,13 +140,13 @@ function bundle BMA_setup (bundle *M, int Norig)
         M.a = log(M.avg_model_size/M.k)
         M.b = log(1 - M.avg_model_size/M.k)
         tmp = M.avg_model_size/M.k
-        loop i=0..M.k --quiet
+        loop i=0..M.k
             M.model_prior_log[i+1] = log(tmp^i * (1-tmp)^(M.k-i))
         endloop
     elif M.prior_name == "Beta-Binomial"
         #scalar M.b = (M.k - M.avg_model_size)/M.avg_model_size
         M.b = M.a*(M.k/M.avg_model_size - 1)
-        loop i=0..M.k --quiet
+        loop i=0..M.k
             M.model_prior_log[i+1] = log((gammafun(i+M.a) * gammafun(M.k-i+M.b) / gammafun(M.a+M.k+M.b)) / (gammafun(M.a) * gammafun(M.b) / gammafun(M.a+M.b)))
         endloop
     elif M.prior_name == "custom"
@@ -162,8 +162,8 @@ function bundle BMA_setup (bundle *M, int Norig)
             if !nelem(thata_names)
                 return "Prior Inclusion Probabilities (theta) does not have variables names"
             endif
-            loop foreach x X_list --quiet
-                loop i=1..nelem(thata_names) --quiet
+            loop foreach x X_list
+                loop i=1..nelem(thata_names)
                     if thata_names[i] == "$x"
                         theta_tmp[inlist(X_list, "$x")] = M.theta[i]
                         break

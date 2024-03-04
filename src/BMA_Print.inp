@@ -85,11 +85,7 @@ function void BMA_Print (bundle *MODEL)
     print "----------------------------------"
     printf "\n"
     print "Posterior moments (unconditional and conditional on inclusion):"
-    if $version < 20170
-        printf "%15f", M.Post_Results
-    else
-        printf "%15f", mreverse(msortby(M.Post_Results, 1))
-    endif
+    printf "%15f", mreverse(msortby(M.Post_Results, 1))
     if M.prior_name == "custom"
         printf "\n"
         print "Inclusion Probabilities"
@@ -99,7 +95,7 @@ function void BMA_Print (bundle *MODEL)
     print "----------------------------------"
     printf "\n"
     print "Posterior probability of models:"
-    loop i=1..rows(M.models_probs_percents) --quiet
+    loop i=1..rows(M.models_probs_percents)
         if i <= 4
             printf "Best %d\t models account for %.4f of mass\n", M.models_probs_percents[i,1], M.models_probs_percents[i,2]
         elif i == rows(M.models_probs_percents)
@@ -109,7 +105,7 @@ function void BMA_Print (bundle *MODEL)
         endif
     endloop
     printf "\nBest models ranking:\n"
-    loop i=1..M.Nrank --quiet
+    loop i=1..M.Nrank
         printf "Model %d:\t%f\n", i, M.Numerical_Likelihood[i]
     endloop
     printf "Total probability of the models in ranking (numerical): %f\n", sumc(M.Numerical_Likelihood)
@@ -149,8 +145,8 @@ function void BMA_Print (bundle *MODEL)
             scalar strong_sub_th = M.do_joint == 7 ? -0.65 : -2
             scalar strong_com_th = M.do_joint == 7 ? 0.65 : 2
             scalar significant_relation = M.do_joint == 7 ? 0.3 : 1
-            loop i=1..M.k --quiet
-                loop j=i+1..M.k --quiet
+            loop i=1..M.k
+                loop j=i+1..M.k
                     if abs(jointess_measure[i,j]) > significant_relation
                         pair += 1
                         pairs[pair,1] = jointess_measure[i,j]
@@ -196,9 +192,9 @@ function void BMA_Print (bundle *MODEL)
         matrix coeffmat
         strings Xnames # names of X-es
         printf "\n\nBest models estimates:"
-        loop i=1..M.Nrank --quiet
+        loop i=1..M.Nrank
             if M.mod_nume_prob[i]
-                Xnames = null
+                Xnames = array(0)
                 printf "\n"
                 print "----------------------------------"
                 printf "\nModel: %d, posterior probability: %f", i, M.Numerical_Likelihood[i]

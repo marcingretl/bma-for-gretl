@@ -45,7 +45,7 @@ function void BMA_summary (bundle *M)
     M.mod_size_av = sum(M.mod_sizes[,1] .* M.mod_sizes[,2])
     M.mod_size_sd = sqrt(sum((M.mod_sizes[,1] - M.mod_size_av) .^2 .* M.mod_sizes[,2]))
     M.mod_sizes = M.mod_sizes ~ zeros(rows(M.mod_sizes),1)
-    loop i=1..rows(M.mod_sizes) --quiet
+    loop i=1..rows(M.mod_sizes)
         k = M.mod_sizes[i,1]
         M.mod_sizes[i,3] = bincoeff(M.k,k) * exp(M.model_prior_log[i])
     endloop
@@ -74,7 +74,7 @@ function void BMA_summary (bundle *M)
     percents1 = selifr(percents1, percents1 .< M.post_n_models_accepted)
     percents1 = percents1 ~ zeros(nelem(percents1))
     if rows(percents1) > 0
-        loop i=1..rows(percents1) --quiet
+        loop i=1..rows(percents1)
             percents1[i,2] = M.models_probs_cum[percents1[i,1]]
         endloop
         percents1 = selifr(percents1, percents1[,2] .> 0)
@@ -90,7 +90,7 @@ function void BMA_summary (bundle *M)
     endif
     percents2 = zeros(nelem(percents2)) ~ percents2
     nr = 1
-    loop i=tmps..M.post_n_models_accepted-1 --quiet
+    loop i=tmps..M.post_n_models_accepted-1
         if 100*M.models_probs_cum[i] >= percents2[nr,2]
             percents2[nr,1] = i
             percents2[nr++,2] = M.models_probs_cum[i]
