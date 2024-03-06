@@ -108,7 +108,7 @@
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
 		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
-		wls, xcorrgm, xtab, mpi, gibbs, return, params},  
+		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, eval},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,
 		cmult, cnorm, colname, colnames, cols, cos, cosh, cov,
@@ -133,11 +133,13 @@
 		transp, trimr, typestr, uniform, uniq, unvech, upper, urcpval, values,
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
 		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle,
-		mat2list, strftime, _},
-	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle, void, bundles, null},
-	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now},
+		mat2list, strftime, fzero, sleep, eigen, cnameset, rnameset, _},
+	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
+		void, bundles, null, const},
+	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$workdir, \$aic,
+		\$model, \$pvalue, \$xlist, \$uhat},
 	%   alsoletter={-},
-	sensitive=false,  
+	sensitive=false,
 	morecomment=[l]{\#},
 	morecomment=[l][\color{hanslgreen}]{--},
 	morecomment=[s]{/*}{*/},
@@ -150,7 +152,7 @@
 	xleftmargin=\parindent,
 	language=Hansl,
 	showstringspaces=false,
-	basicstyle={\footnotesize\ttfamily},
+	basicstyle={\normalsize\ttfamily},
 	keywordstyle={\bfseries\color{hanslred}},
 	keywordstyle=[2]{\color{hanslteal}},
 	keywordstyle=[3]{\bfseries\color{hanslgreen}},
@@ -159,6 +161,7 @@
 	stringstyle={\color{hanslmagenta}}
 }
 \lstset{escapechar=@,style=hansl}
+\def\inline{\lstinline[basicstyle={\footnotesize\ttfamily}]}
 % Definicja kolorów
 % \definecolor{hanslgreen}{cmyk}{.67,0,.37,.45}
 \definecolor{hanslgreen}{cmyk}{.87,0,.91,.45}
@@ -167,3 +170,8 @@
 \definecolor{hanslteal}{cmyk}{1,0,.45,0} %{.01,0,.45,1}
 \definecolor{hanslmagenta}{cmyk}{0,.96,0,0}
 \definecolor{hanslblack}{cmyk}{0,0,0,1}
+
+\newcommand{\gretlword}[1]{\lstinline!#1!}
+\newcommand{\gretlcmdf}[1]{\inline{#1}\xspace}
+\newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
+\newcommand{\baceopts}[1]{\vspace*{10pt}\noindent\gretlcmd{#1}}

@@ -22,6 +22,10 @@ function bundle BMA (series Y "Dependent variable",
        Bundle-based interface to carry out BMA analysis.
        Function returns bundle MODEL with (formatted) results.
     */
+
+    # We need to force use of dot as decimal point
+    set force_decpoint on
+
     bundle MODEL
     string Y_name = argname(Y)
     scalar Norig = NA

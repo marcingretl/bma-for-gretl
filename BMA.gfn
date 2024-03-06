@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="BMA" minver="2022c" lives-in-subdir="true">
 <author email="marcin@gretlconference.org">Marcin Błażejowski, Jacek Kwiatkowski</author>
-<version>3.2</version>
-<date>2024-03-04</date>
+<version>3.21</version>
+<date>2024-03-06</date>
 <description>Bayesian Model Averaging for the linear regression models with jointness measures</description>
 <tags>C11 C52</tags>
 <label>Bayesian Model Averaging</label>
@@ -27,6 +27,10 @@ examples </data-files>
 Bundle-based interface to carry out BMA analysis.
 Function returns bundle MODEL with (formatted) results.
 */
+
+# We need to force use of dot as decimal point
+set force_decpoint on
+
 bundle MODEL
 string Y_name = argname(Y)
 scalar Norig = NA
