@@ -4,16 +4,10 @@
 	\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass[a4paper,11pt,twoside]{article}
-\RequirePackage[]{graphicx}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
-\RequirePackage{a4wide}
-\RequirePackage{array}
-\RequirePackage{url}
 \RequirePackage[pdftex]{color}
-\RequirePackage{fancyhdr}
-\RequirePackage{listings}
-\RequirePackage{color,ae,fancyvrb}
+\RequirePackage{graphicx,a4wide,array,url,fancyhdr,listings,color,ae,fancyvrb,amsmath,amssymb,rotating,multirow,thumbpdf,float,xspace}
 
 \usepackage[pagebackref=true,unicode]{hyperref}
 %   \hypersetup{colorlinks=true}
@@ -38,6 +32,8 @@
 \newcommand{\VAR}{\mathsf{VAR}}
 \newcommand{\COV}{\mathsf{COV}}
 \newcommand{\Prob}{\mathsf{P}}
+\newcommand{\BMA}{\pkg{BMA}\xspace}
+\newcommand{\gretl}{\pkg{gretl}\xspace}
 
 \newenvironment{CodeChunk}{}{}
 

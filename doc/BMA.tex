@@ -1,23 +1,22 @@
 \documentclass[article]{repec}
-\usepackage{amsmath,amssymb,rotating,multirow,thumbpdf,float}
 \graphicspath{{graph/}}
 
 \author{Marcin Błażejowski\\WSB Merito University in Torun\ \And
         Jacek Kwiatkowski\\Nicolaus Copernicus University in Torun}
 \Plainauthor{Marcin Błażejowski, Jacek Kwiatkowski}
 
-\title{Bayesian Model Averaging and Jointness Measures for \pkg{gretl} -- 3.21}
+\title{Bayesian Model Averaging and Jointness Measures for \gretl -- 3.21}
 \Plaintitle{Bayesian Model Averaging and Jointness Measures for gretl -- 3.21}
 
 \Abstract{Bayesian model averaging is a model-building strategy that
   takes account of model uncertainty in
   conclusions about estimated parameters. It is an efficient tool for
   discovering the most probable models and obtaining estimates of
-  their posterior characteristics. We introduce the \pkg{BMA} package
+  their posterior characteristics. We introduce the \BMA package
   for linear regression models with 7 jointness measures.
   More information one can find in \cite{Blazejowski_Kwiatkowski_BMA_JSS}.}
 
-\Keywords{Bayesian model averaging, jointness measures, \pkg{gretl}, \proglang{Hansl}}
+\Keywords{Bayesian model averaging, jointness measures, \gretl, \proglang{Hansl}}
 \Plainkeywords{Bayesian model averaging, jointness measures, gretl, Hansl}
 
 \newcommand{\gretlver}{2024a-git}
@@ -38,10 +37,10 @@
 
 \section*{Changelog}
 {\small\begin{description}
-	\item[3.21] Small bug fix and one script added:
+	\item[3.21] Small bug fix:
 		\begin{itemize}
-			\item Force use of ``.'' as decimal point.
-			\item \texttt{priorIP.inp} file added to examples.
+			\item Force use of ``.'' as decimal point by \BMA package
+				internally (not for the running \gretl instance).
 		\end{itemize}
 	\item[3.2] Some cleanups:
 		\begin{itemize}
@@ -55,8 +54,8 @@
 			\item New progress bar.
 			\item Few typos corrected.
 			\item Modify call to BMA\_jointness\_measure() according
-				to new ''const guarantee'' constraint in 2022c version.
-			\item Some plot enhancement + new ''Model prior distribution'' plot.
+				to new ``const guarantee'' constraint in 2022c version.
+			\item Some plot enhancement + new ``Model prior distribution'' plot.
 			\item Printing of related jointness pairs for modified Yule's Q
 				measure.
 		\end{itemize}
